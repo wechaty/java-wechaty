@@ -9,7 +9,7 @@ mvn install
 
 3. execute
 ```shell
-java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar   
+java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar   
 ```
 
 4. enjoy
