@@ -9,6 +9,10 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wechaty-puppet-hosite</artifactId>
 
+    <properties>
+        <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+    </properties>
+
     <dependencies>
 
         <dependency>
@@ -153,7 +157,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.6.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
                 <executions>
                     <!-- 替换会被 maven 特别处理的 default-compile -->
                     <execution>

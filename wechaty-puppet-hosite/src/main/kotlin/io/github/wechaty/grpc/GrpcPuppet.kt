@@ -45,6 +45,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         val token = puppetOptions!!.token
 
         val client = WebClient.create(vertx)
+
         client.getAbs(CHATIE_ENDPOINT + token).send { ar->
             if(ar.succeeded()){
 
@@ -770,7 +771,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             val payload = event.payload
 
             log.info("PuppetHostie $type payload $payload")
-            println("PuppetHostie $type payload $payload")
+//            println("PuppetHostie $type payload $payload")
 
             if (type == Event.EventType.EVENT_TYPE_HEARTBEAT) {
                 eb.publish("heartbeat", json {

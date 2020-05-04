@@ -24,7 +24,7 @@ interface PuppetHeartbeatListener{
 
 @FunctionalInterface
 interface PuppetScanListener{
-    fun handler(qrcode: String?, statusScanStatus: ScanStatus, data: String?)
+    fun handler(qrcode: String?, scanStatus: ScanStatus, data: String?)
 }
 
 @FunctionalInterface

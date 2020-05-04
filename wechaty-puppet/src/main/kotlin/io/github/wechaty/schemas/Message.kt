@@ -42,6 +42,12 @@ data class MessagePayload(val id:String) {
     var fromId: String? = null
     var roomId: String? = null
     var toId: String? = null
+
+    override fun toString(): String {
+        return "MessagePayload(id='$id', mentionIdList=$mentionIdList, filename=$filename, text=$text, timestamp=$timestamp, type=$type, fromId=$fromId, roomId=$roomId, toId=$toId)"
+    }
+
+
 }
 
 class MessageQueryFilter {
@@ -51,4 +57,10 @@ class MessageQueryFilter {
     private val text: String? = null
     private val toId: String? = null
     private val type: MessageType? = null
+
+    override fun toString(): String {
+        return "MessageQueryFilter(fromId=$fromId, id=$id, roomId=$roomId, text=$text, toId=$toId, type=$type)"
+    }
+
+
 }

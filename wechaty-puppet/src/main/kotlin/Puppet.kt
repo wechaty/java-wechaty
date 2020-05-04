@@ -611,8 +611,12 @@ abstract class Puppet {
 
             if (StringUtils.isNotBlank(query.topic)) {
                 roomPayloads = roomPayloads.filter { t ->
-                    StringUtils.equals(t.topic, query.topic)
+                    log.info("t.topic is {} and topic is {}",t.topic,query.topic)
+                    val equals = StringUtils.equals(t.topic, query.topic)
+                    log.info("equals is {}",equals)
+                    equals
                 }
+                log.info("roomPayloads is {}",roomPayloads)
             }
 
             if (CollectionUtils.isNotEmpty(roomPayloads)) {

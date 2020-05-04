@@ -5,6 +5,7 @@ import io.github.wechaty.Wechaty
 import io.github.wechaty.schemas.MessagePayload
 import io.github.wechaty.type.Sayable
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
@@ -99,6 +100,8 @@ class Message(wechaty: Wechaty,var id:String?= null) : Sayable, Accessory(wechat
 
             this.payload = puppte.messagePayload(id!!).get()
 
+            log.info("message payload is {}",payload)
+
             if (payload == null) {
                 throw Exception("no playload")
             }
@@ -107,8 +110,8 @@ class Message(wechaty: Wechaty,var id:String?= null) : Sayable, Accessory(wechat
             val roomId = payload!!.roomId
             val toId = payload!!.toId
 
-            if (StringUtils.isNotBlank(fromId)) {
-
+            if (StringUtils.isNotBlank(roomId)) {
+                wechaty.room().load(roomId!!).ready().get()
             }
 
             if (StringUtils.isNotBlank(fromId)) {
@@ -133,6 +136,10 @@ class Message(wechaty: Wechaty,var id:String?= null) : Sayable, Accessory(wechat
         }
 
         return payload?.text ?:  ""
+    }
+
+    companion object{
+        val log = LoggerFactory.getLogger(Message::class.java)
     }
 
 

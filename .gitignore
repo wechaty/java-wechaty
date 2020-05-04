@@ -156,6 +156,6 @@ build/*
 .idea/vcs.xml
 target/
 
-.idea/
+.idea/*
 
 *.iml

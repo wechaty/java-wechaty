@@ -3,21 +3,23 @@ package io.github.wechaty.examples;
 
 import io.github.wechaty.MessageListener;
 import io.github.wechaty.Wechaty;
-import io.github.wechaty.schemas.ContactQueryFilter;
+import io.github.wechaty.schemas.RoomQueryFilter;
 import io.github.wechaty.user.Contact;
-import io.github.wechaty.user.Message;
+import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
+        /**
+         * Add your token here
+         */
         String token = "_";
 
         Wechaty bot = Wechaty.instance(token);
@@ -34,13 +36,33 @@ public class Main {
 
                 Contact from = message.from();
 
-                from.say("dong");
+                Contact room = message.room();
+
+                if(room != null){
+                    room.say("dong");
+                }else {
+                    from.say("dong");
+                }
 
             }
 
         });
 
         bot.start().get();
+
+//        Room room = bot.room();
+//
+//        RoomQueryFilter roomQueryFilter = new RoomQueryFilter();
+//
+//        roomQueryFilter.setTopic("ChatOps - Donut");
+//
+//        Future<List<Room>> all = room.findAll(roomQueryFilter);
+//
+//        List<Room> rooms = all.get();
+//
+//        Room room1 = rooms.get(0);
+//
+//        room1.say("hi from kotlin wechaty bot");
 
     }
 }

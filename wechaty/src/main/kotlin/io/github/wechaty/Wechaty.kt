@@ -7,13 +7,17 @@ import io.github.wechaty.io.github.wechaty.Listener.*
 import io.github.wechaty.io.github.wechaty.Status
 import io.github.wechaty.io.github.wechaty.schemas.*
 import io.github.wechaty.io.github.wechaty.utils.GenericCodec
+import io.github.wechaty.io.github.wechaty.utils.JsonUtils
 import io.github.wechaty.schemas.PuppetOptions
 import io.github.wechaty.user.Contact
 import io.github.wechaty.user.ContactSelf
 import io.github.wechaty.user.Message
+import io.github.wechaty.user.Room
 //import io.github.wechaty.user.Room
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.EventBus
+import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.core.json.json
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
@@ -23,7 +27,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
     private lateinit var puppet: Puppet
     private var vertx: Vertx = Vertx.vertx()
     private var wechatyEb: EventBus
-    private val puppetOptions:PuppetOptions = wechatyOptions.puppetOptions!!
+    private val puppetOptions: PuppetOptions = wechatyOptions.puppetOptions!!
 
     @Volatile
     private var readyState = Status.OFF
@@ -33,10 +37,14 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
 
     private val contactCache: Cache<String, Contact> = Caffeine.newBuilder().build()
     private val messageCache: Cache<String, Message> = Caffeine.newBuilder().build()
+    private val roomCache: Cache<String, Room> = Caffeine.newBuilder().build()
 //    private val roomCache:Cache<String,Room> = Caffeine.newBuilder().build()
 
 
-    public fun start() :Future<Void>{
+    public fun start(): Future<Void> {
+
+        log.info("start Wechaty")
+
         return CompletableFuture.supplyAsync {
             initPuppet()
             puppet.start().get()
@@ -55,7 +63,17 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
     }
 
     fun on(event: String, listener: ScanListener) {
+        val consumer = wechatyEb.consumer<String>(event)
+        consumer.handler {
+            val body = it.body()
 
+            log.info("scan body is {}",body)
+
+            val jsonObject = JsonObject(body)
+            val code = jsonObject.getInteger("scanStatus")
+            listener.handler(jsonObject.getString("qrcode"),ScanStatus.getByCode(code),jsonObject.getString("data"))
+
+        }
     }
 
     fun on(event: String, listener: MessageListener) {
@@ -66,20 +84,12 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         }
     }
 
-    fun room() {
-
-    }
-
     fun message(): Message {
         return Message(this)
     }
 
     fun contact(): Contact {
         return Contact(this)
-    }
-
-    fun contactSelf(): ContactSelf {
-        return ContactSelf(this)
     }
 
     fun getConactFromCache(id: String): Contact? {
@@ -94,7 +104,27 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         contactCache.invalidate(id)
     }
 
-    private fun initPuppet(){
+    fun contactSelf(): ContactSelf {
+        return ContactSelf(this)
+    }
+
+    fun room():Room {
+        return Room(this)
+    }
+
+    fun getRoomFromCache(id:String):Room?{
+        return roomCache.getIfPresent(id)
+    }
+
+    fun putRoomToCache(id:String,room:Room){
+        roomCache.put(id,room)
+    }
+
+    fun delRoomFromCache(id:String){
+        roomCache.invalidate(id)
+    }
+
+    private fun initPuppet() {
         this.puppet = GrpcPuppet(puppetOptions)
         initPuppetEventBridge(puppet)
     }
@@ -119,6 +149,24 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
             when (it) {
                 "dong" -> {
 
+                }
+
+                "scan" ->{
+                    puppet.on("scan",object : PuppetScanListener{
+                        override fun handler(qrcode: String?, scanStatus: ScanStatus, data: String?) {
+
+                            val scanJson = JsonUtils.write(mapOf(
+                                "qrcode" to qrcode,
+                                "scanStatus" to scanStatus.code,
+                                "data" to data
+                            ))
+
+                            log.info("scan json is {}",scanJson)
+
+                            wechatyEb.publish("scan",scanJson)
+
+                        }
+                    })
                 }
 
                 "login" -> {
