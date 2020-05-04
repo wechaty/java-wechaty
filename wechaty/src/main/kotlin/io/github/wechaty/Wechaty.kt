@@ -192,9 +192,11 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
 
                     puppet.on("message", object : PuppetMessageListener {
                         override fun handler(messageId: String) {
-                            val msg = message().load(messageId)
-                            msg.ready().get()
-                            wechatyEb.publish("message", msg)
+                            CompletableFuture.runAsync {
+                                val msg = message().load(messageId)
+                                msg.ready().get()
+                                wechatyEb.publish("message", msg)
+                            }
                         }
                     })
                 }

@@ -12,4 +12,10 @@ mvn install
 java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar   
 ```
 
+or run in background
+
+```shell
+nohup java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
+```
+
 4. enjoy
