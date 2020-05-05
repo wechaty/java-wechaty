@@ -56,4 +56,7 @@ class ContactPayload {
     var signature: String? = null
     var star: Boolean? = null
     var weixin: String? = null
+    override fun toString(): String {
+        return "ContactPayload(id=$id, gender=$gender, type=$type, name=$name, avatar=$avatar, address=$address, alias=$alias, city=$city, friend=$friend, province=$province, signature=$signature, star=$star, weixin=$weixin)"
+    }
 }

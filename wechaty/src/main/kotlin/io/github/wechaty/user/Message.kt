@@ -79,8 +79,14 @@ class Message(wechaty: Wechaty,var id:String?= null) : Sayable, Accessory(wechat
         if(payload == null){
             throw Exception("no payload")
         }
-        val roomId = payload!!.roomId ?: return null
-        return wechaty.contact().load(roomId)
+
+        val roomId = payload!!.roomId
+
+        if (StringUtils.isEmpty(roomId)) {
+            return null
+        }
+
+        return wechaty.contact().load(roomId!!)
     }
 
 

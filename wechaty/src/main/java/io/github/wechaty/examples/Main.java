@@ -17,9 +17,6 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        /**
-         * Add your token here
-         */
         String token = "_";
 
         Wechaty bot = Wechaty.instance(token);

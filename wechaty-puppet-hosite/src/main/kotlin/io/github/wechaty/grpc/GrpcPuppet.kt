@@ -1,14 +1,11 @@
 package io.github.wechaty.grpc
 
 import com.google.protobuf.StringValue
-import io.github.wechaty.io.github.wechaty.schemas.EventDongPayload
-import io.github.wechaty.io.github.wechaty.schemas.EventLoginPayload
-import io.github.wechaty.io.github.wechaty.schemas.EventScanPayload
 import io.github.wechaty.Puppet
 import io.github.wechaty.grpc.puppet.*
 import io.github.wechaty.io.github.wechaty.Status
 import io.github.wechaty.io.github.wechaty.filebox.FileBox
-import io.github.wechaty.io.github.wechaty.schemas.EventMessagePayload
+import io.github.wechaty.io.github.wechaty.schemas.*
 import io.github.wechaty.io.github.wechaty.utils.JsonUtils
 import io.github.wechaty.schemas.*
 import io.grpc.ManagedChannel
@@ -81,7 +78,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         state = Status.PENDING
 
         state = try {
-            startGrpcClient()
+            startGrpcClient().get()
             startGrpcStream()
             Status.ON
         } catch (e: Exception) {
@@ -786,6 +783,11 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
                     val loginPayload = JsonUtils.readValue<EventLoginPayload>(payload)
                     setId(loginPayload.contactId)
                     eb.publish("login", loginPayload)
+                }
+
+                Event.EventType.EVENT_TYPE_HEARTBEAT ->{
+                    val heartbeatPayload = JsonUtils.readValue<EventHeartbeatPayload>(payload)
+                    eb.publish("heartbeat",heartbeatPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_SCAN -> {

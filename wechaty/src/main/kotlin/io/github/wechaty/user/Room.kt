@@ -10,6 +10,7 @@ import io.github.wechaty.type.Sayable
 import io.github.wechaty.utils.FutureUtils
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
@@ -107,7 +108,7 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             }
 
             this.payload = puppet.roomPayload(id!!).get()
-
+            log.info("get room payload is {} by id {}",payload,id)
             if (payload == null) {
                 throw Exception("no payload")
             }
@@ -125,6 +126,10 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
 
     fun isRead(): Boolean {
         return payload != null
+    }
+
+    companion object{
+        private val log = LoggerFactory.getLogger(Room::class.java)
     }
 }
 

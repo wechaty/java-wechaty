@@ -7,10 +7,7 @@ import com.google.common.collect.Lists
 import io.github.wechaty.io.github.wechaty.Listener.*
 import io.github.wechaty.io.github.wechaty.Status
 import io.github.wechaty.io.github.wechaty.filebox.FileBox
-import io.github.wechaty.io.github.wechaty.schemas.EventDongPayload
-import io.github.wechaty.io.github.wechaty.schemas.EventLoginPayload
-import io.github.wechaty.io.github.wechaty.schemas.EventMessagePayload
-import io.github.wechaty.io.github.wechaty.schemas.EventScanPayload
+import io.github.wechaty.io.github.wechaty.schemas.*
 import io.github.wechaty.io.github.wechaty.throwUnsupportedError
 import io.github.wechaty.io.github.wechaty.utils.GenericCodec
 import io.github.wechaty.schemas.*
@@ -29,7 +26,10 @@ import kotlin.collections.ArrayList
 abstract class Puppet {
 
     @Volatile
-    protected var state = Status.OFF;
+    protected var state = Status.OFF
+
+    private val HEARTBEAT_COUNTER = AtomicLong()
+    private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
 
     private lateinit var cacheContactPayload: Cache<String, ContactPayload>
     private lateinit var cacheFriendshipPayload: Cache<String, FriendshipPayload>
@@ -42,6 +42,8 @@ abstract class Puppet {
     private val count = AtomicLong()
     private var id: String? = null
     protected var puppetOptions: PuppetOptions? = null
+
+    private var heartbeatTimerId:Long = 0
 
     /**
      *
@@ -61,6 +63,7 @@ abstract class Puppet {
         eb = vertx.eventBus()
         initEventCodec()
         initCache()
+        initHeart()
 
     }
 
@@ -69,6 +72,7 @@ abstract class Puppet {
         eb.registerDefaultCodec(EventDongPayload::class.java, GenericCodec(EventDongPayload::class.java))
         eb.registerDefaultCodec(EventMessagePayload::class.java, GenericCodec(EventMessagePayload::class.java))
         eb.registerDefaultCodec(EventLoginPayload::class.java, GenericCodec(EventLoginPayload::class.java))
+        eb.registerDefaultCodec(EventHeartbeatPayload::class.java, GenericCodec(EventHeartbeatPayload::class.java))
     }
 
 //    constructor(token:String) {
@@ -81,7 +85,7 @@ abstract class Puppet {
 //        initCache()
 //    }
 
-    protected fun getId():String?{
+    protected fun getId(): String? {
         return id;
     }
 
@@ -94,13 +98,31 @@ abstract class Puppet {
         cacheMessagePayload = Caffeine.newBuilder().build()
     }
 
+    private fun initHeart(){
+
+//        heartbeadTimerId = vertx.setPeriodic(HOSTIE_KEEPALIVE_TIMEOUT,{ ->
+//            val incrementAndGet = HEARTBEAT_COUNTER.incrementAndGet()
+//            ding("`recover CPR #${incrementAndGet}")
+//        })
+
+        heartbeatTimerId = vertx.setPeriodic(HOSTIE_KEEPALIVE_TIMEOUT) { id ->
+            log.info("timer")
+            if(state == Status.ON) {
+                val incrementAndGet = HEARTBEAT_COUNTER.incrementAndGet()
+                log.info("HEARTBEAT_COUNTER #{}", incrementAndGet)
+                ding("`recover CPR #${incrementAndGet}")
+            }
+        }
+
+    }
+
     fun emit(event: String, vararg args: Any) {
 
         eb.publish(event, args)
     }
 
     //dong
-    fun on(event: String,listener: PuppetDongListener){
+    fun on(event: String, listener: PuppetDongListener) {
         val consumer = eb.consumer<EventDongPayload>(event)
         consumer.handler {
             val body = it.body()
@@ -108,48 +130,44 @@ abstract class Puppet {
         }
     }
 
-    fun on(event: String,listener: PuppetScanListener){
+    fun on(event: String, listener: PuppetScanListener) {
 
         val consumer = eb.consumer<EventScanPayload>(event)
-        consumer.handler{
+        consumer.handler {
             val body = it.body()
 
             val data = body.data
             val qrcode = body.qrcode
             val status = body.status
 
-            listener.handler(qrcode,status,data)
+            listener.handler(qrcode, status, data)
         }
 
     }
 
-    fun on(event:String,listener: PuppetLoginListener){
+    fun on(event: String, listener: PuppetLoginListener) {
         val consumer = eb.consumer<EventLoginPayload>(event)
-        consumer.handler(){
+        consumer.handler() {
             val body = it.body()
             val contactId = body.contactId
             listener.handler(contactId)
         }
     }
 
-    fun on(event:String,listener: PuppetReadyListener){
+    fun on(event: String, listener: PuppetReadyListener) {
         val consumer = eb.consumer<String>(event)
-        consumer.handler(){
+        consumer.handler() {
             listener.handler()
         }
     }
 
-    fun on(event:String,listener:PuppetMessageListener){
+    fun on(event: String, listener: PuppetMessageListener) {
         val consumer = eb.consumer<EventMessagePayload>(event)
-        consumer.handler(){
+        consumer.handler() {
             val body = it.body()
             listener.handler(body.messageId)
         }
     }
-
-
-
-
 
 
 //    fun on(event: String, listener: ): Puppet {
@@ -294,13 +312,13 @@ abstract class Puppet {
                 list = contactList().get()
             }
 
-            if(query == null){
+            if (query == null) {
                 return@supplyAsync list
             }
 
             return@supplyAsync list!!.filter {
                 val payload = contactPayload(it).get()
-                return@filter StringUtils.equals(query.name,payload.name)
+                return@filter StringUtils.equals(query.name, payload.name)
             }
         }
     }
@@ -611,12 +629,12 @@ abstract class Puppet {
 
             if (StringUtils.isNotBlank(query.topic)) {
                 roomPayloads = roomPayloads.filter { t ->
-                    log.info("t.topic is {} and topic is {}",t.topic,query.topic)
+                    log.info("t.topic is {} and topic is {}", t.topic, query.topic)
                     val equals = StringUtils.equals(t.topic, query.topic)
-                    log.info("equals is {}",equals)
+                    log.info("equals is {}", equals)
                     equals
                 }
-                log.info("roomPayloads is {}",roomPayloads)
+                log.info("roomPayloads is {}", roomPayloads)
             }
 
             if (CollectionUtils.isNotEmpty(roomPayloads)) {
@@ -635,9 +653,9 @@ abstract class Puppet {
         return "$contactId@@@$roomId"
     }
 
-    protected abstract fun roomMemberRawPayload(roomId: String,contactId: String):Future<RoomMemberPayload>
+    protected abstract fun roomMemberRawPayload(roomId: String, contactId: String): Future<RoomMemberPayload>
 
-    protected abstract fun roomMemberRawPayloadParser(rawPayload: RoomMemberPayload) :Future<RoomMemberPayload>
+    protected abstract fun roomMemberRawPayloadParser(rawPayload: RoomMemberPayload): Future<RoomMemberPayload>
 
     public fun roomMemberPayloadDirty(roomId: String): Future<Void> {
         val contactIdList = roomMemberList(roomId).get()
@@ -653,17 +671,18 @@ abstract class Puppet {
 
         val key = cacheKeyRoomMember(roomId, memberId)
         return CompletableFuture.supplyAsync {
-            return@supplyAsync cacheRoomMemberPayload.get(key){
+            return@supplyAsync cacheRoomMemberPayload.get(key) {
                 val rawPayload = roomMemberRawPayload(roomId, memberId).get()
                 roomMemberRawPayloadParser(rawPayload).get()
             }
         }
     }
-    public fun getEventBus():EventBus{
+
+    public fun getEventBus(): EventBus {
         return eb
     }
 
-    companion object{
+    companion object {
         private val log = LoggerFactory.getLogger(Puppet::class.java)
     }
 
