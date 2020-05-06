@@ -38,10 +38,9 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
     private val contactCache: Cache<String, Contact> = Caffeine.newBuilder().build()
     private val messageCache: Cache<String, Message> = Caffeine.newBuilder().build()
     private val roomCache: Cache<String, Room> = Caffeine.newBuilder().build()
-//    private val roomCache:Cache<String,Room> = Caffeine.newBuilder().build()
 
 
-    public fun start(): Future<Void> {
+    fun start(): Future<Void> {
 
         log.info("start Wechaty")
 
@@ -54,7 +53,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         }
     }
 
-    public fun name(): String {
+    fun name(): String {
         return wechatyOptions.name
     }
 
@@ -154,15 +153,12 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
                 "scan" ->{
                     puppet.on("scan",object : PuppetScanListener{
                         override fun handler(qrcode: String?, scanStatus: ScanStatus, data: String?) {
-
                             val scanJson = JsonUtils.write(mapOf(
                                 "qrcode" to qrcode,
                                 "scanStatus" to scanStatus.code,
                                 "data" to data
                             ))
-
                             log.info("scan json is {}",scanJson)
-
                             wechatyEb.publish("scan",scanJson)
 
                         }
@@ -189,7 +185,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
                 }
 
                 "message" -> {
-
                     puppet.on("message", object : PuppetMessageListener {
                         override fun handler(messageId: String) {
                             CompletableFuture.runAsync {

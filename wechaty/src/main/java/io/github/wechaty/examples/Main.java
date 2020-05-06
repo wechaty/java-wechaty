@@ -29,6 +29,14 @@ public class Main {
         bot.on("message", (MessageListener) message -> {
             String text = message.text();
 
+
+            if(StringUtils.contains(text,"@小犀利豆")){
+
+                String replace = StringUtils.replace(text, "@小犀利豆","");
+
+            }
+
+
             if(StringUtils.equals(text,"#ding")){
 
                 Contact from = message.from();

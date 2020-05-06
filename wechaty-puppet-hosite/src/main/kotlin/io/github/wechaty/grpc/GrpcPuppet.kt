@@ -409,6 +409,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageImage(messageId: String): Future<FileBox> {
 
 
+
         TODO("Not yet implemented")
     }
 
@@ -457,7 +458,17 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     override fun messageSendFile(conversationId: String, file: FileBox): Future<String?> {
-        TODO("Not yet implemented")
+
+        val request = Message.MessageSendFileRequest.newBuilder()
+                .setConversationId(conversationId)
+                .setFilebox(file.toJsonString())
+                .build()
+
+        return CompletableFuture.supplyAsync {
+            val response = grpcClient!!.messageSendFile(request)
+            response.id.value
+        }
+
     }
 
     override fun messageSendMiniProgram(conversationId: String, miniProgramPayload: MiniProgramPayload): Future<String?> {
