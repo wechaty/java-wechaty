@@ -306,7 +306,7 @@ abstract class Puppet {
 
         return CompletableFuture.supplyAsync {
 
-            var list = searchIdList;
+            var list = searchIdList
 
             if (CollectionUtils.isEmpty(searchIdList)) {
                 list = contactList().get()
@@ -425,7 +425,7 @@ abstract class Puppet {
 
     abstract fun messageContact(messageId: String): Future<String>
     abstract fun messageFile(messageId: String): Future<FileBox>
-    abstract fun messageImage(messageId: String): Future<FileBox>
+    abstract fun messageImage(messageId: String,imageType:ImageType): Future<FileBox>
     abstract fun messageMiniProgram(messageId: String): Future<MiniProgramPayload>
     abstract fun messageUrl(messageId: String): Future<UrlLinkPayload>
 

@@ -3,12 +3,15 @@ package io.github.wechaty.examples;
 
 import io.github.wechaty.MessageListener;
 import io.github.wechaty.Wechaty;
+import io.github.wechaty.io.github.wechaty.filebox.FileBox;
+import io.github.wechaty.schemas.ContactQueryFilter;
 import io.github.wechaty.schemas.RoomQueryFilter;
 import io.github.wechaty.user.Contact;
 import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -17,7 +20,9 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        String token = "_";
+        String token = "";
+
+        FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg",null,null);
 
         Wechaty bot = Wechaty.instance(token);
 
@@ -44,6 +49,9 @@ public class Main {
                 Contact room = message.room();
 
                 if(room != null){
+
+                    room.say(fileBox);
+
                     room.say("dong");
                 }else {
                     from.say("dong");
@@ -67,7 +75,9 @@ public class Main {
 //
 //        Room room1 = rooms.get(0);
 //
-//        room1.say("hi from kotlin wechaty bot");
+//        FileBox fileBox = FileBox.fromFile("dong.jpg", "dong.jpg");
+//
+//        room1.say(fileBox).get();
 
     }
 }

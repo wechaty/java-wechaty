@@ -2,6 +2,7 @@ package io.github.wechaty.user
 
 import io.github.wechaty.Accessory
 import io.github.wechaty.Wechaty
+import io.github.wechaty.io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.MessagePayload
 import io.github.wechaty.type.Sayable
 import org.apache.commons.lang3.StringUtils
@@ -37,6 +38,12 @@ class Message(wechaty: Wechaty,var id:String?= null) : Sayable, Accessory(wechat
 
                 is String ->{
                     msgId = puppte.messageSendText(conversationId, something).get()
+                }
+
+                is FileBox ->{
+
+                    msgId = puppte.messageSendFile(conversationId,something).get()
+
                 }
 
                 else ->{

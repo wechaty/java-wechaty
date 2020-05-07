@@ -141,7 +141,11 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             throw Exception()
         }
 
-        channel = VertxChannelBuilder.forAddress(vertx, endPoint, GRPC_PROT).usePlaintext().build()
+        channel = VertxChannelBuilder.forAddress(vertx, endPoint, GRPC_PROT)
+                .usePlaintext()
+                .maxInboundMessageSize(100* 1024* 1024)
+                .perRpcBufferLimit(10L shl 20)
+                .build()
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
         grpcAsyncClient = PuppetGrpc.newStub(channel)
@@ -403,10 +407,20 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     override fun messageFile(messageId: String): Future<FileBox> {
-        TODO("Not yet implemented")
+
+        val request = Message.MessageFileRequest.newBuilder()
+                .setId(messageId)
+                .build()
+
+        return CompletableFuture.supplyAsync {
+            val response = grpcClient!!.messageFile(request)
+            val jsonText = response.filebox
+            FileBox.fromJson(jsonText)
+        }
+
     }
 
-    override fun messageImage(messageId: String): Future<FileBox> {
+    override fun messageImage(messageId: String,imageType:ImageType): Future<FileBox> {
 
 
 
@@ -459,9 +473,14 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun messageSendFile(conversationId: String, file: FileBox): Future<String?> {
 
+        val fileJson = file.toJsonString()
+
+        log.info("json is {}",fileJson)
+        log.info("json size is {}",fileJson.length)
+
         val request = Message.MessageSendFileRequest.newBuilder()
                 .setConversationId(conversationId)
-                .setFilebox(file.toJsonString())
+                .setFilebox(fileJson)
                 .build()
 
         return CompletableFuture.supplyAsync {
@@ -619,7 +638,20 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     override fun roomAvatar(roomId: String): Future<FileBox> {
-        TODO("Not yet implemented")
+
+        val request = Room.RoomAvatarRequest.newBuilder()
+                .setId(roomId)
+                .build()
+
+        return CompletableFuture.supplyAsync {
+
+            val response = grpcClient!!.roomAvatar(request)
+            val filebox = response.filebox
+            FileBox.fromJson(filebox)
+
+        }
+
+
     }
 
     override fun roomCreate(contactIdList: List<String>, topic: String): Future<String> {

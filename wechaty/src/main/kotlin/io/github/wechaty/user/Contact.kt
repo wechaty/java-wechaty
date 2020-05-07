@@ -38,6 +38,10 @@ open class Contact(wechaty: Wechaty, var id:String? = null) : Sayable, Accessory
                 val messageSendText = puppet.messageSendText(id!!, something)
             }
 
+            is FileBox ->{
+                val messageSendFile = puppet.messageSendFile(id!!, something).get()
+            }
+
         }
         return CompletableFuture.completedFuture(null);
     }
