@@ -4,20 +4,16 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.wechaty.grpc.GrpcPuppet
 import io.github.wechaty.io.github.wechaty.Listener.*
-import io.github.wechaty.io.github.wechaty.Status
+import io.github.wechaty.io.github.wechaty.StateEnum
 import io.github.wechaty.io.github.wechaty.schemas.*
 import io.github.wechaty.io.github.wechaty.utils.GenericCodec
 import io.github.wechaty.io.github.wechaty.utils.JsonUtils
 import io.github.wechaty.schemas.PuppetOptions
-import io.github.wechaty.user.Contact
-import io.github.wechaty.user.ContactSelf
-import io.github.wechaty.user.Message
-import io.github.wechaty.user.Room
+import io.github.wechaty.user.*
 //import io.github.wechaty.user.Room
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.json.json
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
@@ -30,14 +26,15 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
     private val puppetOptions: PuppetOptions = wechatyOptions.puppetOptions!!
 
     @Volatile
-    private var readyState = Status.OFF
+    private var readyState = StateEnum.OFF
 
     @Volatile
-    private var status = Status.OFF
+    private var status = StateEnum.OFF
 
     private val contactCache: Cache<String, Contact> = Caffeine.newBuilder().build()
     private val messageCache: Cache<String, Message> = Caffeine.newBuilder().build()
     private val roomCache: Cache<String, Room> = Caffeine.newBuilder().build()
+    private val tagCache: Cache<String,Tag> = Caffeine.newBuilder().build()
 
 
     fun start(): Future<Void> {
@@ -47,7 +44,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         return CompletableFuture.supplyAsync {
             initPuppet()
             puppet.start().get()
-            status = Status.ON
+            status = StateEnum.ON
             wechatyEb.publish("start", "")
             return@supplyAsync null
         }
@@ -109,6 +106,10 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
 
     fun room():Room {
         return Room(this)
+    }
+
+    fun tag(): Tag {
+        return Tag(this)
     }
 
     fun getRoomFromCache(id:String):Room?{
@@ -179,7 +180,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
                     puppet.on("ready", object : PuppetReadyListener {
                         override fun handler() {
                             wechatyEb.publish("ready", "");
-                            readyState = Status.ON
+                            readyState = StateEnum.ON
                         }
                     })
                 }
@@ -204,6 +205,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         wechatyEb.registerDefaultCodec(Message::class.java, GenericCodec(Message::class.java))
         wechatyEb.registerDefaultCodec(Contact::class.java, GenericCodec(Contact::class.java))
     }
+
 
     companion object Factory {
         @JvmStatic

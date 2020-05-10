@@ -20,48 +20,31 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        String token = "";
+        String token = "d";
 
-        FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg",null,null);
+        FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg", null, null);
 
         Wechaty bot = Wechaty.instance(token);
 
         bot.on("scan", (qrcode, statusScanStatus, data) -> {
-            System.out.println(qrcode);
             System.out.println(QrcodeUtils.getQr(qrcode));
         });
 
         bot.on("message", (MessageListener) message -> {
             String text = message.text();
-
-
-            if(StringUtils.contains(text,"@小犀利豆")){
-
-                String replace = StringUtils.replace(text, "@小犀利豆","");
-
-            }
-
-
-            if(StringUtils.equals(text,"#ding")){
-
+            if (StringUtils.equals(text, "#ding")) {
                 Contact from = message.from();
-
                 Contact room = message.room();
-
-                if(room != null){
-
+                if (room != null) {
                     room.say(fileBox);
-
                     room.say("dong");
-                }else {
+                } else {
                     from.say("dong");
                 }
-
             }
-
         });
-
         bot.start().get();
+//    }
 
 //        Room room = bot.room();
 //

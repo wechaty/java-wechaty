@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import io.github.wechaty.io.github.wechaty.Listener.*
-import io.github.wechaty.io.github.wechaty.Status
+import io.github.wechaty.io.github.wechaty.StateEnum
 import io.github.wechaty.io.github.wechaty.filebox.FileBox
 import io.github.wechaty.io.github.wechaty.schemas.*
 import io.github.wechaty.io.github.wechaty.throwUnsupportedError
@@ -26,7 +26,7 @@ import kotlin.collections.ArrayList
 abstract class Puppet {
 
     @Volatile
-    protected var state = Status.OFF
+    protected var state = StateEnum.OFF
 
     private val HEARTBEAT_COUNTER = AtomicLong()
     private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
@@ -107,7 +107,7 @@ abstract class Puppet {
 
         heartbeatTimerId = vertx.setPeriodic(HOSTIE_KEEPALIVE_TIMEOUT) { id ->
             log.info("timer")
-            if(state == Status.ON) {
+            if(state == StateEnum.ON) {
                 val incrementAndGet = HEARTBEAT_COUNTER.incrementAndGet()
                 log.info("HEARTBEAT_COUNTER #{}", incrementAndGet)
                 ding("`recover CPR #${incrementAndGet}")
@@ -188,7 +188,7 @@ abstract class Puppet {
 
         val future = CompletableFuture<Void>()
 
-        if (state == Status.OFF) {
+        if (state == StateEnum.OFF) {
             log.info("Puppet reset state is off")
             future.complete(null)
             return future
@@ -259,7 +259,7 @@ abstract class Puppet {
     abstract fun tagContactDelete(tagId: String): Future<Void>
     abstract fun tagContactList(contactId: String): Future<List<String>>
     abstract fun tagContactList(): Future<List<String>>
-    abstract fun tagContactRemove(tagId: String?, contactId: String): Future<Void>
+    abstract fun tagContactRemove(tagId: String, contactId: String): Future<Void>
 
     /**
      *
@@ -268,8 +268,8 @@ abstract class Puppet {
      */
     abstract fun contactAlias(contactId: String): Future<String>
     abstract fun contactAlias(contactId: String, alias: String?): Future<Void>
-    abstract fun contactAvatar(contactId: String): Future<FileBox>
-    abstract fun contactAvatar(contactId: String, file: FileBox): Future<Void>
+    abstract fun getContactAvatar(contactId: String): Future<FileBox>
+    abstract fun setContactAvatar(contactId: String, file: FileBox): Future<Void>
     abstract fun contactList(): Future<List<String>>
     protected abstract fun contactRawPayload(contractId: String): Future<ContactPayload>
     protected abstract fun contactRawPayloadParser(rawPayload: ContactPayload): Future<ContactPayload>
@@ -359,7 +359,7 @@ abstract class Puppet {
      *
      */
     abstract fun friendshipAccept(friendshipId: String): Future<Void>
-    abstract fun friendshipAdd(contractId: String, hello: String?): Future<Void>
+    abstract fun friendshipAdd(contractId: String, hello: String): Future<Void>
     abstract fun friendshipSearchPhone(phone: String): Future<String?>
     abstract fun friendshipSearchWeixin(weixin: String): Future<String?>
     abstract fun friendshipRwaPayload(friendshipId: String): Future<FriendshipPayload>
@@ -580,8 +580,8 @@ abstract class Puppet {
      * RoomMember
      */
 
-    abstract fun roomAnnounce(roomId: String): Future<String>
-    abstract fun roomAnnounce(roomId: String, text: String): Future<Void>
+    abstract fun getRoomAnnounce(roomId: String): Future<String>
+    abstract fun setRoomAnnounce(roomId: String, text: String): Future<Void>
     abstract fun roomMemberList(roomId: String): Future<List<String>>
 
     public fun roomMemberSearch(roomId: String, query: RoomMemberQueryFilter): Future<List<String>> {

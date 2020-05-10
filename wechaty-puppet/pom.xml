@@ -108,6 +108,10 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.tinder.statemachine</groupId>
+            <artifactId>statemachine</artifactId>
+        </dependency>
 
     </dependencies>
 
