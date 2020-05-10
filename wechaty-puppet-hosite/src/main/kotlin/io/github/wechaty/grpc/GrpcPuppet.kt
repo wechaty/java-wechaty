@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 
 class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
@@ -118,7 +119,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             if (channel != null) {
                 try {
                     val stopRequest = Base.StopRequest.newBuilder().build()
-                    grpcClient!!.stop(stopRequest)
+                    grpcClient!!.withDeadlineAfter(5,TimeUnit.SECONDS).stop(stopRequest)
                 } catch (e: Exception) {
                     log.error("stop() this.grpcClient.stop() rejection:", e)
                 }
@@ -158,8 +159,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 //                .usePlaintext()
 //                .build()
 
-        grpcClient = PuppetGrpc.newBlockingStub(channel)
-        grpcAsyncClient = PuppetGrpc.newStub(channel)
+        grpcClient = PuppetGrpc.newBlockingStub(channel).withDeadlineAfter(5,TimeUnit.SECONDS)
+        grpcAsyncClient = PuppetGrpc.newStub(channel).withDeadlineAfter(5,TimeUnit.SECONDS)
 
         return CompletableFuture.completedFuture(null)
     }

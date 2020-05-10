@@ -38,7 +38,9 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark") {
 
             val body = it.body()
             val eventResetPayload = EventResetPayload(body.data.toString())
-
+            val watchdogFood = WatchdogFood(this.timeOut)
+            log.info("sent reset message")
+            feed(watchdogFood)
             listener.handler(eventResetPayload)
         }
 
