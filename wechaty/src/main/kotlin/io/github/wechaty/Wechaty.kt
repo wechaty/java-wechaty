@@ -8,6 +8,7 @@ import io.github.wechaty.io.github.wechaty.StateEnum
 import io.github.wechaty.io.github.wechaty.schemas.*
 import io.github.wechaty.io.github.wechaty.utils.GenericCodec
 import io.github.wechaty.io.github.wechaty.utils.JsonUtils
+import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
 import io.github.wechaty.schemas.PuppetOptions
 import io.github.wechaty.user.*
 //import io.github.wechaty.user.Room

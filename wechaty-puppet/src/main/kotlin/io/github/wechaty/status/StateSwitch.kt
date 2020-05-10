@@ -35,7 +35,7 @@ class StateSwitch{
     init {
         offPromise = CompletableFuture.completedFuture(null);
         onPromise = CompletableFuture.runAsync{
-            onResolver = it
+            TODO()
         }
     }
 
@@ -47,11 +47,11 @@ class StateSwitch{
         pending = (state == StateEnum.PENDING)
 
         eb.publish("on",state.name)
-
+        TODO()
     }
 
     fun on():StateEnum{
-
+        TODO()
     }
 
     companion object{

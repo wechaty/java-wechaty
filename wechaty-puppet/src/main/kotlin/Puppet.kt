@@ -4,12 +4,16 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
+import com.google.common.util.concurrent.RateLimiter
 import io.github.wechaty.io.github.wechaty.Listener.*
 import io.github.wechaty.io.github.wechaty.StateEnum
 import io.github.wechaty.io.github.wechaty.filebox.FileBox
 import io.github.wechaty.io.github.wechaty.schemas.*
 import io.github.wechaty.io.github.wechaty.throwUnsupportedError
 import io.github.wechaty.io.github.wechaty.utils.GenericCodec
+import io.github.wechaty.io.github.wechaty.watchdag.WatchDog
+import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
+import io.github.wechaty.io.github.wechaty.watchdag.WatchdogListener
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.FutureUtils
 import io.vertx.core.Vertx
@@ -19,9 +23,11 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.collections.ArrayList
 
+
+val PUPPET_COUNT = AtomicLong()
 
 abstract class Puppet {
 
@@ -30,6 +36,7 @@ abstract class Puppet {
 
     private val HEARTBEAT_COUNTER = AtomicLong()
     private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
+    private val DEFAULT_WATCHDOG_TIMEOUT = 60L
 
     private lateinit var cacheContactPayload: Cache<String, ContactPayload>
     private lateinit var cacheFriendshipPayload: Cache<String, FriendshipPayload>
@@ -44,6 +51,7 @@ abstract class Puppet {
     protected var puppetOptions: PuppetOptions? = null
 
     private var heartbeatTimerId:Long = 0
+    private val watchDog:WatchDog
 
     /**
      *
@@ -58,9 +66,45 @@ abstract class Puppet {
 //    }
 
     constructor(puppetOptions: PuppetOptions) {
+
+        count.addAndGet(1)
         this.puppetOptions = puppetOptions
+
+        val timeOut = puppetOptions.timeout ?:DEFAULT_WATCHDOG_TIMEOUT
+        watchDog = WatchDog(1000 * timeOut,"puppet")
+
         vertx = Vertx.vertx()
         eb = vertx.eventBus()
+
+
+
+        on("heartbeat",object :PuppetHeartbeatListener{
+            override fun handler(data: String) {
+                log.info("heartbeat -> ${data}")
+                val watchdogFood = WatchdogFood(1000 * timeOut)
+                watchdogFood.data = data
+                watchDog.feed(watchdogFood);
+            }
+        })
+
+        this.watchDog.on("reset",object : WatchdogListener{
+            override fun handler(event: EventResetPayload) {
+                eb.publish("reset",event)
+            }
+        })
+
+        // 一秒只有一次
+        val rateLimiter = RateLimiter.create(1.0)
+
+        on("reset",object :PuppetResetListener{
+            override fun handler(reason: String) {
+                log.info("get a reset message")
+                if(rateLimiter.tryAcquire()){
+                    reset(reason)
+                }
+            }
+        })
+
         initEventCodec()
         initCache()
         initHeart()
@@ -73,6 +117,7 @@ abstract class Puppet {
         eb.registerDefaultCodec(EventMessagePayload::class.java, GenericCodec(EventMessagePayload::class.java))
         eb.registerDefaultCodec(EventLoginPayload::class.java, GenericCodec(EventLoginPayload::class.java))
         eb.registerDefaultCodec(EventHeartbeatPayload::class.java, GenericCodec(EventHeartbeatPayload::class.java))
+        eb.registerDefaultCodec(EventResetPayload::class.java, GenericCodec(EventResetPayload::class.java))
     }
 
 //    constructor(token:String) {
@@ -117,7 +162,6 @@ abstract class Puppet {
     }
 
     fun emit(event: String, vararg args: Any) {
-
         eb.publish(event, args)
     }
 
@@ -169,6 +213,23 @@ abstract class Puppet {
         }
     }
 
+    fun on(event:String,listener: PuppetHeartbeatListener){
+        val consumer = eb.consumer<EventHeartbeatPayload>(event)
+        consumer.handler() {
+            val body = it.body()
+            listener.handler(body.data)
+        }
+    }
+
+    fun on(event:String,listener: PuppetResetListener){
+        val consumer = eb.consumer<EventResetPayload>(event)
+        consumer.handler() {
+            val body = it.body()
+            listener.handler(body.data)
+        }
+
+    }
+
 
 //    fun on(event: String, listener: ): Puppet {
 //        eb.consumer(
@@ -182,7 +243,9 @@ abstract class Puppet {
 
     abstract fun start(): Future<Void>
     abstract fun stop(): Future<Void>
-    abstract fun end(): Future<Void>
+    open fun unref(){
+
+    }
 
     protected fun reset(reason: String): Future<Void> {
 
@@ -194,14 +257,9 @@ abstract class Puppet {
             return future
         }
 
-        future.thenRun() { stop() }
-                .thenRun() { start() }
-                .exceptionally {
-                    log.error("Puppet error", it)
-                    emit("error", it)
-                    return@exceptionally null
-//
-                }
+        stop().get()
+        start().get()
+
         return future;
     }
 

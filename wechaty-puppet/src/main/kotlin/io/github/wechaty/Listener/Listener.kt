@@ -19,7 +19,7 @@ interface PuppetFriendshipListener{
 
 @FunctionalInterface
 interface PuppetHeartbeatListener{
-    fun handlder(data:Any)
+    fun handler(data:String)
 }
 
 @FunctionalInterface
@@ -38,7 +38,7 @@ interface PuppetLogoutListener{
 }
 
 @FunctionalInterface
-interface PuppetResetListerner{
+interface PuppetResetListener{
     fun handler(reason:String)
 }
 

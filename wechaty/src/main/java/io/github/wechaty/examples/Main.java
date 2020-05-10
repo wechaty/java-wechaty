@@ -20,7 +20,7 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        String token = "d";
+        String token = "_";
 
         FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg", null, null);
 

@@ -13,7 +13,7 @@ class ContactSelf(wechaty: Wechaty) : Contact(wechaty){
 
     fun avatar(fileBox:FileBox):Future<Void>{
         return CompletableFuture.supplyAsync {
-            puppet.contactAvatar(this.id!!, fileBox)
+            puppet.setContactAvatar(this.id!!, fileBox)
             null
         }
 
