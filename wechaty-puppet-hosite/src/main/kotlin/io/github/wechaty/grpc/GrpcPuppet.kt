@@ -11,15 +11,14 @@ import io.github.wechaty.schemas.*
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.StreamObserver
-import io.vertx.ext.web.client.WebClient
-import io.vertx.grpc.VertxChannelBuilder
+import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.json
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 
 
 class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
@@ -31,7 +30,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     val CHATIE_ENDPOINT = "https://api.chatie.io/v0/hosties/"
 
     val eb = vertx.eventBus()
-    val client = WebClient.create(vertx)
+    val client: OkHttpClient = OkHttpClient()
 
     var grpcClient: PuppetGrpc.PuppetBlockingStub? = null
     var grpcAsyncClient: PuppetGrpc.PuppetStub? = null
@@ -39,28 +38,36 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
 //    private var finishLatch:CountDownLatch? = null
 
-    private fun discoverHostieIpa(): Future<String> {
-
-        val completedFuture: CompletableFuture<String> = CompletableFuture()
+    private fun discoverHostieIpa(): String {
 
         val token = puppetOptions!!.token
 
-        client.getAbs(CHATIE_ENDPOINT + token).send { ar ->
-            if (ar.succeeded()) {
+        val request: Request = Request.Builder()
+                .url(CHATIE_ENDPOINT + token)
+                .build()
 
-                val result = ar.result()
-                val bodyAsJsonObject = result.bodyAsJsonObject()
-
-                val ip = bodyAsJsonObject.getString("ip")
-
-                completedFuture.complete(ip)
-            } else {
-                log.error("get ip error", ar.cause())
-                completedFuture.completeExceptionally(ar.cause())
-            }
+        client.newCall(request).execute().use {
+            response ->
+            val string = response.body!!.string()
+            val jsonObject = JsonObject(string)
+            return jsonObject.getString("ip")
         }
 
-        return completedFuture
+
+//        client.getAbs(CHATIE_ENDPOINT + token).send { ar ->
+//            if (ar.succeeded()) {
+//
+//                val result = ar.result()
+//                val bodyAsJsonObject = result.bodyAsJsonObject()
+//
+//                val ip = bodyAsJsonObject.getString("ip")
+//
+//                completedFuture.complete(ip)
+//            } else {
+//                log.error("get ip error", ar.cause())
+//                completedFuture.completeExceptionally(ar.cause())
+//            }
+//        }
 
     }
 
@@ -119,7 +126,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             if (channel != null) {
                 try {
                     val stopRequest = Base.StopRequest.newBuilder().build()
-                    grpcClient!!.withDeadlineAfter(5,TimeUnit.SECONDS).stop(stopRequest)
+                    grpcClient!!.stop(stopRequest)
                 } catch (e: Exception) {
                     log.error("stop() this.grpcClient.stop() rejection:", e)
                 }
@@ -148,19 +155,19 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     private fun startGrpcClient(): Future<Void> {
         var endPoint = puppetOptions?.endPoint
         if (StringUtils.isEmpty(endPoint)) {
-            endPoint = discoverHostieIpa().get()
+            endPoint = discoverHostieIpa()
         }
 
         if (StringUtils.isEmpty(endPoint) || StringUtils.equals(endPoint, "0.0.0.0")) {
             throw Exception()
         }
-        channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().build();
-//        channel = .forAddress(vertx, endPoint, GRPC_PROT)
+        channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().build()
+//        channel = VertxChannelBuilder.forAddress(vertx, endPoint, GRPC_PROT)
 //                .usePlaintext()
 //                .build()
 
-        grpcClient = PuppetGrpc.newBlockingStub(channel).withDeadlineAfter(5,TimeUnit.SECONDS)
-        grpcAsyncClient = PuppetGrpc.newStub(channel).withDeadlineAfter(5,TimeUnit.SECONDS)
+        grpcClient = PuppetGrpc.newBlockingStub(channel)
+        grpcAsyncClient = PuppetGrpc.newStub(channel)
 
         return CompletableFuture.completedFuture(null)
     }
