@@ -9,8 +9,12 @@ import io.github.wechaty.schemas.RoomQueryFilter;
 import io.github.wechaty.user.Contact;
 import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -18,13 +22,19 @@ import java.util.concurrent.Future;
 
 public class Main {
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 
-        String token = "_";
+        URL resource = Main.class.getResource("/token.txt");
+
+        File file = new File(resource.getPath());
+
+        List<String> strings = FileUtils.readLines(file, "UTF-8");
+
+        String toke = strings.get(0);
 
         FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg", null, null);
 
-        Wechaty bot = Wechaty.instance(token);
+        Wechaty bot = Wechaty.instance(toke);
 
         bot.on("scan", (qrcode, statusScanStatus, data) -> {
             System.out.println(QrcodeUtils.getQr(qrcode));
