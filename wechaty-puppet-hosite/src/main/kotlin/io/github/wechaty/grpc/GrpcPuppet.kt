@@ -495,7 +495,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
     }
 
-    override fun friendshipRwaPayload(friendshipId: String): Future<FriendshipPayload> {
+    override fun friendshipRawPayload(friendshipId: String): Future<FriendshipPayload> {
 
         val request = Friendship.FriendshipPayloadRequest.newBuilder()
                 .setId(friendshipId)
@@ -503,12 +503,14 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.friendshipPayload(request)
-            val payload = FriendshipPayloadReceive()
+            val payload = FriendshipPayload()
 
-            payload.scene = FriendshipSceneType.valueOf(response.scene.name)
+            payload.scene = FriendshipSceneType.getByCode(response.scene.number)
             payload.stranger = response.stranger
             payload.ticket = response.ticket
-            payload.type = FriendshipType.valueOf(response.type.name)
+            payload.type = FriendshipType.getByCode(response.type.number)
+            payload.contactId = response.contactId
+            payload.id = response.id
 
             payload
         }

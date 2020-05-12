@@ -24,9 +24,9 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 
-        URL resource = Main.class.getResource("/token.txt");
+        URL resource = Main.class.getClassLoader().getResource("token.txt");
 
-        File file = new File(resource.getPath());
+        File file = new File(resource.getFile());
 
         List<String> strings = FileUtils.readLines(file, "UTF-8");
 

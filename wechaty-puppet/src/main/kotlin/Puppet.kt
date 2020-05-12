@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 
@@ -420,7 +419,7 @@ abstract class Puppet {
     abstract fun friendshipAdd(contractId: String, hello: String): Future<Void>
     abstract fun friendshipSearchPhone(phone: String): Future<String?>
     abstract fun friendshipSearchWeixin(weixin: String): Future<String?>
-    abstract fun friendshipRwaPayload(friendshipId: String): Future<FriendshipPayload>
+    abstract fun friendshipRawPayload(friendshipId: String): Future<FriendshipPayload>
     abstract fun friendshipRawPayloadParser(rawPayload: FriendshipPayload): Future<FriendshipPayload>
     fun friendshipSearch(condition: FriendshipSearchCondition): Future<String?> {
         log.info("friendshipSearch{}", condition)
@@ -443,7 +442,7 @@ abstract class Puppet {
         return CompletableFuture.completedFuture(null);
     }
 
-    public fun friendshipPayload(friendshipId: String): Future<FriendshipPayload> {
+    fun friendshipPayload(friendshipId: String): Future<FriendshipPayload> {
 
         val future = CompletableFuture<FriendshipPayload>()
 
@@ -454,7 +453,7 @@ abstract class Puppet {
             return future
         }
 
-        val rawPayload = friendshipRwaPayload(friendshipId).get()
+        val rawPayload = friendshipRawPayload(friendshipId).get()
         val payload = friendshipRawPayloadParser(rawPayload).get()
 
         cacheFriendshipPayload.put(friendshipId, payload)
