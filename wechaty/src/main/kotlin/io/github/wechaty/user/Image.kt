@@ -2,8 +2,8 @@ package io.github.wechaty.user
 
 import io.github.wechaty.Accessory
 import io.github.wechaty.Wechaty
-import io.github.wechaty.io.github.wechaty.filebox.FileBox
-import io.github.wechaty.io.github.wechaty.schemas.ImageType
+import io.github.wechaty.filebox.FileBox
+import io.github.wechaty.schemas.ImageType
 
 class Image(wechaty: Wechaty):Accessory(wechaty){
 
@@ -15,7 +15,7 @@ class Image(wechaty: Wechaty):Accessory(wechaty){
         return image
     }
 
-    fun thumbnail():FileBox{
+    fun thumbnail(): FileBox {
         return wechaty.getPuppet().messageImage(id!!, ImageType.Thumbnail).get()
     }
 

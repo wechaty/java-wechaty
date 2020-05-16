@@ -1,29 +1,28 @@
 package io.github.wechaty;
 
+//import io.github.wechaty.user.Room
+
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import io.github.wechaty.eventEmitter.EventEmitter
+import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.grpc.GrpcPuppet
-import io.github.wechaty.io.github.wechaty.Listener.*
-import io.github.wechaty.io.github.wechaty.StateEnum
-import io.github.wechaty.io.github.wechaty.schemas.*
-import io.github.wechaty.io.github.wechaty.utils.GenericCodec
-import io.github.wechaty.io.github.wechaty.utils.JsonUtils
-import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
-import io.github.wechaty.schemas.PuppetOptions
+import io.github.wechaty.listener.*
+import io.github.wechaty.schemas.*
 import io.github.wechaty.user.*
-//import io.github.wechaty.user.Room
-import io.vertx.core.Vertx
-import io.vertx.core.eventbus.EventBus
-import io.vertx.core.json.JsonObject
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
+import java.util.concurrent.locks.ReentrantLock
 
-class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
+
+class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : EventEmitter() {
+
+    private val LOCK = ReentrantLock()
+    private val STOP = LOCK.newCondition()
+
 
     private lateinit var puppet: Puppet
-    private var vertx: Vertx = Vertx.vertx()
-    private var wechatyEb: EventBus
     private val puppetOptions: PuppetOptions = wechatyOptions.puppetOptions!!
 
     @Volatile
@@ -35,20 +34,34 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
     private val contactCache: Cache<String, Contact> = Caffeine.newBuilder().build()
     private val messageCache: Cache<String, Message> = Caffeine.newBuilder().build()
     private val roomCache: Cache<String, Room> = Caffeine.newBuilder().build()
-    private val tagCache: Cache<String,Tag> = Caffeine.newBuilder().build()
+    private val tagCache: Cache<String, Tag> = Caffeine.newBuilder().build()
 
 
-    fun start(): Future<Void> {
+    fun start(await: Boolean = false) {
 
-        log.info("start Wechaty")
+        initPuppet()
+        puppet.start().get()
+        status = StateEnum.ON
+        emit("start", "")
 
-        return CompletableFuture.supplyAsync {
-            initPuppet()
-            puppet.start().get()
-            status = StateEnum.ON
-            wechatyEb.publish("start", "")
-            return@supplyAsync null
+        if (await) {
+            addHook()
+
+            log.info("start Wechaty")
+            try {
+                LOCK.lock();
+                STOP.await();
+            } catch (e: InterruptedException) {
+                log.warn(" service   stopped, interrupted by other thread!", e);
+            } finally {
+                LOCK.unlock();
+            }
         }
+
+    }
+
+    fun stop() {
+        puppet.stop()
     }
 
     fun name(): String {
@@ -60,25 +73,19 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
     }
 
     fun on(event: String, listener: ScanListener) {
-        val consumer = wechatyEb.consumer<String>(event)
-        consumer.handler {
-            val body = it.body()
-
-            log.info("scan body is {}",body)
-
-            val jsonObject = JsonObject(body)
-            val code = jsonObject.getInteger("scanStatus")
-            listener.handler(jsonObject.getString("qrcode"),ScanStatus.getByCode(code),jsonObject.getString("data"))
-
-        }
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as String, any[1] as ScanStatus, any[2] as String)
+            }
+        })
     }
 
     fun on(event: String, listener: MessageListener) {
-        val consumer = wechatyEb.consumer<Message>(event)
-        consumer.handler() {
-            val body = it.body()
-            listener.handler(body)
-        }
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as Message)
+            }
+        })
     }
 
     fun message(): Message {
@@ -105,7 +112,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         return ContactSelf(this)
     }
 
-    fun room():Room {
+    fun room(): Room {
         return Room(this)
     }
 
@@ -113,15 +120,15 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         return Tag(this)
     }
 
-    fun getRoomFromCache(id:String):Room?{
+    fun getRoomFromCache(id: String): Room? {
         return roomCache.getIfPresent(id)
     }
 
-    fun putRoomToCache(id:String,room:Room){
-        roomCache.put(id,room)
+    fun putRoomToCache(id: String, room: Room) {
+        roomCache.put(id, room)
     }
 
-    fun delRoomFromCache(id:String){
+    fun delRoomFromCache(id: String) {
         roomCache.invalidate(id)
     }
 
@@ -130,21 +137,15 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         initPuppetEventBridge(puppet)
     }
 
-    fun friendship():Friendship{
+    fun friendship(): Friendship {
         return Friendship(this);
     }
 
-    fun roomInvitation():RoomInvitation{
+    fun roomInvitation(): RoomInvitation {
         return RoomInvitation(this)
     }
 
-
-    init {
-        this.wechatyEb = vertx.eventBus()
-        initEventCodec()
-    }
-
-    public fun getPuppet(): Puppet {
+    fun getPuppet(): Puppet {
         return puppet
     }
 
@@ -157,107 +158,120 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
 
             when (it) {
                 "dong" -> {
-                    puppet.on("dong",object : PuppetDongListener{
-                        override fun handler(data: String?) {
-                            wechatyEb.publish("dong",data)
+                    puppet.on(it, object : PuppetDongListener {
+                        override fun handler(payload: EventDongPayload) {
+                            emit("dong", payload.data)
                         }
                     })
                 }
 
-                "error" ->{
-                    puppet.on("error",object :PuppetErrorListener{
-                        override fun handler(error: String) {
-                            wechatyEb.publish("error",error)
+                "error" -> {
+                    puppet.on(it, object : PuppetErrorListener {
+                        override fun handler(payload: EventErrorPayload) {
+                            emit("error", Exception(payload.data))
                         }
                     })
                 }
 
-                "heartbeat"->{
-                    puppet.on("heartbeat",object : PuppetHeartbeatListener{
-                        override fun handler(data: String) {
-                            wechatyEb.publish("heartbeat",data)
+                "heartbeat" -> {
+                    puppet.on(it, object : PuppetHeartbeatListener {
+                        override fun handler(payload: EventHeartbeatPayload) {
+                            emit("heartbeat", payload.data)
                         }
                     })
                 }
 
-                "friendship"->{
-                    puppet.on("friendship",object :PuppetFriendshipListener{
-                        override fun handler(friendshipId: String) {
-                            val friendship = friendship().load(friendshipId)
+                "friendship" -> {
+                    puppet.on(it, object : PuppetFriendshipListener {
+                        override fun handler(payload: EventFriendshipPayload) {
+                            val friendship = friendship().load(payload.friendshipId)
                             friendship.ready()
-                            wechatyEb.publish("friendship",friendship)
+                            emit("friendship", friendship)
                         }
                     })
                 }
-
-                "scan" ->{
-                    puppet.on("scan",object : PuppetScanListener{
-                        override fun handler(qrcode: String?, scanStatus: ScanStatus, data: String?) {
-                            val scanJson = JsonUtils.write(mapOf(
-                                "qrcode" to qrcode,
-                                "scanStatus" to scanStatus.code,
-                                "data" to data
-                            ))
-                            log.info("scan json is {}",scanJson)
-                            wechatyEb.publish("scan",scanJson)
-
-                        }
-                    })
-                }
-
                 "login" -> {
-                    puppet.on("login", object : PuppetLoginListener {
-                        override fun handler(contactId: String) {
-                            val contact = contactSelf().load(contactId)
+                    puppet.on(it, object : PuppetLoginListener {
+                        override fun handler(payload: EventLoginPayload) {
+                            val contact = contactSelf().load(payload.contactId)
                             contact.ready()
-                            wechatyEb.publish("login", contact)
+                            emit("login", contact)
                         }
                     })
                 }
 
-                "ready" -> {
-                    puppet.on("ready", object : PuppetReadyListener {
-                        override fun handler() {
-                            wechatyEb.publish("ready", "");
-                            readyState = StateEnum.ON
+                "logout" -> {
+                    puppet.on(it, object : PuppetLogoutListener {
+                        override fun handler(payload: EventLogoutPayload) {
+                            val contact = contactSelf().load(payload.contactId)
+                            contact.ready()
+                            emit("logout", contact, payload.data)
                         }
                     })
                 }
 
                 "message" -> {
-                    puppet.on("message", object : PuppetMessageListener {
-                        override fun handler(messageId: String) {
-                            CompletableFuture.runAsync {
-                                val msg = message().load(messageId)
-                                msg.ready().get()
-                                wechatyEb.publish("message", msg)
-                            }
+                    puppet.on(it, object : PuppetMessageListener {
+                        override fun handler(payload: EventMessagePayload) {
+                            val msg = message().load(payload.messageId)
+                            msg.ready().get()
+                            emit("message", msg)
                         }
                     })
                 }
 
-                "room-invite" ->{
-                    puppet.on("room-join",object :PuppetRoomInviteListener{
-                        override fun handler(roomInvitationId: String) {
+                "ready" -> {
+                    puppet.on(it, object : PuppetReadyListener {
+                        override fun handler(payload: EventReadyPayload) {
+                            emit("ready");
+                            readyState = StateEnum.ON
+                        }
+                    })
+                }
 
-
-
+                "room-invite" -> {
+                    puppet.on(it, object : PuppetRoomInviteListener {
+                        override fun handler(payload: EventRoomInvitePayload) {
                             TODO("Not yet implemented")
                         }
-
                     })
+                }
 
+                "room-join" -> {
+                    puppet.on(it, object : PuppetRoomInviteListener {
+                        override fun handler(payload: EventRoomInvitePayload) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                }
+
+
+                "room-leave" -> {
+                    puppet.on(it, object : PuppetRoomInviteListener {
+                        override fun handler(payload: EventRoomInvitePayload) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                }
+
+                "room-topic" -> {
+                    puppet.on(it, object : PuppetRoomInviteListener {
+                        override fun handler(payload: EventRoomInvitePayload) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                }
+
+                "scan" -> {
+                    puppet.on(it, object : PuppetScanListener {
+                        override fun handler(payload: EventScanPayload) {
+                            emit("scan", payload.qrcode ?: "", payload.status, payload.data ?: "")
+                        }
+                    })
                 }
             }
-
         }
     }
-
-    private fun initEventCodec() {
-        wechatyEb.registerDefaultCodec(Message::class.java, GenericCodec(Message::class.java))
-        wechatyEb.registerDefaultCodec(Contact::class.java, GenericCodec(Contact::class.java))
-    }
-
 
     companion object Factory {
         @JvmStatic
@@ -276,6 +290,23 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         }
 
         private val log = LoggerFactory.getLogger(Wechaty::class.java)
+    }
+
+    private fun addHook() {
+        Runtime.getRuntime().addShutdownHook(Thread(Runnable {
+            try {
+                stop()
+            } catch (e: java.lang.Exception) {
+                log.error("StartMain stop exception ", e)
+            }
+            log.info("jvm exit, all service stopped.")
+            try {
+                LOCK.lock()
+                STOP.signal()
+            } finally {
+                LOCK.unlock()
+            }
+        }, "StartMain-shutdown-hook"))
     }
 
 

@@ -1,16 +1,12 @@
 package io.github.wechaty.io.github.wechaty.watchdag
 
-import io.github.wechaty.io.github.wechaty.schemas.*
-import io.github.wechaty.io.github.wechaty.utils.GenericCodec
-import io.vertx.core.Handler
-import io.vertx.core.Vertx
+import io.github.wechaty.eventEmitter.EventEmitter
+import io.github.wechaty.eventEmitter.Listener
+import io.github.wechaty.schemas.EventResetPayload
 import org.slf4j.LoggerFactory
-import kotlin.concurrent.thread
+import java.util.*
 
-class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark") {
-
-    private val vertx:Vertx = Vertx.vertx()
-    private val eb = vertx.eventBus();
+class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):EventEmitter(){
 
     @Volatile
     private var lastFeed :Long = 0
@@ -18,32 +14,33 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark") {
 
     private var timeOut = defaultTimeOut
 
+    private var timer:Timer? =null
+
     @Volatile
     private var timeId: Long = 0;
 
 
+
     init{
         startTimer(defaultTimeOut)
-        initEventCodec()
     }
 
-    private fun initEventCodec() {
-        eb.registerDefaultCodec(WatchdogFood::class.java, GenericCodec(WatchdogFood::class.java))
-    }
+//    private fun initEventCodec() {
+//        eb.registerDefaultCodec(WatchdogFood::class.java, GenericCodec(WatchdogFood::class.java))
+//    }
 
     fun on(event:String,listener:WatchdogListener){
-        val consumer = eb.consumer<WatchdogFood>(event)
-        consumer.handler{
-            log.info("reset")
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                val payload = any[0] as EventResetPayload
+                val watchdogFood = WatchdogFood(timeOut)
+                log.info("sent reset message")
+                feed(watchdogFood)
+                listener.handler(payload)
 
-            val body = it.body()
-            val eventResetPayload = EventResetPayload(body.data.toString())
-            val watchdogFood = WatchdogFood(this.timeOut)
-            log.info("sent reset message")
-            feed(watchdogFood)
-            listener.handler(eventResetPayload)
-        }
+            }
 
+        })
     }
 
     private fun startTimer(timeout:Long){
@@ -54,11 +51,16 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark") {
             localTimeout = defaultTimeOut;
         }
 
-        this.timeId = vertx.setTimer(localTimeout) {
-            val watchdogFood = WatchdogFood(timeout)
-            log.info("sent reset message")
-            eb.publish("reset",watchdogFood)
-        }
+
+        timer = Timer()
+        timer!!.schedule(object : TimerTask() {
+            override fun run() {
+                val watchdogFood = WatchdogFood(timeout)
+                log.info("sent reset message")
+                emit("reset",watchdogFood)
+            }
+
+        },localTimeout)
     }
 
     fun left():Long{
@@ -76,7 +78,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark") {
             food.timeout = defaultTimeOut
         }
 
-        vertx.cancelTimer(timeId);
+        timer?.cancel()
 
         this.lastFeed = System.currentTimeMillis();
         this.lastFood = food
@@ -91,7 +93,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark") {
     }
 
     fun stopTimer(){
-        vertx.cancelTimer(timeId)
+        timer?.cancel()
     }
 
     fun sleep(){
@@ -110,7 +112,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark") {
 }
 
 interface WatchdogListener {
-    fun handler(event:EventResetPayload)
+    fun handler(event: EventResetPayload)
 }
 
 

@@ -1,4 +1,4 @@
-package io.github.wechaty.io.github.wechaty.filebox
+package io.github.wechaty.filebox
 
 import com.fasterxml.jackson.annotation.JsonValue
 
@@ -91,6 +91,6 @@ sealed class FileBoxOptions
 
 typealias Metadata = Map<String, Any>
 
-typealias OutgoingHttpHeaders = Map<String, Any>
+typealias OutgoingHttpHeaders = Map<String, List<String>>
 
 

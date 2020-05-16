@@ -2,24 +2,20 @@ package io.github.wechaty.grpc
 
 import com.google.protobuf.StringValue
 import io.github.wechaty.Puppet
+import io.github.wechaty.StateEnum
+import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.grpc.puppet.*
-import io.github.wechaty.io.github.wechaty.StateEnum
-import io.github.wechaty.io.github.wechaty.filebox.FileBox
-import io.github.wechaty.io.github.wechaty.schemas.*
-import io.github.wechaty.io.github.wechaty.utils.JsonUtils
 import io.github.wechaty.schemas.*
+import io.github.wechaty.utils.JsonUtils
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.StreamObserver
-import io.vertx.core.json.JsonObject
-import io.vertx.grpc.VertxChannelBuilder
-import io.vertx.kotlin.core.json.json
-import kotlinx.coroutines.newFixedThreadPoolContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
@@ -33,11 +29,10 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     val CHATIE_ENDPOINT = "https://api.chatie.io/v0/hosties/"
 
-    val eb = vertx.eventBus()
     val client: OkHttpClient = OkHttpClient()
 
     var grpcClient: PuppetGrpc.PuppetBlockingStub? = null
-    var grpcVertxClient:PuppetGrpc.PuppetVertxStub? = null
+    var grpcAsyncClient:PuppetGrpc.PuppetStub? = null
 
 //    private var finishLatch:CountDownLatch? = null
 
@@ -52,8 +47,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         client.newCall(request).execute().use {
             response ->
             val string = response.body!!.string()
-            val jsonObject = JsonObject(string)
-            return jsonObject.getString("ip")
+            val readValue = JsonUtils.readValue<Map<String, String>>(string)
+            return readValue["ip"] ?: error("")
         }
     }
 
@@ -97,10 +92,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         try {
             if (logonoff()) {
-                eb.publish("logout", json {
-                    "contactId" to selfId()
-                    "data" to "PuppetHostie stop()"
-                }.toString())
+                emit("logout",EventLogoutPayload(getId()!!,"logout"))
 
                 this.setId(null)
             }
@@ -150,19 +142,29 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 //                .build()
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
-        grpcVertxClient = PuppetGrpc.newVertxStub(channel)
+        grpcAsyncClient = PuppetGrpc.newStub(channel)
         return CompletableFuture.completedFuture(null)
     }
 
     private fun startGrpcStream() {
-        val request = Event.EventRequest.newBuilder().build()
-        grpcVertxClient!!.event(request){
-            it.handler{
-                onGrpcStreamEvent(it)
-            }.endHandler{
-                log.info("end the vertx client")
+        val streamObserver = object :StreamObserver<Event.EventResponse>{
+            override fun onNext(event: Event.EventResponse?) {
+                onGrpcStreamEvent(event!!)
             }
+
+            override fun onError(t: Throwable?) {
+                log.error("error of grpc",t)
+                throw Exception(t)
+            }
+
+            override fun onCompleted() {
+                log.warn("grpc client exit")
+            }
+
         }
+
+        val request = Event.EventRequest.newBuilder().build()
+        grpcAsyncClient!!.event(request,streamObserver)
     }
 
 
@@ -187,9 +189,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         } catch (e: Exception) {
             log.error("logout() rejection: %s", e)
         } finally {
-            emit("logout", json {
-                "contactId" to getId()
-            })
+            emit("logout",EventLogoutPayload(getId()!!,"logout"))
         }
         return CompletableFuture.completedFuture(null)
     }
@@ -411,7 +411,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
                 .build()
 
         return CompletableFuture.supplyAsync {
-            grpcClient!!.friendshipAccept(request)
+            grpcClient!!.frendshipAccept(request)
             return@supplyAsync null
         }
     }
@@ -933,66 +933,67 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             log.info("PuppetHostie $type payload $payload")
 
             if (type != Event.EventType.EVENT_TYPE_HEARTBEAT) {
-                eb.publish("heartbeat", EventHeartbeatPayload("heartbeat"))
+                emit("heartbeat", EventHeartbeatPayload("heartbeat"))
             }
 
             when (type) {
-                Event.EventType.EVENT_TYPE_DONG -> eb.publish("dong", JsonUtils.readValue<EventDongPayload>(payload))
+                Event.EventType.EVENT_TYPE_DONG -> emit("dong", JsonUtils.readValue<EventDongPayload>(payload))
 
                 Event.EventType.EVENT_TYPE_ERROR -> {
-                    eb.publish("error", JsonUtils.readValue<EventErrorPayload>(payload))
+                    emit("error", JsonUtils.readValue<EventErrorPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_HEARTBEAT -> {
                     val heartbeatPayload = JsonUtils.readValue<EventHeartbeatPayload>(payload)
-                    eb.publish("heartbeat", heartbeatPayload)
+                    emit("heartbeat", heartbeatPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_FRIENDSHIP -> {
-                    eb.publish("friendship", JsonUtils.readValue<EventFriendshipPayLoad>(payload))
+                    val friendshipPayload = JsonUtils.readValue<EventFriendshipPayload>(payload)
+                    emit("friendship", friendshipPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_LOGIN -> {
                     val loginPayload = JsonUtils.readValue<EventLoginPayload>(payload)
                     setId(loginPayload.contactId)
-                    eb.publish("login", loginPayload)
+                    emit("login", loginPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_LOGOUT -> {
                     this.setId("")
-                    eb.publish("logout", JsonUtils.readValue<EventLogoutPayload>(payload))
+                    emit("logout", JsonUtils.readValue<EventLogoutPayload>(payload))
                 }
 
 
                 Event.EventType.EVENT_TYPE_MESSAGE -> {
                     val eventMessagePayload = JsonUtils.readValue<EventMessagePayload>(payload)
-                    eb.publish("message", eventMessagePayload)
+                    emit("message", eventMessagePayload)
                 }
 
                 Event.EventType.EVENT_TYPE_READY -> {
-                    eb.publish("ready", JsonUtils.readValue<EventReadyPayload>(payload))
+                    emit("ready", JsonUtils.readValue<EventReadyPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_INVITE -> {
-                    eb.publish("room-invite", JsonUtils.readValue<EventRoomInvitePayload>(payload))
+                    emit("room-invite", JsonUtils.readValue<EventRoomInvitePayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_JOIN -> {
-                    eb.publish("room-join", JsonUtils.readValue<EventRoomJoinPayload>(payload))
+                    emit("room-join", JsonUtils.readValue<EventRoomJoinPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_LEAVE -> {
-                    eb.publish("room-leave", JsonUtils.readValue<EventRoomLeavePayload>(payload))
+                    emit("room-leave", JsonUtils.readValue<EventRoomLeavePayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_TOPIC -> {
-                    eb.publish("room-topic", JsonUtils.readValue<EventRoomTopicePayload>(payload))
+                    emit("room-topic", JsonUtils.readValue<EventRoomTopicPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_SCAN -> {
                     val eventScanPayload = JsonUtils.readValue<EventScanPayload>(payload)
                     log.info("scan pay load is {}", eventScanPayload)
-                    eb.publish("scan", eventScanPayload)
+                    emit("scan", eventScanPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_RESET -> {
@@ -1015,6 +1016,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
 
     }
+
+
 
     companion object {
         private val log = LoggerFactory.getLogger(GrpcPuppet::class.java)

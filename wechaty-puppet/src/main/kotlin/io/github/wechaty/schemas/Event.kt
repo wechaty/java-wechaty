@@ -1,7 +1,4 @@
-package io.github.wechaty.io.github.wechaty.schemas
-
-import com.fasterxml.jackson.annotation.JsonValue
-import io.github.wechaty.schemas.MessageType
+package io.github.wechaty.schemas
 
 enum class ScanStatus(var code: Int) {
     Unknown(-1),
@@ -23,12 +20,6 @@ enum class ScanStatus(var code: Int) {
         }
     }
 
-}
-
-data class EventFriendshipPayLoad(var friendshipId:String) {
-    override fun toString(): String {
-        return "EventFriendshipPayLoad(friendshipId='$friendshipId')"
-    }
 }
 
 data class EventLoginPayload(var contactId:String) {
@@ -83,7 +74,7 @@ data class EventRoomLeavePayload(
     }
 }
 
-data class EventRoomTopicePayload(
+data class EventRoomTopicPayload(
         var changerId:String,
         var newTopic:String,
         var oldTopic:String,
@@ -100,6 +91,14 @@ data class EventScanPayload(var status: ScanStatus){
     var data:String? = null
     override fun toString(): String {
         return "EventScanPayload(status=$status, qrcode=$qrcode, data=$data)"
+    }
+}
+
+data class EventFriendshipPayload(
+        var friendshipId: String
+) {
+    override fun toString(): String {
+        return "EventFriendshipPayload(friendshipId='$friendshipId')"
     }
 }
 

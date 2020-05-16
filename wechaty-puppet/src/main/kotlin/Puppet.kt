@@ -5,20 +5,15 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import com.google.common.util.concurrent.RateLimiter
-import io.github.wechaty.io.github.wechaty.Listener.*
-import io.github.wechaty.io.github.wechaty.StateEnum
-import io.github.wechaty.io.github.wechaty.filebox.FileBox
-import io.github.wechaty.io.github.wechaty.schemas.*
-import io.github.wechaty.io.github.wechaty.throwUnsupportedError
-import io.github.wechaty.io.github.wechaty.utils.GenericCodec
+import io.github.wechaty.eventEmitter.EventEmitter
+import io.github.wechaty.eventEmitter.Listener
+import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.io.github.wechaty.watchdag.WatchDog
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogListener
+import io.github.wechaty.listener.*
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.FutureUtils
-import io.vertx.core.Vertx
-import io.vertx.core.VertxOptions
-import io.vertx.core.eventbus.EventBus
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -29,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 val PUPPET_COUNT = AtomicLong()
 
-abstract class Puppet {
+abstract class Puppet: EventEmitter{
 
     @Volatile
     protected var state = StateEnum.OFF
@@ -44,8 +39,6 @@ abstract class Puppet {
     private lateinit var cacheRoomPayload: Cache<String, RoomPayload>
     private lateinit var cacheRoomMemberPayload: Cache<String, RoomMemberPayload>
     private lateinit var cacheRoomInvitationPayload: Cache<String, RoomInvitationPayload>
-    protected var vertx: Vertx
-    private var eb: EventBus
     private val count = AtomicLong()
     private var id: String? = null
     protected var puppetOptions: PuppetOptions? = null
@@ -73,23 +66,18 @@ abstract class Puppet {
         val timeOut = puppetOptions.timeout ?:DEFAULT_WATCHDOG_TIMEOUT
         watchDog = WatchDog(1000 * timeOut,"puppet")
 
-        vertx = Vertx.vertx(VertxOptions().setPreferNativeTransport(true))
-        eb = vertx.eventBus()
-
-
-
         on("heartbeat",object :PuppetHeartbeatListener{
-            override fun handler(data: String) {
-                log.info("heartbeat -> ${data}")
+            override fun handler(payload: EventHeartbeatPayload) {
+                log.info("heartbeat -> ${payload.data}")
                 val watchdogFood = WatchdogFood(1000 * timeOut)
-                watchdogFood.data = data
+                watchdogFood.data = payload.data
                 watchDog.feed(watchdogFood);
             }
         })
 
         this.watchDog.on("reset",object : WatchdogListener{
             override fun handler(event: EventResetPayload) {
-                eb.publish("reset",event)
+                emit("reset",event)
             }
         })
 
@@ -97,30 +85,30 @@ abstract class Puppet {
         val rateLimiter = RateLimiter.create(1.0)
 
         on("reset",object :PuppetResetListener{
-            override fun handler(reason: String) {
+            override fun handler(payload: EventResetPayload) {
                 log.info("get a reset message")
                 if(rateLimiter.tryAcquire()){
-                    reset(reason)
+                    reset(payload.data)
                 }
             }
         })
 
-        initEventCodec()
+//        initEventCodec()
         initCache()
         initHeart()
 
     }
 
-    private fun initEventCodec() {
-        eb.registerDefaultCodec(EventScanPayload::class.java, GenericCodec(EventScanPayload::class.java))
-        eb.registerDefaultCodec(EventDongPayload::class.java, GenericCodec(EventDongPayload::class.java))
-        eb.registerDefaultCodec(EventMessagePayload::class.java, GenericCodec(EventMessagePayload::class.java))
-        eb.registerDefaultCodec(EventLoginPayload::class.java, GenericCodec(EventLoginPayload::class.java))
-        eb.registerDefaultCodec(EventHeartbeatPayload::class.java, GenericCodec(EventHeartbeatPayload::class.java))
-        eb.registerDefaultCodec(EventResetPayload::class.java, GenericCodec(EventResetPayload::class.java))
-        eb.registerDefaultCodec(EventErrorPayload::class.java, GenericCodec(EventErrorPayload::class.java))
-        eb.registerDefaultCodec(EventRoomInvitePayload::class.java, GenericCodec(EventRoomInvitePayload::class.java))
-    }
+//    private fun initEventCodec() {
+//        eb.registerDefaultCodec(EventScanPayload::class.java, GenericCodec(EventScanPayload::class.java))
+//        eb.registerDefaultCodec(EventDongPayload::class.java, GenericCodec(EventDongPayload::class.java))
+//        eb.registerDefaultCodec(EventMessagePayload::class.java, GenericCodec(EventMessagePayload::class.java))
+//        eb.registerDefaultCodec(EventLoginPayload::class.java, GenericCodec(EventLoginPayload::class.java))
+//        eb.registerDefaultCodec(EventHeartbeatPayload::class.java, GenericCodec(EventHeartbeatPayload::class.java))
+//        eb.registerDefaultCodec(EventResetPayload::class.java, GenericCodec(EventResetPayload::class.java))
+//        eb.registerDefaultCodec(EventErrorPayload::class.java, GenericCodec(EventErrorPayload::class.java))
+//        eb.registerDefaultCodec(EventRoomInvitePayload::class.java, GenericCodec(EventRoomInvitePayload::class.java))
+//    }
 
 //    constructor(token:String) {
 //        this.puppetOptions = PuppetOptions()
@@ -146,103 +134,164 @@ abstract class Puppet {
     }
 
     private fun initHeart(){
-        heartbeatTimerId = vertx.setPeriodic(HOSTIE_KEEPALIVE_TIMEOUT) { id ->
-            if(state == StateEnum.ON) {
-                val incrementAndGet = HEARTBEAT_COUNTER.incrementAndGet()
-                log.info("HEARTBEAT_COUNTER #{}", incrementAndGet)
-                ding("`recover CPR #${incrementAndGet}")
-            }
-        }
+
+
+
+//        heartbeatTimerId = vertx.setPeriodic(HOSTIE_KEEPALIVE_TIMEOUT) { id ->
+//            if(state == StateEnum.ON) {
+//                val incrementAndGet = HEARTBEAT_COUNTER.incrementAndGet()
+//                log.info("HEARTBEAT_COUNTER #{}", incrementAndGet)
+//                ding("`recover CPR #${incrementAndGet}")
+//            }
+//        }
 
     }
 
-    fun emit(event: String, vararg args: Any) {
-        eb.publish(event, args)
-    }
+//    fun emit(event: String, vararg args: Any) {
+//        eb.publish(event, args)
+//    }
 
     //dong
     fun on(event: String, listener: PuppetDongListener) {
-        val consumer = eb.consumer<EventDongPayload>(event)
-        consumer.handler {
-            val body = it.body()
-            listener.handler(body.data)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+
+                log.info("class Type is {}",any[0].javaClass.name)
+
+                listener.handler(any[0] as EventDongPayload)
+            }
+        })
     }
 
-    fun on(event: String,listener: PuppetFriendshipListener){
-        val consumer = eb.consumer<EventFriendshipPayLoad>(event)
-        consumer.handler{
-            val body = it.body()
-            listener.handler(body.friendshipId)
-        }
+    fun on(event: String, listener: PuppetFriendshipListener) {
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventFriendshipPayload)
+            }
+        })
+    }
+
+    //dong
+    fun on(event: String, listener: PuppetLogoutListener) {
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventLogoutPayload)
+            }
+        })
     }
 
     fun on(event: String,listener: PuppetRoomInviteListener){
-        val consumer = eb.consumer<EventRoomInvitePayload>(event)
-        consumer.handler{
-            val body = it.body()
-            listener.handler(body.roomInvitationId)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventRoomInvitePayload)
+            }
+        })
+//        val consumer = eb.consumer<EventRoomInvitePayload>(event)
+//        consumer.handler{
+//            val body = it.body()
+//            listener.handler(body.roomInvitationId)
+//        }
     }
 
     fun on(event: String,listener: PuppetErrorListener){
-        val consumer = eb.consumer<EventErrorPayload>(event)
-        consumer.handler {
-            val body = it.body()
-            listener.handler(body.data)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventErrorPayload)
+            }
+        })
+//        val consumer = eb.consumer<EventErrorPayload>(event)
+//        consumer.handler {
+//            val body = it.body()
+//            listener.handler(body.data)
+//        }
     }
 
     fun on(event: String, listener: PuppetScanListener) {
-        val consumer = eb.consumer<EventScanPayload>(event)
-        consumer.handler {
-            val body = it.body()
-            val data = body.data
-            val qrcode = body.qrcode
-            val status = body.status
-            listener.handler(qrcode, status, data)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+
+                log.info("class Type is {}",any[0].javaClass.name)
+
+                listener.handler(any[0] as EventScanPayload)
+            }
+        })
+//        val consumer = eb.consumer<EventScanPayload>(event)
+//        consumer.handler {
+//            val body = it.body()
+//            val data = body.data
+//            val qrcode = body.qrcode
+//            val status = body.status
+//            listener.handler(qrcode, status, data)
+//        }
 
     }
 
     fun on(event: String, listener: PuppetLoginListener) {
-        val consumer = eb.consumer<EventLoginPayload>(event)
-        consumer.handler() {
-            val body = it.body()
-            val contactId = body.contactId
-            listener.handler(contactId)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventLoginPayload)
+            }
+        })
+//        val consumer = eb.consumer<EventLoginPayload>(event)
+//        consumer.handler() {
+//            val body = it.body()
+//            val contactId = body.contactId
+//            listener.handler(contactId)
+//        }
     }
 
     fun on(event: String, listener: PuppetReadyListener) {
-        val consumer = eb.consumer<String>(event)
-        consumer.handler() {
-            listener.handler()
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventReadyPayload)
+            }
+        })
+//        val consumer = eb.consumer<String>(event)
+//        consumer.handler() {
+//            listener.handler()
+//        }
     }
 
     fun on(event: String, listener: PuppetMessageListener) {
-        val consumer = eb.consumer<EventMessagePayload>(event)
-        consumer.handler() {
-            val body = it.body()
-            listener.handler(body.messageId)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventMessagePayload)
+            }
+        })
+//        val consumer = eb.consumer<EventMessagePayload>(event)
+//        consumer.handler() {
+//            val body = it.body()
+//            listener.handler(body.messageId)
+//        }
     }
 
     fun on(event:String,listener: PuppetHeartbeatListener){
-        val consumer = eb.consumer<EventHeartbeatPayload>(event)
-        consumer.handler() {
-            val body = it.body()
-            listener.handler(body.data)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+
+                log.info("class Type is {}",any[0].javaClass.name)
+
+                listener.handler(any[0] as EventHeartbeatPayload)
+            }
+        })
+//        val consumer = eb.consumer<EventHeartbeatPayload>(event)
+//        consumer.handler() {
+//            val body = it.body()
+//            listener.handler(body.data)
+//        }
     }
 
     fun on(event:String,listener: PuppetResetListener){
-        val consumer = eb.consumer<EventResetPayload>(event)
-        consumer.handler() {
-            val body = it.body()
-            listener.handler(body.data)
-        }
+        super.on(event,object:Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventResetPayload)
+            }
+        })
+//        val consumer = eb.consumer<EventResetPayload>(event)
+//        consumer.handler() {
+//            val body = it.body()
+//            listener.handler(body.data)
+//        }
 
     }
 
@@ -468,7 +517,7 @@ abstract class Puppet {
 
     }
 
-    public fun friendshipPayload(friendshipId: String, newPayload: FriendshipPayload?): Future<Void> {
+    fun friendshipPayload(friendshipId: String, newPayload: FriendshipPayload?): Future<Void> {
 
         val future = CompletableFuture<Void>()
 
@@ -522,12 +571,12 @@ abstract class Puppet {
         return CompletableFuture.completedFuture(null);
     }
 
-    public fun messageList(): List<String> {
+    fun messageList(): List<String> {
         val keys = cacheMessagePayload.asMap().keys
         return Lists.newArrayList(keys)
     }
 
-    public fun messageSearch(query: MessageQueryFilter): Future<List<String>?> {
+    fun messageSearch(query: MessageQueryFilter): Future<List<String>?> {
         TODO("TODO")
     }
 
@@ -535,7 +584,7 @@ abstract class Puppet {
         TODO()
     }
 
-    public fun messageForward(conversationId: String, messageId: String): Future<String?> {
+    fun messageForward(conversationId: String, messageId: String): Future<String?> {
 
         val payload = messagePayload(messageId).get()
 
@@ -599,7 +648,7 @@ abstract class Puppet {
         return cachePayload
     }
 
-    public abstract fun roomInvitationAccept(roomInvitation: String): Future<Void>
+    abstract fun roomInvitationAccept(roomInvitation: String): Future<Void>
 
     protected abstract fun roomInvitationRawPayload(roomInvitationId: String): Future<RoomInvitationPayload>
     protected abstract fun roomInvitationRawPayloadParser(rawPayload: RoomInvitationPayload): Future<RoomInvitationPayload>
@@ -647,19 +696,19 @@ abstract class Puppet {
     abstract fun setRoomAnnounce(roomId: String, text: String): Future<Void>
     abstract fun roomMemberList(roomId: String): Future<List<String>>
 
-    public fun roomMemberSearch(roomId: String, query: RoomMemberQueryFilter): Future<List<String>> {
+    fun roomMemberSearch(roomId: String, query: RoomMemberQueryFilter): Future<List<String>> {
         TODO()
     }
 
-    public fun roomReach(query: RoomQueryFilter?): Future<List<String>> {
+    fun roomReach(query: RoomQueryFilter?): Future<List<String>> {
         TODO()
     }
 
-    public fun roomValidate(roomId: String): Future<Boolean> {
+    fun roomValidate(roomId: String): Future<Boolean> {
         return CompletableFuture.completedFuture(true)
     }
 
-    protected fun roomPayloadCache(roomId: String): RoomPayload? {
+    fun roomPayloadCache(roomId: String): RoomPayload? {
         return cacheRoomPayload.getIfPresent(roomId)
     }
 
@@ -673,7 +722,7 @@ abstract class Puppet {
         }
     }
 
-    public fun roomPayloadDirty(roomId: String): Future<Void> {
+    fun roomPayloadDirty(roomId: String): Future<Void> {
         cacheRoomPayload.invalidate(roomId)
         return CompletableFuture.completedFuture(null)
     }
@@ -720,7 +769,7 @@ abstract class Puppet {
 
     protected abstract fun roomMemberRawPayloadParser(rawPayload: RoomMemberPayload): Future<RoomMemberPayload>
 
-    public fun roomMemberPayloadDirty(roomId: String): Future<Void> {
+    fun roomMemberPayloadDirty(roomId: String): Future<Void> {
         val contactIdList = roomMemberList(roomId).get()
 
         contactIdList.forEach {
@@ -730,7 +779,7 @@ abstract class Puppet {
         return CompletableFuture.completedFuture(null)
     }
 
-    public fun roomMemberPayload(roomId: String, memberId: String): Future<RoomMemberPayload?> {
+    fun roomMemberPayload(roomId: String, memberId: String): Future<RoomMemberPayload?> {
 
         val key = cacheKeyRoomMember(roomId, memberId)
         return CompletableFuture.supplyAsync {
@@ -741,9 +790,9 @@ abstract class Puppet {
         }
     }
 
-    public fun getEventBus(): EventBus {
-        return eb
-    }
+//    fun getEventBus(): EventBus {
+//        return eb
+//    }
 
     companion object {
         private val log = LoggerFactory.getLogger(Puppet::class.java)

@@ -1,4 +1,4 @@
-package io.github.wechaty.io.github.wechaty
+package io.github.wechaty
 
 enum class StateEnum {
 

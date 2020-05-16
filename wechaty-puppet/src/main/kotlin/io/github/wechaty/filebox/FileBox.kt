@@ -1,13 +1,10 @@
-package io.github.wechaty.io.github.wechaty.filebox
+package io.github.wechaty.filebox
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonValue
-import io.github.wechaty.io.github.wechaty.utils.JsonUtils
-import io.vertx.core.MultiMap
-import io.vertx.core.Vertx
-import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.client.WebClient
-import io.vertx.kotlin.core.json.get
+import io.github.wechaty.utils.JsonUtils
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.StringUtils
@@ -41,7 +38,7 @@ class FileBox(options: FileBoxOptions) {
     @JsonProperty
     private lateinit var boxType:FileBoxType
 
-    private var vertx:Vertx = Vertx.vertx()
+    private val client:OkHttpClient = OkHttpClient()
 
     init {
         when(options){
@@ -106,12 +103,11 @@ class FileBox(options: FileBoxOptions) {
         val path: Path = File(localPath!!).toPath()
         val mimeType = Files.probeContentType(path)
 
-        val map = httpHeadHeader.get()
-        val get = map.get("content-type")
+        val get = httpHeadHeader["content-type"]
 
         when {
-            StringUtils.isNotEmpty(get) -> {
-                this.mimeType = get
+            CollectionUtils.isNotEmpty(get) -> {
+                this.mimeType = get?.get(0)
             }
             StringUtils.isNotEmpty(mimeType) -> {
                 this.mimeType = mimeType
@@ -125,22 +121,17 @@ class FileBox(options: FileBoxOptions) {
 
     }
 
-    private fun httpHeadHeader(url:String):Future<MultiMap>{
+    private fun httpHeadHeader(url:String):Map<String, List<String>>{
 
-        val future = CompletableFuture<MultiMap>()
+        val request: Request = Request.Builder()
+                .url(url)
+                .build()
 
-        val client = WebClient.create(vertx)
-
-        client.headAbs(url).send {
-            if(it.succeeded()){
-                val result = it.result()
-                val headers = result.headers()
-                future.complete(headers)
-            }else{
-                future.complete(null)
-            }
+        client.newCall(request).execute().use {
+            response ->
+            val headers = response.headers
+            return headers.toMultimap()
         }
-        return future
     }
 
     fun toJsonString():String {
@@ -188,40 +179,43 @@ class FileBox(options: FileBoxOptions) {
 
         @JvmStatic
         fun fromJson(obj:String):FileBox{
-            val jsonObject = JsonObject(obj)
 
-            var fileBox:FileBox
+            return JsonUtils.readValue<FileBox>(obj)
 
-            val type = jsonObject.getInteger("boxType")
-
-            when(type){
-
-                FileBoxType.Base64.code ->{
-                    fileBox = fromBase64(
-                            jsonObject.getString("base64"),
-                            jsonObject.getString("name")
-                    )
-                }
-
-                FileBoxType.Url.code ->{
-                    fileBox = fromUrl(
-                            jsonObject.getString("name"),
-                            jsonObject.getString("remoteUrl")
-                    )
-                }
-
-                FileBoxType.QRcode.code ->{
-                    fileBox = fromQRCode(
-                            jsonObject.getString("qrCode")
-                    )
-                }
-                else ->{
-                    throw Exception("unknown filebox json object{type} $jsonObject")
-                }
-            }
-
-            fileBox.metadata = jsonObject.get("metadata")
-            return fileBox;
+//            val jsonObject = JsonObject(obj)
+//
+//            var fileBox:FileBox
+//
+//            val type = jsonObject.getInteger("boxType")
+//
+//            when(type){
+//
+//                FileBoxType.Base64.code ->{
+//                    fileBox = fromBase64(
+//                            jsonObject.getString("base64"),
+//                            jsonObject.getString("name")
+//                    )
+//                }
+//
+//                FileBoxType.Url.code ->{
+//                    fileBox = fromUrl(
+//                            jsonObject.getString("name"),
+//                            jsonObject.getString("remoteUrl")
+//                    )
+//                }
+//
+//                FileBoxType.QRcode.code ->{
+//                    fileBox = fromQRCode(
+//                            jsonObject.getString("qrCode")
+//                    )
+//                }
+//                else ->{
+//                    throw Exception("unknown filebox json object{type} $jsonObject")
+//                }
+//            }
+//
+//            fileBox.metadata = jsonObject.get("metadata")
+//            return fileBox;
         }
 
         @JvmStatic

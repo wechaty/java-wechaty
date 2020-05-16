@@ -3,7 +3,7 @@ package io.github.wechaty.user
 import io.github.wechaty.Accessory
 import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
-import io.github.wechaty.io.github.wechaty.filebox.FileBox
+import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.ContactPayload
 import io.github.wechaty.schemas.RoomPayload
 import io.github.wechaty.schemas.RoomQueryFilter

@@ -1,8 +1,7 @@
 package io.github.wechaty
 
-import io.github.wechaty.io.github.wechaty.schemas.ScanStatus
+import io.github.wechaty.schemas.ScanStatus
 import io.github.wechaty.user.Message
-import io.github.wechaty.utils.LogUtils
 
 @FunctionalInterface
 interface DongListener{
@@ -24,9 +23,9 @@ interface HeartbeatListener{
     fun handlder(data:Any)
 }
 
+@FunctionalInterface
 interface ScanListener{
     fun handler(qrcode: String?, statusScanStatus: ScanStatus, data: String?)
-//        LogUtils.log.warn("${this.javaClass.name} not set")
 
 }
 
@@ -69,7 +68,9 @@ interface RoomInviteListener{
 interface ReadyListener{
     fun handler()
 }
+
 @FunctionalInterface
 interface MessageListener{
     fun handler(message:Message)
+
 }

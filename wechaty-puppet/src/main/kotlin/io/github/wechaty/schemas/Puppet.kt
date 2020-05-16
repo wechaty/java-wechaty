@@ -1,4 +1,4 @@
-package io.github.wechaty.io.github.wechaty.schemas
+package io.github.wechaty.schemas
 
 data class PuppetQRCodeScanEvent(val qrcoode: String, val status: Int) {
     var data: String? = null

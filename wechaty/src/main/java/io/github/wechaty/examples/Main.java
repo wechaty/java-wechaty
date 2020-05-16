@@ -2,12 +2,11 @@ package io.github.wechaty.examples;
 
 
 import io.github.wechaty.MessageListener;
+import io.github.wechaty.ScanListener;
 import io.github.wechaty.Wechaty;
-import io.github.wechaty.io.github.wechaty.filebox.FileBox;
+import io.github.wechaty.filebox.FileBox;
 import io.github.wechaty.user.Contact;
 import io.github.wechaty.utils.QrcodeUtils;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import okhttp3.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +27,7 @@ public class Main {
 
         FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg", null, null);
 
-        Wechaty bot = Wechaty.instance("");
+        Wechaty bot = Wechaty.instance("your_token");
 
         bot.on("scan", (qrcode, statusScanStatus, data) -> {
             System.out.println(QrcodeUtils.getQr(qrcode));
@@ -49,7 +48,7 @@ public class Main {
                 }
             }
         });
-        bot.start().get();
+        bot.start(true);
 //    }
 
 //        Room room = bot.room();

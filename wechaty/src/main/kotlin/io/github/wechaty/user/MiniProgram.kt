@@ -1,7 +1,6 @@
 package io.github.wechaty.user
 
 import io.github.wechaty.schemas.MiniProgramPayload
-import io.vertx.kotlin.core.file.copyOptionsOf
 
 class MiniProgram(var payload: MiniProgramPayload) {
 

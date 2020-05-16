@@ -1,7 +1,7 @@
 package io.github.wechaty.user
 
 import io.github.wechaty.Wechaty
-import io.github.wechaty.io.github.wechaty.filebox.FileBox
+import io.github.wechaty.filebox.FileBox
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 

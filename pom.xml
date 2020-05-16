@@ -28,7 +28,7 @@
 
             <dependency>
                 <groupId>io.github.wechaty</groupId>
-                <version>0.11.26-SNAPSHOT</version>
+                <version>0.11.25</version>
                 <artifactId>grpc</artifactId>
             </dependency>
 
@@ -38,28 +38,28 @@
                 <version>${kotlin.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-core</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-lang-kotlin</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>io.vertx</groupId>-->
+<!--                <artifactId>vertx-core</artifactId>-->
+<!--                <version>${vertx.version}</version>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>io.vertx</groupId>-->
+<!--                <artifactId>vertx-lang-kotlin</artifactId>-->
+<!--                <version>${vertx.version}</version>-->
+<!--            </dependency>-->
 
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-grpc</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>io.vertx</groupId>-->
+<!--                <artifactId>vertx-grpc</artifactId>-->
+<!--                <version>${vertx.version}</version>-->
+<!--            </dependency>-->
 
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-web-client</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>io.vertx</groupId>-->
+<!--                <artifactId>vertx-web-client</artifactId>-->
+<!--                <version>${vertx.version}</version>-->
+<!--            </dependency>-->
 
 
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
@@ -177,6 +177,14 @@
                 <artifactId>disruptor</artifactId>
                 <version>3.4.2</version>
             </dependency>
+
+<!--            &lt;!&ndash; https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>io.reactivex.rxjava2</groupId>-->
+<!--                <artifactId>rxjava</artifactId>-->
+<!--                <version>2.2.19</version>-->
+<!--            </dependency>-->
+
 
 
 
