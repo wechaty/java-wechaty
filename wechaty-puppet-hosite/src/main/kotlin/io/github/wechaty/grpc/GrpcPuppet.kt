@@ -154,7 +154,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
             override fun onError(t: Throwable?) {
                 log.error("error of grpc",t)
-                throw Exception(t)
+                val payload = EventResetPayload(t?.message ?:"")
+                emit("reset",payload)
             }
 
             override fun onCompleted() {

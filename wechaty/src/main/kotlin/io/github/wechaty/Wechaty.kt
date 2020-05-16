@@ -11,8 +11,6 @@ import io.github.wechaty.listener.*
 import io.github.wechaty.schemas.*
 import io.github.wechaty.user.*
 import org.slf4j.LoggerFactory
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Future
 import java.util.concurrent.locks.ReentrantLock
 
 
@@ -79,6 +77,15 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
             }
         })
     }
+
+//    fun on(event: String,listener: ResetListerner){
+//        super.on(event, object : Listener {
+//            override fun handler(vararg any: Any) {
+//                listener.handler(any[0] as String)
+//            }
+//        })
+//
+//    }
 
     fun on(event: String, listener: MessageListener) {
         super.on(event, object : Listener {

@@ -14,11 +14,14 @@ import io.github.wechaty.io.github.wechaty.watchdag.WatchdogListener
 import io.github.wechaty.listener.*
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.FutureUtils
+import io.github.wechaty.utils.JsonUtils
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 
@@ -33,6 +36,8 @@ abstract class Puppet: EventEmitter{
     private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
     private val DEFAULT_WATCHDOG_TIMEOUT = 60L
 
+    private val executorService = Executors.newSingleThreadScheduledExecutor()
+
     private lateinit var cacheContactPayload: Cache<String, ContactPayload>
     private lateinit var cacheFriendshipPayload: Cache<String, FriendshipPayload>
     private lateinit var cacheMessagePayload: Cache<String, MessagePayload>
@@ -43,20 +48,11 @@ abstract class Puppet: EventEmitter{
     private var id: String? = null
     protected var puppetOptions: PuppetOptions? = null
 
-    private var heartbeatTimerId:Long = 0
     private val watchDog:WatchDog
 
     /**
      *
      */
-//    constructor() {
-//        this.puppetOptions = PuppetOptions()
-//        vertx = Vertx.vertx()
-//        eb = vertx.eventBus()
-//        eb.registerDefaultCodec(EventScanPayload::class.java, GenericCodec(EventScanPayload::class.java))
-//        eb.registerDefaultCodec(EventMessagePayload::class.java, GenericCodec(EventMessagePayload::class.java))
-//        initCache()
-//    }
 
     constructor(puppetOptions: PuppetOptions) {
 
@@ -75,9 +71,12 @@ abstract class Puppet: EventEmitter{
             }
         })
 
+
+
         this.watchDog.on("reset",object : WatchdogListener{
-            override fun handler(event: EventResetPayload) {
-                emit("reset",event)
+            override fun handler(event: WatchdogFood) {
+                val payload = EventResetPayload(JsonUtils.write(event))
+                emit("reset",payload)
             }
         })
 
@@ -99,27 +98,6 @@ abstract class Puppet: EventEmitter{
 
     }
 
-//    private fun initEventCodec() {
-//        eb.registerDefaultCodec(EventScanPayload::class.java, GenericCodec(EventScanPayload::class.java))
-//        eb.registerDefaultCodec(EventDongPayload::class.java, GenericCodec(EventDongPayload::class.java))
-//        eb.registerDefaultCodec(EventMessagePayload::class.java, GenericCodec(EventMessagePayload::class.java))
-//        eb.registerDefaultCodec(EventLoginPayload::class.java, GenericCodec(EventLoginPayload::class.java))
-//        eb.registerDefaultCodec(EventHeartbeatPayload::class.java, GenericCodec(EventHeartbeatPayload::class.java))
-//        eb.registerDefaultCodec(EventResetPayload::class.java, GenericCodec(EventResetPayload::class.java))
-//        eb.registerDefaultCodec(EventErrorPayload::class.java, GenericCodec(EventErrorPayload::class.java))
-//        eb.registerDefaultCodec(EventRoomInvitePayload::class.java, GenericCodec(EventRoomInvitePayload::class.java))
-//    }
-
-//    constructor(token:String) {
-//        this.puppetOptions = PuppetOptions()
-//        puppetOptions!!.token = token
-//        vertx = Vertx.vertx()
-//        eb = vertx.eventBus()
-//        eb.registerDefaultCodec(EventScanPayload::class.java, GenericCodec(EventScanPayload::class.java))
-//        eb.registerDefaultCodec(EventMessagePayload::class.java, GenericCodec(EventMessagePayload::class.java))
-//        initCache()
-//    }
-
     protected fun getId(): String? {
         return id;
     }
@@ -135,7 +113,13 @@ abstract class Puppet: EventEmitter{
 
     private fun initHeart(){
 
-
+        executorService.scheduleAtFixedRate({
+            if(state == StateEnum.ON) {
+                val incrementAndGet = HEARTBEAT_COUNTER.incrementAndGet()
+                log.info("HEARTBEAT_COUNTER #{}", incrementAndGet)
+                ding("`recover CPR #${incrementAndGet}")
+            }
+        },HOSTIE_KEEPALIVE_TIMEOUT,HOSTIE_KEEPALIVE_TIMEOUT,TimeUnit.MILLISECONDS)
 
 //        heartbeatTimerId = vertx.setPeriodic(HOSTIE_KEEPALIVE_TIMEOUT) { id ->
 //            if(state == StateEnum.ON) {
@@ -186,11 +170,7 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventRoomInvitePayload)
             }
         })
-//        val consumer = eb.consumer<EventRoomInvitePayload>(event)
-//        consumer.handler{
-//            val body = it.body()
-//            listener.handler(body.roomInvitationId)
-//        }
+
     }
 
     fun on(event: String,listener: PuppetErrorListener){
@@ -199,11 +179,6 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventErrorPayload)
             }
         })
-//        val consumer = eb.consumer<EventErrorPayload>(event)
-//        consumer.handler {
-//            val body = it.body()
-//            listener.handler(body.data)
-//        }
     }
 
     fun on(event: String, listener: PuppetScanListener) {
@@ -215,14 +190,6 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventScanPayload)
             }
         })
-//        val consumer = eb.consumer<EventScanPayload>(event)
-//        consumer.handler {
-//            val body = it.body()
-//            val data = body.data
-//            val qrcode = body.qrcode
-//            val status = body.status
-//            listener.handler(qrcode, status, data)
-//        }
 
     }
 
@@ -232,12 +199,6 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventLoginPayload)
             }
         })
-//        val consumer = eb.consumer<EventLoginPayload>(event)
-//        consumer.handler() {
-//            val body = it.body()
-//            val contactId = body.contactId
-//            listener.handler(contactId)
-//        }
     }
 
     fun on(event: String, listener: PuppetReadyListener) {
@@ -246,10 +207,6 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventReadyPayload)
             }
         })
-//        val consumer = eb.consumer<String>(event)
-//        consumer.handler() {
-//            listener.handler()
-//        }
     }
 
     fun on(event: String, listener: PuppetMessageListener) {
@@ -258,11 +215,6 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventMessagePayload)
             }
         })
-//        val consumer = eb.consumer<EventMessagePayload>(event)
-//        consumer.handler() {
-//            val body = it.body()
-//            listener.handler(body.messageId)
-//        }
     }
 
     fun on(event:String,listener: PuppetHeartbeatListener){
@@ -274,11 +226,6 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventHeartbeatPayload)
             }
         })
-//        val consumer = eb.consumer<EventHeartbeatPayload>(event)
-//        consumer.handler() {
-//            val body = it.body()
-//            listener.handler(body.data)
-//        }
     }
 
     fun on(event:String,listener: PuppetResetListener){
@@ -287,12 +234,15 @@ abstract class Puppet: EventEmitter{
                 listener.handler(any[0] as EventResetPayload)
             }
         })
-//        val consumer = eb.consumer<EventResetPayload>(event)
-//        consumer.handler() {
-//            val body = it.body()
-//            listener.handler(body.data)
-//        }
+    }
 
+    fun on(event: String,listener: WatchdogListener){
+        super.on(event,object :Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as WatchdogFood)
+            }
+
+        })
     }
 
     abstract fun start(): Future<Void>
@@ -336,7 +286,7 @@ abstract class Puppet: EventEmitter{
     }
 
     public fun logonoff(): Boolean {
-        return id == null
+        return id != null
     }
 
     fun setId(id: String?) {

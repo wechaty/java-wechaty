@@ -2,9 +2,12 @@ package io.github.wechaty.io.github.wechaty.watchdag
 
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
-import io.github.wechaty.schemas.EventResetPayload
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+
 
 class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):EventEmitter(){
 
@@ -14,7 +17,9 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
 
     private var timeOut = defaultTimeOut
 
-    private var timer:Timer? =null
+    val executorService = Executors.newSingleThreadScheduledExecutor()
+
+    var schedule:ScheduledFuture<*>? = null
 
     @Volatile
     private var timeId: Long = 0;
@@ -32,11 +37,10 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
     fun on(event:String,listener:WatchdogListener){
         super.on(event,object:Listener{
             override fun handler(vararg any: Any) {
-                val payload = any[0] as EventResetPayload
                 val watchdogFood = WatchdogFood(timeOut)
                 log.info("sent reset message")
                 feed(watchdogFood)
-                listener.handler(payload)
+                listener.handler(watchdogFood)
 
             }
 
@@ -52,15 +56,12 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
         }
 
 
-        timer = Timer()
-        timer!!.schedule(object : TimerTask() {
-            override fun run() {
-                val watchdogFood = WatchdogFood(timeout)
-                log.info("sent reset message")
-                emit("reset",watchdogFood)
-            }
+        schedule = executorService.schedule({
+            val watchdogFood = WatchdogFood(timeout)
+            log.info("sent reset message")
+            emit("reset", watchdogFood)
+        }, localTimeout, TimeUnit.MILLISECONDS)
 
-        },localTimeout)
     }
 
     fun left():Long{
@@ -78,7 +79,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
             food.timeout = defaultTimeOut
         }
 
-        timer?.cancel()
+        schedule?.cancel(true)
 
         this.lastFeed = System.currentTimeMillis();
         this.lastFood = food
@@ -93,7 +94,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
     }
 
     fun stopTimer(){
-        timer?.cancel()
+        schedule?.cancel(true)
     }
 
     fun sleep(){
@@ -112,7 +113,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
 }
 
 interface WatchdogListener {
-    fun handler(event: EventResetPayload)
+    fun handler(event: WatchdogFood)
 }
 
 
