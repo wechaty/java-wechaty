@@ -14,8 +14,9 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
 
     private var payload:FriendshipPayload? = null
 
-    fun load(id:String):String{
-        return id
+    fun load(id:String):Friendship{
+        this.id = id
+        return this
     }
 
     fun search(queryFilter: FriendshipSearchCondition):Contact?{
@@ -43,8 +44,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
             return
         }
         this.payload = wechaty.getPuppet().friendshipPayload(id!!).get()
-
-        contact().ready()
+        contact().ready().get()
 
     }
 

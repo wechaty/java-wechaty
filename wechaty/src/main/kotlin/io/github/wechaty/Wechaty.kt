@@ -130,6 +130,14 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
         initPuppetEventBridge(puppet)
     }
 
+    fun friendship():Friendship{
+        return Friendship(this);
+    }
+
+    fun roomInvitation():RoomInvitation{
+        return RoomInvitation(this)
+    }
+
 
     init {
         this.wechatyEb = vertx.eventBus()
@@ -149,7 +157,37 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
 
             when (it) {
                 "dong" -> {
+                    puppet.on("dong",object : PuppetDongListener{
+                        override fun handler(data: String?) {
+                            wechatyEb.publish("dong",data)
+                        }
+                    })
+                }
 
+                "error" ->{
+                    puppet.on("error",object :PuppetErrorListener{
+                        override fun handler(error: String) {
+                            wechatyEb.publish("error",error)
+                        }
+                    })
+                }
+
+                "heartbeat"->{
+                    puppet.on("heartbeat",object : PuppetHeartbeatListener{
+                        override fun handler(data: String) {
+                            wechatyEb.publish("heartbeat",data)
+                        }
+                    })
+                }
+
+                "friendship"->{
+                    puppet.on("friendship",object :PuppetFriendshipListener{
+                        override fun handler(friendshipId: String) {
+                            val friendship = friendship().load(friendshipId)
+                            friendship.ready()
+                            wechatyEb.publish("friendship",friendship)
+                        }
+                    })
                 }
 
                 "scan" ->{
@@ -196,6 +234,19 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) {
                             }
                         }
                     })
+                }
+
+                "room-invite" ->{
+                    puppet.on("room-join",object :PuppetRoomInviteListener{
+                        override fun handler(roomInvitationId: String) {
+
+
+
+                            TODO("Not yet implemented")
+                        }
+
+                    })
+
                 }
             }
 

@@ -4,11 +4,11 @@ package io.github.wechaty.examples;
 import io.github.wechaty.MessageListener;
 import io.github.wechaty.Wechaty;
 import io.github.wechaty.io.github.wechaty.filebox.FileBox;
-import io.github.wechaty.schemas.ContactQueryFilter;
-import io.github.wechaty.schemas.RoomQueryFilter;
 import io.github.wechaty.user.Contact;
-import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import okhttp3.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,31 +22,27 @@ import java.util.concurrent.Future;
 
 public class Main {
 
+    private static OkHttpClient client = new OkHttpClient();
+
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
-
-        URL resource = Main.class.getClassLoader().getResource("token.txt");
-
-        File file = new File(resource.getFile());
-
-        List<String> strings = FileUtils.readLines(file, "UTF-8");
-
-        String toke = strings.get(0);
 
         FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg", null, null);
 
-        Wechaty bot = Wechaty.instance(toke);
+        Wechaty bot = Wechaty.instance("");
 
         bot.on("scan", (qrcode, statusScanStatus, data) -> {
             System.out.println(QrcodeUtils.getQr(qrcode));
         });
 
         bot.on("message", (MessageListener) message -> {
+
+            Contact from = message.from();
+            Contact room = message.room();
+
             String text = message.text();
+
             if (StringUtils.equals(text, "#ding")) {
-                Contact from = message.from();
-                Contact room = message.room();
                 if (room != null) {
-                    room.say(fileBox);
                     room.say("dong");
                 } else {
                     from.say("dong");
@@ -73,4 +69,7 @@ public class Main {
 //        room1.say(fileBox).get();
 
     }
+
+
+
 }

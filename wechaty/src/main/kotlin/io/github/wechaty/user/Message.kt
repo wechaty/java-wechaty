@@ -153,6 +153,10 @@ class Message(wechaty: Wechaty,var id:String?= null) : Sayable, Accessory(wechat
 
     companion object{
         val log = LoggerFactory.getLogger(Message::class.java)
+
+        fun create(id:String){
+
+        }
     }
 
 

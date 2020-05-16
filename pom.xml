@@ -13,7 +13,7 @@
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.version>3.9.0</vertx.version>
+        <vertx.version>4.0.0-milestone4</vertx.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     </properties>
 
@@ -28,7 +28,7 @@
 
             <dependency>
                 <groupId>io.github.wechaty</groupId>
-                <version>0.11.25</version>
+                <version>0.11.26-SNAPSHOT</version>
                 <artifactId>grpc</artifactId>
             </dependency>
 
@@ -171,7 +171,12 @@
             </dependency>
 
 
-
+            <!-- https://mvnrepository.com/artifact/com.lmax/disruptor -->
+            <dependency>
+                <groupId>com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>3.4.2</version>
+            </dependency>
 
 
 
@@ -199,11 +204,19 @@
             </dependency>
 
 
-<!--            <dependency>-->
-<!--                <groupId>io.github.wechaty</groupId>-->
-<!--                <artifactId>wechaty-grpc-proto</artifactId>-->
-<!--                <version>1.0.0</version>-->
-<!--            </dependency>-->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-kqueue</artifactId>
+                <version>4.1.48.Final</version>
+                <classifier>osx-x86_64</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-epoll</artifactId>
+                <version>4.1.48.Final</version>
+                <classifier>linux-x86_64</classifier>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

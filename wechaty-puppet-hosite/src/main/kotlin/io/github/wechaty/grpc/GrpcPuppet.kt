@@ -12,13 +12,17 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.StreamObserver
 import io.vertx.core.json.JsonObject
+import io.vertx.grpc.VertxChannelBuilder
 import io.vertx.kotlin.core.json.json
+import kotlinx.coroutines.newFixedThreadPoolContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 
 class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
@@ -33,8 +37,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     val client: OkHttpClient = OkHttpClient()
 
     var grpcClient: PuppetGrpc.PuppetBlockingStub? = null
-    var grpcAsyncClient: PuppetGrpc.PuppetStub? = null
-    var streamObserver: StreamObserver<Event.EventResponse>? = null
+    var grpcVertxClient:PuppetGrpc.PuppetVertxStub? = null
 
 //    private var finishLatch:CountDownLatch? = null
 
@@ -52,23 +55,6 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             val jsonObject = JsonObject(string)
             return jsonObject.getString("ip")
         }
-
-
-//        client.getAbs(CHATIE_ENDPOINT + token).send { ar ->
-//            if (ar.succeeded()) {
-//
-//                val result = ar.result()
-//                val bodyAsJsonObject = result.bodyAsJsonObject()
-//
-//                val ip = bodyAsJsonObject.getString("ip")
-//
-//                completedFuture.complete(ip)
-//            } else {
-//                log.error("get ip error", ar.cause())
-//                completedFuture.completeExceptionally(ar.cause())
-//            }
-//        }
-
     }
 
 
@@ -85,15 +71,11 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         state = try {
             startGrpcClient().get()
+            val state = channel!!.getState(true)
+            log.info(state.name)
             val startRequest = Base.StartRequest.newBuilder().build()
             val start = grpcClient!!.start(startRequest)
-
             startGrpcStream()
-
-
-
-            println(start.allFields)
-
             StateEnum.ON
         } catch (e: Exception) {
             log.error("start() rejection:", e)
@@ -123,7 +105,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
                 this.setId(null)
             }
 
-            if (channel != null) {
+            if (channel != null && !channel!!.isShutdown) {
                 try {
                     val stopRequest = Base.StopRequest.newBuilder().build()
                     grpcClient!!.stop(stopRequest)
@@ -161,59 +143,35 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         if (StringUtils.isEmpty(endPoint) || StringUtils.equals(endPoint, "0.0.0.0")) {
             throw Exception()
         }
-        channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().build()
+        val newFixedThreadPool = newFixedThreadPool(16)
+        channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().executor(newFixedThreadPool).build()
 //        channel = VertxChannelBuilder.forAddress(vertx, endPoint, GRPC_PROT)
 //                .usePlaintext()
 //                .build()
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
-        grpcAsyncClient = PuppetGrpc.newStub(channel)
-
+        grpcVertxClient = PuppetGrpc.newVertxStub(channel)
         return CompletableFuture.completedFuture(null)
     }
 
     private fun startGrpcStream() {
-
-//        finishLatch = CountDownLatch(1)
-
         val request = Event.EventRequest.newBuilder().build()
-        this.streamObserver = object : StreamObserver<Event.EventResponse> {
-            override fun onNext(event: Event.EventResponse?) {
-                if (event != null) {
-                    onGrpcStreamEvent(event)
-                }
-            }
-
-            override fun onError(e: Throwable?) {
-                log.error("error", e)
-                val reason = "startGrpcStream() eventStream.on(error) ${e?.message}"
-                eb.publish("reset", EventResetPayload(reason))
-
-            }
-
-            override fun onCompleted() {
-//                finishLatch!!.countDown()
+        grpcVertxClient!!.event(request){
+            it.handler{
+                onGrpcStreamEvent(it)
+            }.endHandler{
+                log.info("end the vertx client")
             }
         }
-
-        grpcAsyncClient!!.event(request, streamObserver)
-
     }
 
 
     fun stopGrpcClient(): Future<Void> {
 
-        this.streamObserver!!.onCompleted()
-        val shutdownNow = channel!!.shutdownNow()
-        if (shutdownNow.isShutdown) {
-            this.channel = null
-            this.streamObserver = null
-            this.grpcClient = null
-            this.grpcAsyncClient = null
-
-        } else {
-            log.error("not show down")
-        }
+//        this.streamObserver!!.onCompleted(onCompleted)
+        channel!!.shutdown().awaitTermination(5, TimeUnit.SECONDS)
+        log.info("grpc is shutdown")
+        channel = null
         return CompletableFuture.completedFuture(null)
     }
 
@@ -453,7 +411,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
                 .build()
 
         return CompletableFuture.supplyAsync {
-            grpcClient!!.frendshipAccept(request)
+            grpcClient!!.friendshipAccept(request)
             return@supplyAsync null
         }
     }
