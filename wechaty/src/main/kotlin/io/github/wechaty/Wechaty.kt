@@ -44,7 +44,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
         if (await) {
             addHook()
-
             log.info("start Wechaty")
             try {
                 LOCK.lock();
@@ -78,15 +77,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         })
     }
 
-//    fun on(event: String,listener: ResetListerner){
-//        super.on(event, object : Listener {
-//            override fun handler(vararg any: Any) {
-//                listener.handler(any[0] as String)
-//            }
-//        })
-//
-//    }
-
     fun on(event: String, listener: MessageListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
@@ -99,20 +89,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return Message(this)
     }
 
+    fun getMessageCache():Cache<String,Message>{
+        return messageCache
+    }
+
     fun contact(): Contact {
         return Contact(this)
     }
 
-    fun getConactFromCache(id: String): Contact? {
-        return contactCache.getIfPresent(id);
-    }
-
-    fun putContactToCache(id: String, contact: Contact) {
-        contactCache.put(id, contact)
-    }
-
-    fun delContactFromCache(id: String) {
-        contactCache.invalidate(id)
+    fun getContactCache():Cache<String,Contact>{
+        return contactCache
     }
 
     fun contactSelf(): ContactSelf {
@@ -123,20 +109,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return Room(this)
     }
 
+    fun getRoomCache():Cache<String,Room>{
+        return roomCache
+    }
+
     fun tag(): Tag {
         return Tag(this)
     }
 
-    fun getRoomFromCache(id: String): Room? {
-        return roomCache.getIfPresent(id)
-    }
-
-    fun putRoomToCache(id: String, room: Room) {
-        roomCache.put(id, room)
-    }
-
-    fun delRoomFromCache(id: String) {
-        roomCache.invalidate(id)
+    fun getTagCache():Cache<String,Tag>{
+        return tagCache
     }
 
     private fun initPuppet() {
@@ -315,8 +297,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
             }
         }, "StartMain-shutdown-hook"))
     }
-
-
 }
 
 

@@ -1,6 +1,5 @@
 package io.github.wechaty.user
 
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.wechaty.Accessory
 import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
@@ -11,12 +10,16 @@ import io.github.wechaty.type.Sayable
 import io.github.wechaty.utils.FutureUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
-open class Contact(wechaty: Wechaty, var id:String? = null) : Sayable, Accessory(wechaty) {
+open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
 
+    constructor(wechaty: Wechaty,id: String):this(wechaty){
+        this.id = id
+    }
+
+    var id:String? =null
     protected val puppet: Puppet = wechaty.getPuppet()
     protected var payload: ContactPayload? = null
 
@@ -31,19 +34,41 @@ open class Contact(wechaty: Wechaty, var id:String? = null) : Sayable, Accessory
         return CompletableFuture.completedFuture(null);
     }
 
-    fun say(something: Any): Future<Void> {
+    fun say(something: Any):Message? {
+
+        var msgId:String?
+
         when (something) {
 
             is String ->{
-                val messageSendText = puppet.messageSendText(id!!, something)
+                msgId = puppet.messageSendText(id!!, something).get()
             }
-
+            is Contact->{
+                msgId = puppet.messageSendContact(id!!, something.id!!).get()
+            }
             is FileBox ->{
-                val messageSendFile = puppet.messageSendFile(id!!, something).get()
+                msgId = puppet.messageSendFile(id!!, something).get()
             }
-
+            is UrlLink ->{
+                msgId = puppet.messageSendUrl(id!!, something.payload).get()
+            }
+            is MiniProgram->{
+                msgId = puppet.messageSendMiniProgram(id!!,something.payload).get()
+            }
+            else->{
+                throw Exception("unsupported arg:$something")
+            }
         }
-        return CompletableFuture.completedFuture(null);
+
+        if(msgId != null){
+
+            val message = wechaty.message().load(msgId)
+            message.ready()
+            return message
+        }
+
+        return null;
+
     }
 
     fun findAll(query:ContactQueryFilter):Future<List<Contact>>{
@@ -63,6 +88,15 @@ open class Contact(wechaty: Wechaty, var id:String? = null) : Sayable, Accessory
             return@supplyAsync contactList
         }
 
+    }
+
+    fun tags():List<Tag>{
+
+        val tagIdList = wechaty.getPuppet().tagContactList().get()
+        val tagList = tagIdList.map {
+            this.wechaty.tag().load(it)
+        }
+        return tagList
     }
 
     fun sync():Future<Void>{
@@ -98,7 +132,7 @@ open class Contact(wechaty: Wechaty, var id:String? = null) : Sayable, Accessory
         }else{
             val contact = Contact(wechaty)
             contact.id = id
-            wechaty.putContactToCache(id,contact)
+            wechaty.getContactCache().put(id,contact)
             return contact
         }
     }

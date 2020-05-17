@@ -93,13 +93,13 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
     }
 
     fun load(id: String): Room {
-        val existingRoom = wechaty.getRoomFromCache(id)
+        val existingRoom = wechaty.getRoomCache().getIfPresent(id)
         if (existingRoom != null) {
             return existingRoom
         }
 
         val room = Room(wechaty, id)
-        wechaty.putRoomToCache(id, room)
+        wechaty.getRoomCache().put(id, room)
         return room
     }
 

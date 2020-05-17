@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory
 
 class Friendship (wechaty: Wechaty):Accessory(wechaty){
 
+    constructor(wechaty: Wechaty,id: String):this(wechaty){
+        this.id = id
+    }
+
     private var id:String? = null
 
     private var payload:FriendshipPayload? = null

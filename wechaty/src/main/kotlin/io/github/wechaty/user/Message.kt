@@ -10,7 +10,13 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
-class Message(wechaty: Wechaty,var id:String?= null) : Sayable, Accessory(wechaty){
+class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
+
+    var id:String?=null
+
+    constructor(wechaty: Wechaty,id: String):this(wechaty){
+        this.id = id
+    }
 
     private val puppte = wechaty.getPuppet()
     protected var payload : MessagePayload? = null

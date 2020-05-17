@@ -8,6 +8,10 @@ import java.util.*
 
 class RoomInvitation(wechaty: Wechaty) : Accessory(wechaty){
 
+    constructor(wechaty: Wechaty,id: String):this(wechaty){
+        this.id=id
+    }
+
     private var id:String? = null
 
     fun load(id:String):RoomInvitation{
