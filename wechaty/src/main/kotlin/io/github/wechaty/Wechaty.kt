@@ -138,6 +138,12 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return puppet
     }
 
+    fun userSelf(): ContactSelf {
+        val userId = puppet.selfId()
+        val user = this.contactSelf().load(userId!!)
+        return user
+    }
+
 
     protected fun initPuppetEventBridge(puppet: Puppet) {
 

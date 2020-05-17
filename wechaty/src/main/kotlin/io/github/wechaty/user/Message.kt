@@ -143,8 +143,8 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         if(payload != null && CollectionUtils.isNotEmpty(payload!!.mentionIdList)){
 
 
-            val list = memtionList().map {
-                val contact = wechaty.contact().load(it.id!!)
+            val list = payload!!.mentionIdList!!.map {
+                val contact = wechaty.contact().load(it)
                 contact.ready()
                 contact
             }
@@ -203,11 +203,11 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             }
 
             if (StringUtils.isNotBlank(fromId)) {
-                wechaty.contact().load(fromId!!).ready().get()
+                wechaty.contact().load(fromId!!).ready()
             }
 
             if (StringUtils.isNotBlank(toId)) {
-                wechaty.contact().load(toId!!).ready().get()
+                wechaty.contact().load(toId!!).ready()
             }
 
             return@supplyAsync null

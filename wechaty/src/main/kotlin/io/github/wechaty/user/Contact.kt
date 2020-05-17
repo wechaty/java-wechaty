@@ -15,18 +15,18 @@ import java.util.concurrent.Future
 
 open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
 
-    constructor(wechaty: Wechaty,id: String):this(wechaty){
+    constructor(wechaty: Wechaty, id: String) : this(wechaty) {
         this.id = id
     }
 
-    var id:String? =null
+    var id: String? = null
     protected val puppet: Puppet = wechaty.getPuppet()
     protected var payload: ContactPayload? = null
 
     override fun say(something: Any, contact: Contact): Future<Any> {
         when (something) {
 
-            is String ->{
+            is String -> {
                 val messageSendText = puppet.messageSendText(id!!, something)
             }
 
@@ -34,33 +34,33 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
         return CompletableFuture.completedFuture(null);
     }
 
-    fun say(something: Any):Message? {
+    fun say(something: Any): Message? {
 
-        var msgId:String?
+        var msgId: String?
 
         when (something) {
 
-            is String ->{
+            is String -> {
                 msgId = puppet.messageSendText(id!!, something).get()
             }
-            is Contact->{
+            is Contact -> {
                 msgId = puppet.messageSendContact(id!!, something.id!!).get()
             }
-            is FileBox ->{
+            is FileBox -> {
                 msgId = puppet.messageSendFile(id!!, something).get()
             }
-            is UrlLink ->{
+            is UrlLink -> {
                 msgId = puppet.messageSendUrl(id!!, something.payload).get()
             }
-            is MiniProgram->{
-                msgId = puppet.messageSendMiniProgram(id!!,something.payload).get()
+            is MiniProgram -> {
+                msgId = puppet.messageSendMiniProgram(id!!, something.payload).get()
             }
-            else->{
+            else -> {
                 throw Exception("unsupported arg:$something")
             }
         }
 
-        if(msgId != null){
+        if (msgId != null) {
 
             val message = wechaty.message().load(msgId)
             message.ready()
@@ -71,26 +71,22 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
 
     }
 
-    fun findAll(query:ContactQueryFilter):Future<List<Contact>>{
+    fun findAll(query: ContactQueryFilter): Future<List<Contact>> {
         val contactIdList = puppet.contactSearch(query, null).get()
         val contactList = contactIdList.map {
             load(it)
         }
 
-        val futures = contactList.map {
-            FutureUtils.toCompletable(it.ready())
+        contactList.map {
+            it.ready()
         }
-
-
-
-        return CompletableFuture.supplyAsync{
-            FutureUtils.sequenceVoid(futures).get()
+        return CompletableFuture.supplyAsync {
             return@supplyAsync contactList
         }
 
     }
 
-    fun tags():List<Tag>{
+    fun tags(): List<Tag> {
 
         val tagIdList = wechaty.getPuppet().tagContactList().get()
         val tagList = tagIdList.map {
@@ -99,45 +95,42 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
         return tagList
     }
 
-    fun sync():Future<Void>{
+    fun sync() {
         return ready(true)
     }
 
-    fun ready(forceSyn :Boolean = false):Future<Void>{
-        return CompletableFuture.supplyAsync {
-            if (!forceSyn && isReady()) {
-                return@supplyAsync null
-            }
-            try {
-                if (forceSyn) {
-                    puppet.contactPayloadDirty(id!!)
-                }
-                this.payload = puppet.contactPayload(id!!).get()
-            }
-            catch (e:Exception){
-                log.error("ready() contactPayload {} error ",id,e)
-                throw e
-            }
-            return@supplyAsync null
+    fun ready(forceSyn: Boolean = false) {
+        if (!forceSyn && isReady()) {
+            return
         }
+        try {
+            if (forceSyn) {
+                puppet.contactPayloadDirty(id!!)
+            }
+            this.payload = puppet.contactPayload(id!!).get()
+        } catch (e: Exception) {
+            log.error("ready() contactPayload {} error ", id, e)
+            throw e
+        }
+
+
     }
 
-    fun isReady():Boolean{
+    fun isReady(): Boolean {
         return (payload != null && StringUtils.isNotEmpty(payload!!.name))
     }
 
-    fun load(id:String):Contact{
-        if(this.id != null && this.id == id){
+    open fun load(id: String): Contact {
+        if (this.id != null && this.id == id) {
             return this
-        }else{
-            val contact = Contact(wechaty)
-            contact.id = id
-            wechaty.getContactCache().put(id,contact)
+        } else {
+            val contact = Contact(wechaty,id)
+            wechaty.getContactCache().put(id, contact)
             return contact
         }
     }
 
-    open fun avatar():Future<FileBox>{
+    open fun avatar(): Future<FileBox> {
         TODO()
     }
 
@@ -145,7 +138,7 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
     companion object {
         private val log = LoggerFactory.getLogger(Contact::class.java)
 
-        fun create(wechaty: Wechaty){
+        fun create(wechaty: Wechaty) {
 
         }
 

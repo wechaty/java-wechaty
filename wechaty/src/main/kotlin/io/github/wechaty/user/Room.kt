@@ -18,8 +18,8 @@ import java.util.concurrent.Future
 
 class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayable {
 
-    protected val puppet: Puppet = wechaty.getPuppet()
-    protected var payload: RoomPayload? = null
+    private val puppet: Puppet = wechaty.getPuppet()
+    private var payload: RoomPayload? = null
 
     fun sync(): Future<Void?> {
         return CompletableFuture.completedFuture(null);
@@ -58,22 +58,30 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             when (something) {
 
                 is String -> {
-                    msgId = puppet.messageSendText(id!!, something).get()
-
+                    msgId = wechaty.getPuppet().messageSendText(id!!, something).get()
+                }
+                is FileBox -> {
+                    msgId = wechaty.getPuppet().messageSendFile(id!!, something).get()
                 }
 
-                is FileBox ->{
+                is UrlLink -> {
+                    msgId = wechaty.getPuppet().messageSendUrl(id!!, something.payload).get()
+                }
 
-                    msgId = puppet.messageSendFile(id!!,something).get()
+                is MiniProgram -> {
+                    msgId = wechaty.getPuppet().messageSendMiniProgram(id!!, something.payload).get()
+                }
 
+                else -> {
+                    throw Exception("unknown message")
                 }
 
             }
 
-            if (StringUtils.isNotEmpty(msgId)) {
-                val message = wechaty.message().load(msgId!!)
-                message.ready().get()
-                return@supplyAsync message
+            if (msgId != null) {
+                val msg = wechaty.message().load(msgId!!)
+                msg.load(msgId!!)
+                return@supplyAsync msg
             }
 
             return@supplyAsync null
@@ -123,10 +131,10 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
 
             val memberIdList = puppet.roomMemberList(id!!).get()
 
-            val futures: List<Any> = memberIdList.map {
+            memberIdList.map {
                 wechaty.contact().load(it)
-            }.map {
-                FutureUtils.toCompletable(it.ready())
+            }.forEach {
+                it.ready()
             }
             return@supplyAsync null
         }
@@ -159,6 +167,15 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             wechaty.contact().load(id!!)
         }
         return contactList
+
+    }
+
+    fun alias(contact: Contact):String?{
+
+        val roomMemberPayload = wechaty.getPuppet().roomMemberPayload(this.id!!, contact.id!!).get()
+
+        return roomMemberPayload?.roomAlias
+
 
     }
 

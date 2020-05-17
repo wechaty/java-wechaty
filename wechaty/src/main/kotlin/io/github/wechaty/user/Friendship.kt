@@ -29,7 +29,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
             return null
         }
         val contact = wechaty.contact().load(contactId!!)
-        contact.ready().get()
+        contact.ready()
         return contact
     }
 
@@ -48,7 +48,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
             return
         }
         this.payload = wechaty.getPuppet().friendshipPayload(id!!).get()
-        contact().ready().get()
+        contact().ready()
 
     }
 
