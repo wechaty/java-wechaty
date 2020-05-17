@@ -144,5 +144,10 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
 
     companion object {
         private val log = LoggerFactory.getLogger(Contact::class.java)
+
+        fun create(wechaty: Wechaty){
+
+        }
+
     }
 }

@@ -6,6 +6,7 @@ import io.github.wechaty.ScanListener;
 import io.github.wechaty.Wechaty;
 import io.github.wechaty.filebox.FileBox;
 import io.github.wechaty.user.Contact;
+import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
 import okhttp3.*;
 import org.apache.commons.io.FileUtils;
@@ -36,7 +37,7 @@ public class Main {
         bot.on("message", (MessageListener) message -> {
 
             Contact from = message.from();
-            Contact room = message.room();
+            Room room = message.room();
 
             String text = message.text();
 

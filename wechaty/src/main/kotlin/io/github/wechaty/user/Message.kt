@@ -4,7 +4,11 @@ import io.github.wechaty.Accessory
 import io.github.wechaty.Wechaty
 import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.MessagePayload
+import io.github.wechaty.schemas.MessageType
+import io.github.wechaty.schemas.RoomMemberQueryFilter
+import io.github.wechaty.schemas.RoomQueryFilter
 import io.github.wechaty.type.Sayable
+import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
@@ -18,6 +22,7 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         this.id = id
     }
 
+    private val AT_SEPRATOR_REGEX = "/[\\u2005\\u0020]/"
     private val puppte = wechaty.getPuppet()
     protected var payload : MessagePayload? = null
 
@@ -45,11 +50,16 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
                 is String ->{
                     msgId = puppte.messageSendText(conversationId, something).get()
                 }
-
                 is FileBox ->{
-
                     msgId = puppte.messageSendFile(conversationId,something).get()
+                }
 
+                is UrlLink ->{
+                    msgId = puppte.messageSendUrl(conversationId,something.payload).get()
+                }
+
+                is MiniProgram->{
+                    msgId = puppte.messageSendMiniProgram(conversationId,something.payload).get()
                 }
 
                 else ->{
@@ -88,7 +98,7 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         return wechaty.contact().load(toId)
     }
 
-    fun room():Contact?{
+    fun room():Room?{
         if(payload == null){
             throw Exception("no payload")
         }
@@ -99,7 +109,7 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             return null
         }
 
-        return wechaty.contact().load(roomId!!)
+        return wechaty.room().load(roomId!!)
     }
 
 
@@ -108,6 +118,65 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             return@supplyAsync puppte.messageRecall(this.id!!).get()
         }
     }
+
+    fun type(): MessageType{
+        if(this.payload == null){
+            throw Exception("no payload")
+        }
+        return this.payload?.type ?: MessageType.Unknown
+    }
+
+    fun self():Boolean{
+        val selfId = puppte.selfId()
+        val from = from()
+
+        return StringUtils.equals(selfId,from?.id)
+    }
+
+    fun memtionList():List<Contact>{
+        val room = this.room()
+
+        if(room == null && type() != MessageType.Text){
+            return listOf()
+        }
+
+        if(payload != null && CollectionUtils.isNotEmpty(payload!!.mentionIdList)){
+
+
+            val list = memtionList().map {
+                val contact = wechaty.contact().load(it.id!!)
+                contact.ready()
+                contact
+            }
+
+            return list
+        }
+
+        val atList = this.text()?.split(AT_SEPRATOR_REGEX)
+        if(atList == null || atList.isEmpty()){
+            return listOf()
+        }
+
+        val rawMentionList = atList.filter {
+            it.contains("@")
+        }.map {
+            multipleAt(it)
+        }
+
+        val mentionNameList = rawMentionList.flatten().filter {
+            StringUtils.isNotEmpty(it)
+        }
+
+        val roomMemberQueryFilter = RoomMemberQueryFilter()
+        val flatten = mentionNameList.map {
+            roomMemberQueryFilter.name = it
+            room!!.memberAll(roomMemberQueryFilter)
+        }.flatten()
+
+        return flatten;
+    }
+
+
 
     fun ready():Future<Void>{
 
@@ -167,3 +236,34 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
 
 
 }
+
+fun multipleAt(str:String):List<String>{
+    val re = Regex("^.*?@")
+    val str1 = re.replace(str, "@")
+
+    var name = ""
+    val nameList = mutableListOf<String>()
+
+    str1.split("@")
+            .filter {
+                StringUtils.isNotEmpty(it)
+            }
+            .reversed()
+            .forEach{mentionName ->
+                name = "$mentionName@$name"
+                nameList.add(name.dropLast(1))
+            }
+    return nameList
+}
+
+fun main(){
+
+    val str = "hello@a@b@c"
+
+    val multipleAt = multipleAt(str)
+
+    println(multipleAt)
+
+
+}
+

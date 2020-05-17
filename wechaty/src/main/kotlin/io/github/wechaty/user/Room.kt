@@ -5,6 +5,7 @@ import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
 import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.ContactPayload
+import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
 import io.github.wechaty.schemas.RoomQueryFilter
 import io.github.wechaty.type.Sayable
@@ -129,6 +130,36 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             }
             return@supplyAsync null
         }
+    }
+
+    fun memberAll(query: RoomMemberQueryFilter?):List<Contact>{
+
+        if(query == null){
+            return memberList()
+        }
+
+        val contactIdList = wechaty.getPuppet().roomMemberSearch(this.id!!, query).get()
+        val contactList = contactIdList.map {
+            wechaty.contact().load(id!!)
+        }
+
+        return contactList
+
+    }
+
+    fun memberList():List<Contact>{
+
+        val memberIdList = wechaty.getPuppet().roomMemberList(this.id!!).get()
+
+        if(CollectionUtils.isEmpty(memberIdList)){
+            return listOf()
+        }
+
+        val contactList = memberIdList.map {
+            wechaty.contact().load(id!!)
+        }
+        return contactList
+
     }
 
     fun isRead(): Boolean {
