@@ -2,7 +2,7 @@ package io.github.wechaty.schemas
 
 
 enum class ContractGender(var code: Int) {
-    Unknow(0), Male(1), Female(2);
+    Unknown(0), Male(1), Female(2);
 
     companion object {
         fun getByCode(code: Int): ContractGender {
@@ -12,13 +12,13 @@ enum class ContractGender(var code: Int) {
                     return value
                 }
             }
-            return Unknow
+            return Unknown
         }
     }
 }
 
 enum class ContractType(var code: Int) {
-    Unknow(0), Personal(1), Official(2);
+    Unknown(0), Personal(1), Official(2);
 
     companion object {
         fun getByCode(code: Int): ContractType {
@@ -28,7 +28,7 @@ enum class ContractType(var code: Int) {
                     return value
                 }
             }
-            return Unknow
+            return Unknown
         }
     }
 

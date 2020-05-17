@@ -14,12 +14,9 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
     @Volatile
     private var lastFeed :Long = 0
     private var lastFood: WatchdogFood? = null
-
     private var timeOut = defaultTimeOut
-
-    val executorService = Executors.newSingleThreadScheduledExecutor()
-
-    var schedule:ScheduledFuture<*>? = null
+    private val executorService = Executors.newSingleThreadScheduledExecutor()
+    private var schedule:ScheduledFuture<*>? = null
 
     @Volatile
     private var timeId: Long = 0;
@@ -29,10 +26,6 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
     init{
         startTimer(defaultTimeOut)
     }
-
-//    private fun initEventCodec() {
-//        eb.registerDefaultCodec(WatchdogFood::class.java, GenericCodec(WatchdogFood::class.java))
-//    }
 
     fun on(event:String,listener:WatchdogListener){
         super.on(event,object:Listener{
@@ -48,14 +41,10 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
     }
 
     private fun startTimer(timeout:Long){
-
         var localTimeout = timeout;
-
         if(localTimeout == 0L){
             localTimeout = defaultTimeOut;
         }
-
-
         schedule = executorService.schedule({
             val watchdogFood = WatchdogFood(timeout)
             log.info("sent reset message")

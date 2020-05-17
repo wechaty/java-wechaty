@@ -2,10 +2,10 @@ package io.github.wechaty.schemas
 
 enum class ScanStatus(var code: Int) {
     Unknown(-1),
-    Cancle(0),
+    Cancel(0),
     Waiting(1),
     Scanned(2),
-    Cnnfirmed(3),
+    Confirmed(3),
     Timeout(4);
 
     companion object {

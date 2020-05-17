@@ -27,12 +27,12 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     private val GRPC_PROT = 8788
 
-    val CHATIE_ENDPOINT = "https://api.chatie.io/v0/hosties/"
+    private val CHATIE_ENDPOINT = "https://api.chatie.io/v0/hosties/"
 
-    val client: OkHttpClient = OkHttpClient()
+    private val client: OkHttpClient = OkHttpClient()
 
-    var grpcClient: PuppetGrpc.PuppetBlockingStub? = null
-    var grpcAsyncClient:PuppetGrpc.PuppetStub? = null
+    private var grpcClient: PuppetGrpc.PuppetBlockingStub? = null
+    private var grpcAsyncClient:PuppetGrpc.PuppetStub? = null
 
 //    private var finishLatch:CountDownLatch? = null
 
@@ -171,10 +171,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     fun stopGrpcClient(): Future<Void> {
 
-//        this.streamObserver!!.onCompleted(onCompleted)
         channel!!.shutdown().awaitTermination(5, TimeUnit.SECONDS)
         log.info("grpc is shutdown")
-        channel = null
         return CompletableFuture.completedFuture(null)
     }
 
@@ -272,7 +270,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
                 .setValue(contactId)
                 .build()
 
-        return CompletableFuture.supplyAsync() {
+        return CompletableFuture.supplyAsync {
 
             val request = Tag.TagContactListRequest.newBuilder()
                     .setContactId(stringValue)
@@ -284,7 +282,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun tagContactList(): Future<List<String>> {
 
-        return CompletableFuture.supplyAsync() {
+        return CompletableFuture.supplyAsync {
             val request = Contact.ContactListRequest.newBuilder().build()
             val contactList = grpcClient!!.contactList(request)
             contactList.idsList
