@@ -227,7 +227,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 "room-invite" -> {
                     puppet.on(it, object : PuppetRoomInviteListener {
                         override fun handler(payload: EventRoomInvitePayload) {
-//                            TODO("Not yet implemented")
                             var roomInvitation = roomInvitation().load(payload.roomInvitationId)
                             emit("room-invite", roomInvitation)
                         }
