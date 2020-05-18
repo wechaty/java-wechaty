@@ -120,6 +120,10 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
         return (payload != null && StringUtils.isNotEmpty(payload!!.name))
     }
 
+    fun name():String{
+        return payload?.name ?: ""
+    }
+
     open fun load(id: String): Contact {
         if (this.id != null && this.id == id) {
             return this

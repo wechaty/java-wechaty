@@ -6,15 +6,15 @@ import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.MessagePayload
 import io.github.wechaty.schemas.MessageType
 import io.github.wechaty.schemas.RoomMemberQueryFilter
-import io.github.wechaty.schemas.RoomQueryFilter
 import io.github.wechaty.type.Sayable
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
+import java.util.regex.Pattern
 
-class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
+open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
 
     var id:String?=null
 
@@ -23,8 +23,8 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
     }
 
     private val AT_SEPRATOR_REGEX = "/[\\u2005\\u0020]/"
-    private val puppte = wechaty.getPuppet()
-    protected var payload : MessagePayload? = null
+    private val puppet = wechaty.getPuppet()
+    private var payload : MessagePayload? = null
 
     override fun say(something: Any, contact: Contact): Future<Any> {
 
@@ -32,14 +32,18 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
 
         val room = room()
 
-        var conversationId: String
+        val conversationId: String
 
-        if(room != null){
-            conversationId = room.id!!
-        }else if(from != null){
-            conversationId = from.id!!
-        }else {
-            throw Exception("neither room nor fromId?")
+        conversationId = when {
+            room != null -> {
+                room.id!!
+            }
+            from != null -> {
+                from.id!!
+            }
+            else -> {
+                throw Exception("neither room nor fromId?")
+            }
         }
 
         var msgId:String? = null
@@ -48,18 +52,18 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             when(something){
 
                 is String ->{
-                    msgId = puppte.messageSendText(conversationId, something).get()
+                    msgId = puppet.messageSendText(conversationId, something).get()
                 }
                 is FileBox ->{
-                    msgId = puppte.messageSendFile(conversationId,something).get()
+                    msgId = puppet.messageSendFile(conversationId,something).get()
                 }
 
                 is UrlLink ->{
-                    msgId = puppte.messageSendUrl(conversationId,something.payload).get()
+                    msgId = puppet.messageSendUrl(conversationId,something.payload).get()
                 }
 
                 is MiniProgram->{
-                    msgId = puppte.messageSendMiniProgram(conversationId,something.payload).get()
+                    msgId = puppet.messageSendMiniProgram(conversationId,something.payload).get()
                 }
 
                 else ->{
@@ -87,6 +91,7 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             throw Exception("no payload")
         }
         val fromId = payload!!.fromId ?: return null
+
         return wechaty.contact().load(fromId)
     }
 
@@ -108,14 +113,13 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         if (StringUtils.isEmpty(roomId)) {
             return null
         }
-
         return wechaty.room().load(roomId!!)
     }
 
 
     fun recall():Future<Boolean>{
         return CompletableFuture.supplyAsync {
-            return@supplyAsync puppte.messageRecall(this.id!!).get()
+            return@supplyAsync puppet.messageRecall(this.id!!).get()
         }
     }
 
@@ -127,13 +131,13 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
     }
 
     fun self():Boolean{
-        val selfId = puppte.selfId()
+        val selfId = puppet.selfId()
         val from = from()
 
         return StringUtils.equals(selfId,from?.id)
     }
 
-    fun memtionList():List<Contact>{
+    fun mentionList():List<Contact>{
         val room = this.room()
 
         if(room == null && type() != MessageType.Text){
@@ -173,9 +177,12 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             room!!.memberAll(roomMemberQueryFilter)
         }.flatten()
 
-        return flatten;
+        return flatten
     }
 
+    fun content():String{
+        return text()
+    }
 
 
     fun ready():Future<Void>{
@@ -186,7 +193,7 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
                 return@supplyAsync null
             }
 
-            this.payload = puppte.messagePayload(id!!).get()
+            this.payload = puppet.messagePayload(id!!).get()
 
             log.info("message payload is {}",payload)
 
@@ -218,7 +225,7 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         return payload != null;
     }
 
-    fun text():String?{
+    fun text():String{
         if(payload == null){
             throw Exception("no play")
         }
@@ -226,11 +233,80 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         return payload?.text ?:  ""
     }
 
+    fun talker():Contact{
+        return this.from()!!
+    }
+
+    fun toRecalled():Message?{
+
+        if(this.type() != MessageType.Recalled){
+            throw Exception("Cannot call  toRecalled() on message which id not recalled type")
+        }
+
+        val originalMessageId = text()
+
+        if(StringUtils.isEmpty(originalMessageId)){
+            throw Exception("Cannot find recalled Message")
+        }
+
+        return try {
+            val message = wechaty.message().load(originalMessageId)
+            message.ready().get()
+            message
+        } catch (e: Exception){
+            log.warn("Can not retrieve the recalled message with id ${originalMessageId}")
+            null
+        }
+    }
+
+    fun mentionText():String{
+        val text = text()
+        val room = room()
+
+        val mentionList = mentionList()
+        if(room == null || CollectionUtils.isEmpty(mentionList)){
+            return text
+        }
+
+        val toAliasName :(Contact) -> String = {
+            val alias = room.alias(it)
+            val name = it.name()
+            alias ?:name
+        }
+
+        var textWithoutMention = text
+
+        val mentionNameList = mentionList.map(toAliasName)
+
+        mentionNameList.forEach{
+            val escapedCur = escapeRegExp(it)
+            val regex = Regex("@${escapedCur}(\\u2005|\\u0020|\$)")
+            textWithoutMention = regex.replace(text,"")
+        }
+        return textWithoutMention.trim()
+
+    }
+
+    fun mentionSelf():Boolean{
+        val selfId = puppet.selfId()
+        val mentionList = this.mentionList()
+
+        return mentionList.any {
+            it.id == selfId
+        }
+
+    }
+
+
+    override fun toString():String{
+        TODO()
+    }
+
     companion object{
-        val log = LoggerFactory.getLogger(Message::class.java)
+        private val log = LoggerFactory.getLogger(Message::class.java)
 
-        fun create(id:String){
-
+        fun create(wechaty: Wechaty,id:String):Message{
+            return Message(wechaty,id)
         }
     }
 
@@ -254,6 +330,12 @@ fun multipleAt(str:String):List<String>{
                 nameList.add(name.dropLast(1))
             }
     return nameList
+}
+
+val SPECIAL_REGEX_CHARS: Pattern = Pattern.compile("[{}()\\[\\].+*?^$\\\\|]")
+
+fun escapeRegExp(str: String): String? {
+    return SPECIAL_REGEX_CHARS.matcher(str).replaceAll("\\\\$0")
 }
 
 fun main(){

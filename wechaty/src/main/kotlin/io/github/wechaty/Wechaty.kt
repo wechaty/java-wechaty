@@ -93,7 +93,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return messageCache
     }
 
-    fun contact(): Contact {
+    fun contact(): io.github.wechaty.user.Contact {
         return Contact(this)
     }
 
