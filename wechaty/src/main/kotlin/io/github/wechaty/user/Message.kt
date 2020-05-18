@@ -158,7 +158,7 @@ class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         }
 
         val rawMentionList = atList.filter {
-            it.contains("@")
+            "@" in it
         }.map {
             multipleAt(it)
         }

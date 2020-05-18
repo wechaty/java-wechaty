@@ -352,7 +352,7 @@ abstract class Puppet: EventEmitter{
         val result =
                 roomPayloadList.filter { t: RoomPayload ->
                     val memberIdList = t.memberIdList
-                    memberIdList.contains(contactId)
+                    contactId in memberIdList
                 }.map(RoomPayload::id)
         return CompletableFuture.completedFuture(result)
     }
