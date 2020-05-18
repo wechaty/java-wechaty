@@ -137,9 +137,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
         val newFixedThreadPool = newFixedThreadPool(16)
         channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().executor(newFixedThreadPool).build()
-//        channel = VertxChannelBuilder.forAddress(vertx, endPoint, GRPC_PROT)
-//                .usePlaintext()
-//                .build()
+
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
         grpcAsyncClient = PuppetGrpc.newStub(channel)

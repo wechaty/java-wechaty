@@ -1,7 +1,5 @@
 package io.github.wechaty
 
 
-open class Accessory(open val wechaty: Wechaty) {
-
-}
+open class Accessory(open val wechaty: Wechaty)
 

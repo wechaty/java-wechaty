@@ -63,7 +63,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
     }
 
     fun feed(food: WatchdogFood):Long{
-        log.info("feed dog ${food}")
+        log.info("feed dog $food")
         if(food.timeout == 0L){
             food.timeout = defaultTimeOut
         }

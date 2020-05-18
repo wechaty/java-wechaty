@@ -51,7 +51,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
             } catch (e: InterruptedException) {
                 log.warn(" service   stopped, interrupted by other thread!", e);
             } finally {
-                LOCK.unlock();
+                LOCK.unlock()
             }
         }
 
@@ -290,6 +290,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     private fun addHook() {
         Runtime.getRuntime().addShutdownHook(Thread(Runnable {
             try {
+                //调用 wechaty 的 stop 实现优雅的退出
                 stop()
             } catch (e: java.lang.Exception) {
                 log.error("StartMain stop exception ", e)
