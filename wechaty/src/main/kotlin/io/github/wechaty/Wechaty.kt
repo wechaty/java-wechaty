@@ -234,8 +234,8 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 }
 
                 "room-join" -> {
-                    puppet.on(it, object : PuppetRoomInviteListener {
-                        override fun handler(payload: EventRoomInvitePayload) {
+                    puppet.on(it, object : PuppetRoomJoinListerner {
+                        override fun handler(payload: EventRoomJoinPayload) {
                             TODO("Not yet implemented")
                         }
                     })
