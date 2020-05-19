@@ -271,7 +271,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         val toAliasName :(Contact) -> String = {
             val alias = room.alias(it)
             val name = it.name()
-            alias ?:name
+            if(StringUtils.isNotEmpty(alias)) alias!! else name
         }
 
         var textWithoutMention = text
