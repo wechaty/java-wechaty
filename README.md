@@ -259,17 +259,18 @@ mvn install wechaty
 - [Python Wechaty](https://github.com/wechaty/python-wechaty) - Python WeChat Bot SDK for Individual Account.
 - [Go Wechaty](https://github.com/wechaty/go-wechaty) - Go WeChat Bot SDK for Individual Account.
 
-## Author
+## Authors
 
-- [Huan LI](https://github.com/huan) ([李卓桓](http://linkedin.com/in/zixia)) zixia@zixia.net
+- [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
+  - Website: [犀利豆的博客](https://xilidou.com/)
+- [@huan](https://github.com/huan) ([李卓桓](http://linkedin.com/in/zixia)), Tencent TVP of Chatbot, zixia@zixia.net
 
-[![Profile of Huan LI (李卓桓) on StackOverflow](https://stackexchange.com/users/flair/265499.png)](https://stackexchange.com/users/265499)
+## Maintainers
 
-* [diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com   
-    Website:[犀利豆的博客](https://xilidou.com/)
+See [MAINTAINERS](MAINTAINERS)
 
 ## Copyright & License
 
-- Code & Docs © 2020-now Huan LI \<zixia@zixia.net\>
+- Code & Docs © 2020 Wechaty
 - Code released under the Apache-2.0 License
 - Docs released under Creative Commons
