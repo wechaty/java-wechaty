@@ -261,6 +261,12 @@ mvn install wechaty
 
 ### master
 
+### v0.1 (May 18 2020)
+
+We decided to use Kotlin to develop the Java Wechaty!
+
+1. Project re-inited by overwriting `wechaty/java-wechaty` by `diaozxin/kotlin-wechaty`.
+
 ### v0.0.1 (Mar 12, 2020)
 
 1. Project created.
