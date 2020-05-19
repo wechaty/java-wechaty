@@ -21,8 +21,8 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
     private val puppet: Puppet = wechaty.getPuppet()
     private var payload: RoomPayload? = null
 
-    fun sync(): Future<Void?> {
-        return CompletableFuture.completedFuture(null);
+    fun sync(): Future<Void> {
+        return ready(true)
     }
 
     override fun say(something: Any, contact: Contact): Future<Any> {
