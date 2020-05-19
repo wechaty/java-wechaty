@@ -22,7 +22,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         this.id = id
     }
 
-    private val AT_SEPRATOR_REGEX = "/[\\u2005\\u0020]/"
+    private val AT_SEPRATOR_REGEX = "[\\u2005\\u0020]"
     private val puppet = wechaty.getPuppet()
     private var payload : MessagePayload? = null
 
@@ -46,7 +46,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             }
         }
 
-        var msgId:String? = null
+        var msgId:String?
 
         return CompletableFuture.supplyAsync {
             when(something){
@@ -144,7 +144,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             return listOf()
         }
 
-        if(payload != null && CollectionUtils.isNotEmpty(payload!!.mentionIdList)){
+        if(CollectionUtils.isNotEmpty(payload?.mentionIdList)){
 
 
             val list = payload!!.mentionIdList!!.map {
@@ -156,8 +156,8 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             return list
         }
 
-        val atList = this.text()?.split(AT_SEPRATOR_REGEX)
-        if(atList == null || atList.isEmpty()){
+        val atList = this.text().split(AT_SEPRATOR_REGEX)
+        if(atList.isEmpty()){
             return listOf()
         }
 
