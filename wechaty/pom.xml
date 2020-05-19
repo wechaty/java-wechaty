@@ -24,7 +24,7 @@
 
         <dependency>
             <groupId>io.wechaty</groupId>
-            <artifactId>wechaty-puppet-hosite</artifactId>
+            <artifactId>wechaty-puppet-hostie</artifactId>
             <version>${project.version}</version>
         </dependency>
 

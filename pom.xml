@@ -20,7 +20,7 @@
     <modules>
         <module>wechaty</module>
         <module>wechaty-puppet</module>
-        <module>wechaty-puppet-hosite</module>
+        <module>wechaty-puppet-hostie</module>
     </modules>
 
     <dependencyManagement>

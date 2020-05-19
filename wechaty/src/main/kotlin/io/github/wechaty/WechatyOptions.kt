@@ -6,7 +6,7 @@ class WechatyOptions {
 
     var name:String = "Wechaty"
 
-    var puppet:String = "wechaty-puppet-hosite"
+    var puppet:String = "wechaty-puppet-hostie"
 
     var puppetOptions:PuppetOptions? = null
 
