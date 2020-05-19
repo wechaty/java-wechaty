@@ -55,6 +55,15 @@ class Bot{
 }
 ```
 
+## Development
+
+To be writen:
+
+```sh
+make install
+make bot
+```
+
 ## Java Wechaty Developing Plan
 
 We already have Wechaty in TypeScript, It will be not too hard to translate the TypeScript(TS) to Java because [wechaty](https://github.com/wechaty/wechaty) has only 3,000 lines of the TS code, they are well designed and de-coupled by the [wechaty-puppet](https://github.com/wechaty/wechaty-puppet/) abstraction. So after we have translated those 3,000 lines of TypeScript code, we will almost be done.
