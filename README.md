@@ -213,22 +213,19 @@ If you are interested in the translation and want to look at how it works, it wi
 ## Usage
 
 1. Add a token to class `io.github.wechaty.examples.Main` in folder `wechaty/src/main/java`
-
 2. Build:
-```shell
-mvn install
-``` 
+
+    ```shell
+    mvn install
+    ```
 
 3. Run
-```shell
-java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar   
-```
 
-or run in background
-
-```shell
-nohup java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
-```
+    ```shell
+    java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar   
+    # or run in background  
+    nohup java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
+    ```
 
 4. enjoy
 
@@ -264,15 +261,14 @@ mvn install wechaty
 
 ## Author
 
-* [Huan LI](https://github.com/huan) ([李卓桓](http://linkedin.com/in/zixia)) zixia@zixia.net
+- [Huan LI](https://github.com/huan) ([李卓桓](http://linkedin.com/in/zixia)) zixia@zixia.net
 
-    [![Profile of Huan LI (李卓桓) on StackOverflow](https://stackexchange.com/users/flair/265499.png)](https://stackexchange.com/users/265499)
+[![Profile of Huan LI (李卓桓) on StackOverflow](https://stackexchange.com/users/flair/265499.png)](https://stackexchange.com/users/265499)
 
-* [diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
+- [diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
 
 ## Copyright & License
 
 - Code & Docs © 2020-now Huan LI \<zixia@zixia.net\>
 - Code released under the Apache-2.0 License
 - Docs released under Creative Commons
-
