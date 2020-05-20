@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 
 public class Main {
@@ -48,6 +49,12 @@ public class Main {
                     from.say("dong");
                 }
             }
+        });
+
+        bot.on("room-join", (room, inviteeList, inviter, date) -> {
+            List<String> nameList = inviteeList.stream().map(Contact::name).collect(Collectors.toList());
+            room.say("欢迎" + nameList + "加入群聊");
+
         });
         bot.start(true);
 //    }
