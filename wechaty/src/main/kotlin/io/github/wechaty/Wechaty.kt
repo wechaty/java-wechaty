@@ -13,7 +13,6 @@ import io.github.wechaty.user.*
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
-import java.util.stream.Collectors
 
 
 class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : EventEmitter() {
@@ -83,6 +82,14 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Message)
+            }
+        })
+    }
+
+    fun on(eventName: String, listener: RoomJoinListener) {
+        super.on(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as Room, any[1] as List<Contact>, any[2] as Contact, any[3] as Date)
             }
         })
     }
@@ -241,15 +248,23 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             val room = room().load(payload.roomId)
                             room.sync().get()
 
-                            val inviteeList = payload.inviteeIdList.parallelStream()
-                                .map { id -> contactSelf().load(id).ready() }
-                                .collect(Collectors.toList())
+//                            val inviteeList = payload.inviteeIdList.parallelStream()
+//                                .map { id -> contactSelf().load(id).ready() }
+//                                .collect(Collectors.toList())
+
+                            val inviteeList = payload.inviteeIdList.map { id ->
+                                {
+                                    val contact = contactSelf().load(id)
+                                    contact.ready()
+                                    contact
+                                }
+                            }
 
                             val inviter = contactSelf().load(payload.inviterId)
                             inviter.ready()
 
                             val date = Date(payload.timestamp * 1000)
-                            emit("room-join", inviteeList, inviter, date)
+                            emit("room-join", room, inviteeList, inviter, date)
                             //TODO("room.emit")
 
                         }
