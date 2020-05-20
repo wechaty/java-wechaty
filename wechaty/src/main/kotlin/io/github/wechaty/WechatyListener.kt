@@ -1,7 +1,10 @@
 package io.github.wechaty
 
 import io.github.wechaty.schemas.ScanStatus
+import io.github.wechaty.user.Contact
 import io.github.wechaty.user.Message
+import io.github.wechaty.user.Room
+import java.util.*
 
 @FunctionalInterface
 interface DongListener{
@@ -45,8 +48,9 @@ interface ResetListerner{
 }
 
 @FunctionalInterface
-interface RoomJoinListerner{
-    fun handler(roomId:String,inviteeIdList:List<String>,inviterId:String,timestamp:Long)
+interface RoomJoinListener{
+//    fun handler(roomId:String,inviteeIdList:List<String>,inviterId:String,timestamp:Long)
+    fun handler(room: Room,inviteeList: List<Contact>,inviter: Contact,date: Date)
 }
 
 @FunctionalInterface
