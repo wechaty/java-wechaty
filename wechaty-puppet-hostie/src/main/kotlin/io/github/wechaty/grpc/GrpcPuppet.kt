@@ -138,7 +138,6 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         val newFixedThreadPool = newFixedThreadPool(16)
         channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().executor(newFixedThreadPool).build()
 
-
         grpcClient = PuppetGrpc.newBlockingStub(channel)
         grpcAsyncClient = PuppetGrpc.newStub(channel)
         return CompletableFuture.completedFuture(null)
@@ -729,7 +728,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     }
 
-    override fun roomCreate(contactIdList: List<String>, topic: String): Future<String> {
+    override fun roomCreate(contactIdList: List<String>, topic: String?): Future<String> {
 
         val request = Room.RoomCreateRequest.newBuilder()
                 .setTopic(topic)

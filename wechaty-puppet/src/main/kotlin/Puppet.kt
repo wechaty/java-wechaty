@@ -633,7 +633,7 @@ abstract class Puppet: EventEmitter{
      */
     abstract fun roomAdd(roomId: String, contactId: String): Future<Void>
     abstract fun roomAvatar(roomId: String): Future<FileBox>
-    abstract fun roomCreate(contactIdList: List<String>, topic: String): Future<String>
+    abstract fun roomCreate(contactIdList: List<String>, topic: String?): Future<String>
 
     abstract fun roomDel(roomId: String, contactId: String): Future<Void>
 

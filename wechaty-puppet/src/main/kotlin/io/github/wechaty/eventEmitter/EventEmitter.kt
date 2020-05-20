@@ -41,14 +41,15 @@ open class EventEmitter : EventEmitterInterface {
 
     override fun emit(eventName: String, vararg any: Any) {
 
-        log.info("event {},data {}", eventName, any)
 
+        var tolist: List<Listener>? = null
         val list = map.get(eventName)
-
         if (CollectionUtils.isEmpty(list)) {
+            log.warn("this eventName:${eventName} has no listener")
             return
         }
-        list.forEach {
+        tolist = list.toList()
+        tolist.forEach {
             executor.execute {
                 it.handler(*any)
             }
@@ -76,14 +77,18 @@ open class EventEmitter : EventEmitterInterface {
         map.put(eventName, listener)
     }
 
+    /**
+     * can not work well on multithreading
+     */
     override fun once(eventName: String, listener: Listener) {
-        on(eventName, object : Listener {
+        val wrapListener = object : Listener {
             override fun handler(vararg any: Any) {
-
-                removeListener(eventName, listener)
-                listener.handler()
+                removeListener(eventName, this)
+                listener.handler(*any)
             }
-        })
+        }
+
+        map.put(eventName, wrapListener)
 
     }
 
@@ -172,6 +177,7 @@ interface EventEmitterInterface {
 
 
 interface Listener {
+
     fun handler(vararg any: Any)
 }
 
@@ -179,7 +185,7 @@ fun main() {
 
     val eventEmitter = EventEmitter()
 
-    eventEmitter.on("test", object : Listener {
+    eventEmitter.once("test", object : Listener {
         override fun handler(vararg any: Any) {
 
             val name = any[0]
@@ -194,6 +200,7 @@ fun main() {
 
     })
 
+    eventEmitter.emit("test", EventHeartbeatPayload("test"))
     eventEmitter.emit("test", EventHeartbeatPayload("test"))
 
     Thread.sleep(10000)

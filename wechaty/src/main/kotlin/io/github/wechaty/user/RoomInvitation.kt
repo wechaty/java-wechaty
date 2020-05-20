@@ -6,22 +6,10 @@ import org.apache.commons.collections4.CollectionUtils
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class RoomInvitation(wechaty: Wechaty) : Accessory(wechaty){
-
-    constructor(wechaty: Wechaty,id: String):this(wechaty){
-        this.id=id
-    }
-
-    private var id:String? = null
-
-    fun load(id:String):RoomInvitation{
-        val roomInvitation = RoomInvitation(wechaty)
-        roomInvitation.id = id
-        return roomInvitation
-    }
+class RoomInvitation(wechaty: Wechaty,val id:String) : Accessory(wechaty){
 
     fun accept(){
-        wechaty.getPuppet().roomInvitationAccept(this.id!!)
+        wechaty.getPuppet().roomInvitationAccept(this.id)
 
         val inviter = inviter()
         val topic = topic()
@@ -35,19 +23,19 @@ class RoomInvitation(wechaty: Wechaty) : Accessory(wechaty){
     }
 
     fun memberCount():Int{
-        val payload = wechaty.getPuppet().roomInvitationPayload(this.id!!).get()
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
         return payload.memberCount ?: 0
     }
 
     fun memeberList():List<Contact>{
-        val payload = wechaty.getPuppet().roomInvitationPayload(this.id!!).get()
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
 
         val memberIdList = payload.memberIdList
 
         if(CollectionUtils.isNotEmpty(memberIdList)){
 
             val contactList = memberIdList!!.map {
-                wechaty.contact().load(it)
+                wechaty.contactManager.load(it)
             }
 
             contactList.forEach{
@@ -60,7 +48,7 @@ class RoomInvitation(wechaty: Wechaty) : Accessory(wechaty){
     }
 
     fun date(): Date {
-        val payload = wechaty.getPuppet().roomInvitationPayload(this.id!!).get()
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
         return Date(payload.timestamp!! * 1000)
     }
 
@@ -70,12 +58,12 @@ class RoomInvitation(wechaty: Wechaty) : Accessory(wechaty){
     }
 
     fun inviter():Contact{
-        val payload = wechaty.getPuppet().roomInvitationPayload(this.id!!).get()
-        return wechaty.contact().load(payload.inviterId!!)
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
+        return wechaty.contactManager.load(payload.inviterId!!)
     }
 
     fun topic():String {
-        val payload = wechaty.getPuppet().roomInvitationPayload(this.id!!).get()
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
         return payload.topic ?:"";
     }
 
