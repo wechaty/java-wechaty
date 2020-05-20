@@ -248,16 +248,10 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             val room = room().load(payload.roomId)
                             room.sync().get()
 
-//                            val inviteeList = payload.inviteeIdList.parallelStream()
-//                                .map { id -> contactSelf().load(id).ready() }
-//                                .collect(Collectors.toList())
-
                             val inviteeList = payload.inviteeIdList.map { id ->
-                                {
                                     val contact = contactSelf().load(id)
                                     contact.ready()
-                                    contact
-                                }
+                                    return@map contact
                             }
 
                             val inviter = contactSelf().load(payload.inviterId)
