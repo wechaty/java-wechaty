@@ -29,7 +29,7 @@ public class Main {
 
         FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg", null, null);
 
-        Wechaty bot = Wechaty.instance("donut-test-user-3016");
+        Wechaty bot = Wechaty.instance("your_token");
 
         bot.on("scan", (qrcode, statusScanStatus, data) -> {
             System.out.println(QrcodeUtils.getQr(qrcode));
