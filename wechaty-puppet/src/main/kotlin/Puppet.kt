@@ -173,6 +173,14 @@ abstract class Puppet: EventEmitter{
 
     }
 
+    fun on(event: String,listener: PuppetRoomJoinListerner){
+        super.on(event,object :Listener{
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventRoomJoinPayload)
+            }
+        })
+    }
+
     fun on(event: String,listener: PuppetErrorListener){
         super.on(event,object:Listener{
             override fun handler(vararg any: Any) {

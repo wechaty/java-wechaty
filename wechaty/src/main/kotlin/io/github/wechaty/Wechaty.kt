@@ -11,7 +11,9 @@ import io.github.wechaty.listener.*
 import io.github.wechaty.schemas.*
 import io.github.wechaty.user.*
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import java.util.stream.Collectors
 
 
 class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : EventEmitter() {
@@ -89,7 +91,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return Message(this)
     }
 
-    fun getMessageCache():Cache<String,Message>{
+    fun getMessageCache(): Cache<String, Message> {
         return messageCache
     }
 
@@ -97,7 +99,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return Contact(this)
     }
 
-    fun getContactCache():Cache<String,Contact>{
+    fun getContactCache(): Cache<String, Contact> {
         return contactCache
     }
 
@@ -109,7 +111,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return Room(this)
     }
 
-    fun getRoomCache():Cache<String,Room>{
+    fun getRoomCache(): Cache<String, Room> {
         return roomCache
     }
 
@@ -117,7 +119,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return Tag(this)
     }
 
-    fun getTagCache():Cache<String,Tag>{
+    fun getTagCache(): Cache<String, Tag> {
         return tagCache
     }
 
@@ -227,16 +229,29 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 "room-invite" -> {
                     puppet.on(it, object : PuppetRoomInviteListener {
                         override fun handler(payload: EventRoomInvitePayload) {
-                            var roomInvitation = roomInvitation().load(payload.roomInvitationId)
+                            val roomInvitation = roomInvitation().load(payload.roomInvitationId)
                             emit("room-invite", roomInvitation)
                         }
                     })
                 }
 
                 "room-join" -> {
-                    puppet.on(it, object : PuppetRoomInviteListener {
-                        override fun handler(payload: EventRoomInvitePayload) {
-                            TODO("Not yet implemented")
+                    puppet.on(it, object : PuppetRoomJoinListerner {
+                        override fun handler(payload: EventRoomJoinPayload) {
+                            val room = room().load(payload.roomId)
+                            room.sync().get()
+
+                            val inviteeList = payload.inviteeIdList.parallelStream()
+                                .map { id -> contactSelf().load(id).ready() }
+                                .collect(Collectors.toList())
+
+                            val inviter = contactSelf().load(payload.inviterId)
+                            inviter.ready()
+
+                            val date = Date(payload.timestamp * 1000)
+                            emit("room-join", inviteeList, inviter, date)
+                            //TODO("room.emit")
+
                         }
                     })
                 }
