@@ -20,7 +20,10 @@ import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
-
+/**
+ * puppet
+ * @author zhengxin
+ */
 class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     private var channel: ManagedChannel? = null
@@ -137,7 +140,6 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
         val newFixedThreadPool = newFixedThreadPool(16)
         channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().executor(newFixedThreadPool).build()
-
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
         grpcAsyncClient = PuppetGrpc.newStub(channel)
@@ -729,7 +731,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     }
 
-    override fun roomCreate(contactIdList: List<String>, topic: String): Future<String> {
+    override fun roomCreate(contactIdList: List<String>, topic: String?): Future<String> {
 
         val request = Room.RoomCreateRequest.newBuilder()
                 .setTopic(topic)

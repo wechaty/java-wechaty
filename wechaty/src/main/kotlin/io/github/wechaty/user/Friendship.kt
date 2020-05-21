@@ -28,7 +28,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         if(StringUtils.isEmpty(contactId)){
             return null
         }
-        val contact = wechaty.contact().load(contactId!!)
+        val contact = wechaty.contactManager.load(contactId!!)
         contact.ready()
         return contact
     }
@@ -56,7 +56,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         if(payload == null){
             throw Exception("no payload")
         }
-        return wechaty.contact().load(payload!!.contactId!!)
+        return wechaty.contactManager.load(payload!!.contactId!!)
     }
 
     fun accept(){

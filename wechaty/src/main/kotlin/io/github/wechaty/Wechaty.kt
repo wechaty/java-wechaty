@@ -2,14 +2,13 @@ package io.github.wechaty;
 
 //import io.github.wechaty.user.Room
 
-import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.grpc.GrpcPuppet
 import io.github.wechaty.listener.*
 import io.github.wechaty.schemas.*
 import io.github.wechaty.user.*
+import io.github.wechaty.user.manager.*
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -30,10 +29,11 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     @Volatile
     private var status = StateEnum.OFF
 
-    private val contactCache: Cache<String, Contact> = Caffeine.newBuilder().build()
-    private val messageCache: Cache<String, Message> = Caffeine.newBuilder().build()
-    private val roomCache: Cache<String, Room> = Caffeine.newBuilder().build()
-    private val tagCache: Cache<String, Tag> = Caffeine.newBuilder().build()
+    val tagManager:TagManager = TagManager(this)
+    val contactManager = ContactManager(this)
+    val messageManager = MessageManager(this)
+    val roomManager = RoomManager(this)
+    val roomInvitationMessage = RoomInvitationManager(this)
 
 
     fun start(await: Boolean = false) {
@@ -94,42 +94,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         })
     }
 
-    fun message(): Message {
-        return Message(this)
-    }
-
-    fun getMessageCache(): Cache<String, Message> {
-        return messageCache
-    }
-
-    fun contact(): io.github.wechaty.user.Contact {
-        return Contact(this)
-    }
-
-    fun getContactCache(): Cache<String, Contact> {
-        return contactCache
-    }
-
-    fun contactSelf(): ContactSelf {
-        return ContactSelf(this)
-    }
-
-    fun room(): Room {
-        return Room(this)
-    }
-
-    fun getRoomCache(): Cache<String, Room> {
-        return roomCache
-    }
-
-    fun tag(): Tag {
-        return Tag(this)
-    }
-
-    fun getTagCache(): Cache<String, Tag> {
-        return tagCache
-    }
-
     private fun initPuppet() {
         this.puppet = GrpcPuppet(puppetOptions)
         initPuppetEventBridge(puppet)
@@ -139,9 +103,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return Friendship(this);
     }
 
-    fun roomInvitation(): RoomInvitation {
-        return RoomInvitation(this)
-    }
 
     fun getPuppet(): Puppet {
         return puppet
@@ -149,7 +110,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
     fun userSelf(): ContactSelf {
         val userId = puppet.selfId()
-        val user = this.contactSelf().load(userId!!)
+        val user = this.contactManager.loadSelf(userId!!)
         return user
     }
 
@@ -197,7 +158,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 "login" -> {
                     puppet.on(it, object : PuppetLoginListener {
                         override fun handler(payload: EventLoginPayload) {
-                            val contact = contactSelf().load(payload.contactId)
+                            val contact = contactManager.loadSelf(payload.contactId)
                             contact.ready()
                             emit("login", contact)
                         }
@@ -207,7 +168,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 "logout" -> {
                     puppet.on(it, object : PuppetLogoutListener {
                         override fun handler(payload: EventLogoutPayload) {
-                            val contact = contactSelf().load(payload.contactId)
+                            val contact = contactManager.loadSelf(payload.contactId)
                             contact.ready()
                             emit("logout", contact, payload.data)
                         }
@@ -217,7 +178,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 "message" -> {
                     puppet.on(it, object : PuppetMessageListener {
                         override fun handler(payload: EventMessagePayload) {
-                            val msg = message().load(payload.messageId)
+                            val msg = messageManager.load(payload.messageId)
                             msg.ready().get()
                             emit("message", msg)
                         }
@@ -236,7 +197,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 "room-invite" -> {
                     puppet.on(it, object : PuppetRoomInviteListener {
                         override fun handler(payload: EventRoomInvitePayload) {
-                            val roomInvitation = roomInvitation().load(payload.roomInvitationId)
+                            val roomInvitation = roomInvitationMessage.load(payload.roomInvitationId)
                             emit("room-invite", roomInvitation)
                         }
                     })
@@ -245,16 +206,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 "room-join" -> {
                     puppet.on(it, object : PuppetRoomJoinListerner {
                         override fun handler(payload: EventRoomJoinPayload) {
-                            val room = room().load(payload.roomId)
+                            val room = roomManager.load(payload.roomId)
                             room.sync().get()
 
                             val inviteeList = payload.inviteeIdList.map { id ->
-                                    val contact = contactSelf().load(id)
+                                    val contact = contactManager.loadSelf(id)
                                     contact.ready()
                                     return@map contact
                             }
 
-                            val inviter = contactSelf().load(payload.inviterId)
+                            val inviter = contactManager.loadSelf(payload.inviterId)
                             inviter.ready()
 
                             val date = Date(payload.timestamp * 1000)

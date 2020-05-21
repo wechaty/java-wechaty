@@ -14,13 +14,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.regex.Pattern
 
-open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
-
-    var id:String?=null
-
-    constructor(wechaty: Wechaty,id: String):this(wechaty){
-        this.id = id
-    }
+open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty){
 
     private val AT_SEPRATOR_REGEX = "[\\u2005\\u0020]"
     private val puppet = wechaty.getPuppet()
@@ -36,10 +30,10 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
 
         conversationId = when {
             room != null -> {
-                room.id!!
+                room.id
             }
             from != null -> {
-                from.id!!
+                from.id
             }
             else -> {
                 throw Exception("neither room nor fromId?")
@@ -71,19 +65,12 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
                 }
 
             }
-
             if(msgId != null){
-                val msg = wechaty.message().load(msgId!!)
-                msg.load(msgId!!)
+                val msg = wechaty.messageManager.load(msgId!!)
                 return@supplyAsync msg
             }
-
             return@supplyAsync null
         }
-    }
-
-    fun load(id:String):Message {
-        return Message(wechaty,id)
     }
 
     fun from():Contact?{
@@ -92,7 +79,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         }
         val fromId = payload!!.fromId ?: return null
 
-        return wechaty.contact().load(fromId)
+        return wechaty.contactManager.load(fromId)
     }
 
     fun to():Contact?{
@@ -100,7 +87,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             throw Exception("no payload")
         }
         val toId = payload!!.toId ?: return null
-        return wechaty.contact().load(toId)
+        return wechaty.contactManager.load(toId)
     }
 
     fun room():Room?{
@@ -113,13 +100,13 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         if (StringUtils.isEmpty(roomId)) {
             return null
         }
-        return wechaty.room().load(roomId!!)
+        return wechaty.roomManager.load(roomId!!)
     }
 
 
     fun recall():Future<Boolean>{
         return CompletableFuture.supplyAsync {
-            return@supplyAsync puppet.messageRecall(this.id!!).get()
+            return@supplyAsync puppet.messageRecall(this.id).get()
         }
     }
 
@@ -148,7 +135,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
 
 
             val list = payload!!.mentionIdList!!.map {
-                val contact = wechaty.contact().load(it)
+                val contact = wechaty.contactManager.load(it)
                 contact.ready()
                 contact
             }
@@ -206,15 +193,15 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
             val toId = payload!!.toId
 
             if (StringUtils.isNotBlank(roomId)) {
-                wechaty.room().load(roomId!!).ready().get()
+                wechaty.roomManager.load(roomId!!).ready().get()
             }
 
             if (StringUtils.isNotBlank(fromId)) {
-                wechaty.contact().load(fromId!!).ready()
+                wechaty.contactManager.load(fromId!!).ready()
             }
 
             if (StringUtils.isNotBlank(toId)) {
-                wechaty.contact().load(toId!!).ready()
+                wechaty.contactManager.load(toId!!).ready()
             }
 
             return@supplyAsync null
@@ -250,7 +237,7 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         }
 
         return try {
-            val message = wechaty.message().load(originalMessageId)
+            val message = wechaty.messageManager.load(originalMessageId)
             message.ready().get()
             message
         } catch (e: Exception){
@@ -294,7 +281,6 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
         return mentionList.any {
             it.id == selfId
         }
-
     }
 
 
@@ -304,10 +290,6 @@ open class Message(wechaty: Wechaty) : Sayable, Accessory(wechaty){
 
     companion object{
         private val log = LoggerFactory.getLogger(Message::class.java)
-
-        fun create(wechaty: Wechaty,id:String):Message{
-            return Message(wechaty,id)
-        }
     }
 
 

@@ -279,20 +279,18 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [Python Wechaty](https://github.com/wechaty/python-wechaty) - Python WeChat Bot SDK for Individual Account.
 - [Go Wechaty](https://github.com/wechaty/go-wechaty) - Go WeChat Bot SDK for Individual Account.
 
-## Authors
-
-- [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
-  - Website: [犀利豆的博客](https://xilidou.com/)
-- [@huan](https://github.com/huan) ([李卓桓](http://linkedin.com/in/zixia)), Tencent TVP of Chatbot, zixia@zixia.net
-
-## Maintainers
+## Contributors
 
 - [@redmaple1](https://github.com/redmaple1) Xiaoya Ren
 
-See [MAINTAINERS](MAINTAINERS)
+## Committers
+
+- [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
+  - Website: [犀利豆的博客](https://xilidou.com/)
+- [@huan](https://github.com/huan) - Huan LI ([李卓桓](http://linkedin.com/in/zixia)), Tencent TVP of Chatbot, zixia@zixia.net
 
 ## Copyright & License
 
-- Code & Docs © 2020 Wechaty
+- Code & Docs © 2020 Wechaty Contributors <https://github.com/wechaty>
 - Code released under the Apache-2.0 License
 - Docs released under Creative Commons
