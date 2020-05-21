@@ -266,6 +266,7 @@ mvn install wechaty
 We decided to use Kotlin to develop the Java Wechaty!
 
 1. Project re-inited by overwriting `wechaty/java-wechaty` by `diaozxin/kotlin-wechaty`.
+1. Second contributor joined: [@redmaple1](https://github.com/redmaple1) Xiaoya Ren
 
 ### v0.0.1 (Mar 12, 2020)
 
@@ -285,6 +286,8 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [@huan](https://github.com/huan) ([李卓桓](http://linkedin.com/in/zixia)), Tencent TVP of Chatbot, zixia@zixia.net
 
 ## Maintainers
+
+- [@redmaple1](https://github.com/redmaple1) Xiaoya Ren
 
 See [MAINTAINERS](MAINTAINERS)
 
