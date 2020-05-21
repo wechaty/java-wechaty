@@ -27,6 +27,10 @@ import java.util.concurrent.atomic.AtomicLong
 
 val PUPPET_COUNT = AtomicLong()
 
+/**
+ * puppet
+ * @author zhengxin
+ */
 abstract class Puppet: EventEmitter{
 
     @Volatile

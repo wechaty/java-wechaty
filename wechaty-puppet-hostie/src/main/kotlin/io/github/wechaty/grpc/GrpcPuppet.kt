@@ -20,7 +20,10 @@ import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
-
+/**
+ * puppet
+ * @author zhengxin
+ */
 class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     private var channel: ManagedChannel? = null
