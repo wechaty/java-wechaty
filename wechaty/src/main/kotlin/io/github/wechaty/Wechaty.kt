@@ -29,7 +29,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     @Volatile
     private var status = StateEnum.OFF
 
-    val tagManager:TagManager = TagManager(this)
+    val tagManager: TagManager = TagManager(this)
     val contactManager = ContactManager(this)
     val messageManager = MessageManager(this)
     val roomManager = RoomManager(this)
@@ -90,6 +90,22 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Room, any[1] as List<Contact>, any[2] as Contact, any[3] as Date)
+            }
+        })
+    }
+
+    fun on(eventName: String, listener: RoomLeaveListener) {
+        super.on(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as Room, any[1] as List<Contact>, any[2] as Contact, any[3] as Date)
+            }
+        })
+    }
+
+    fun on(eventName: String, listener: RoomTopicListener) {
+        super.on(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as Room, any[1] as String, any[2] as String, any[3] as Contact, any[4] as Date)
             }
         })
     }
@@ -204,15 +220,15 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 }
 
                 "room-join" -> {
-                    puppet.on(it, object : PuppetRoomJoinListerner {
+                    puppet.on(it, object : PuppetRoomJoinListener {
                         override fun handler(payload: EventRoomJoinPayload) {
                             val room = roomManager.load(payload.roomId)
                             room.sync().get()
 
                             val inviteeList = payload.inviteeIdList.map { id ->
-                                    val contact = contactManager.loadSelf(id)
-                                    contact.ready()
-                                    return@map contact
+                                val contact = contactManager.loadSelf(id)
+                                contact.ready()
+                                return@map contact
                             }
 
                             val inviter = contactManager.loadSelf(payload.inviterId)
@@ -228,17 +244,39 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
 
                 "room-leave" -> {
-                    puppet.on(it, object : PuppetRoomInviteListener {
-                        override fun handler(payload: EventRoomInvitePayload) {
-                            TODO("Not yet implemented")
+                    puppet.on(it, object : PuppetRoomLeaveListener {
+                        override fun handler(payload: EventRoomLeavePayload) {
+                            val room = roomManager.load(payload.roomId)
+                            room.sync()
+
+                            val leaverList = payload.removeeIdList.map { id ->
+                                val contact = contactManager.loadSelf(id)
+                                contact.ready()
+                                return@map contact
+                            }
+
+                            val remover = contactManager.loadSelf(payload.removerId)
+                            remover.ready()
+                            val date = Date(payload.timestamp * 1000)
+
+                            emit("room-leave", room, leaverList, remover, date)
+                            //TODO("room.emit")
                         }
                     })
                 }
 
                 "room-topic" -> {
-                    puppet.on(it, object : PuppetRoomInviteListener {
-                        override fun handler(payload: EventRoomInvitePayload) {
-                            TODO("Not yet implemented")
+                    puppet.on(it, object : PuppetRoomTopicListener {
+                        override fun handler(payload: EventRoomTopicPayload) {
+                            val room = roomManager.load(payload.roomId)
+                            room.sync()
+
+                            val changer = contactManager.loadSelf(payload.changerId)
+                            changer.ready()
+                            val date = Date(payload.timstamp * 1000)
+
+                            emit("room-topic", room, payload.newTopic, payload.oldTopic, changer, date)
+                            //TODO("room.emit")
                         }
                     })
                 }
