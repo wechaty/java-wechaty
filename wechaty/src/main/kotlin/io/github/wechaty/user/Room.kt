@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
-class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayable {
+class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     private val puppet: Puppet = wechaty.getPuppet()
     private var payload: RoomPayload? = null
@@ -33,14 +33,14 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             when (something) {
 
                 is String -> {
-                    msgId = puppet.messageSendText(id!!, something).get()
+                    msgId = puppet.messageSendText(id, something).get()
 
                 }
 
             }
 
             if (StringUtils.isNotEmpty(msgId)) {
-                val message = wechaty.message().load(msgId!!)
+                val message = wechaty.messageManager.load(msgId!!)
                 message.ready().get()
                 return@supplyAsync message
             }
@@ -52,24 +52,24 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
 
     fun say(something: Any): Future<Any> {
 
-        var msgId: String? = null
+        var msgId: String?
 
         return CompletableFuture.supplyAsync {
             when (something) {
 
                 is String -> {
-                    msgId = wechaty.getPuppet().messageSendText(id!!, something).get()
+                    msgId = wechaty.getPuppet().messageSendText(id, something).get()
                 }
                 is FileBox -> {
-                    msgId = wechaty.getPuppet().messageSendFile(id!!, something).get()
+                    msgId = wechaty.getPuppet().messageSendFile(id, something).get()
                 }
 
                 is UrlLink -> {
-                    msgId = wechaty.getPuppet().messageSendUrl(id!!, something.payload).get()
+                    msgId = wechaty.getPuppet().messageSendUrl(id, something.payload).get()
                 }
 
                 is MiniProgram -> {
-                    msgId = wechaty.getPuppet().messageSendMiniProgram(id!!, something.payload).get()
+                    msgId = wechaty.getPuppet().messageSendMiniProgram(id, something.payload).get()
                 }
 
                 else -> {
@@ -79,37 +79,12 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             }
 
             if (msgId != null) {
-                val msg = wechaty.message().load(msgId!!)
-                msg.load(msgId!!)
+                val msg = wechaty.messageManager.load(msgId!!)
                 return@supplyAsync msg
             }
 
             return@supplyAsync null
         }
-    }
-
-
-    fun findAll(query: RoomQueryFilter): Future<List<Room>> {
-        return CompletableFuture.supplyAsync {
-            val roomIdList = puppet.roomSearch(query).get()
-
-            val roomList = roomIdList.map {
-                load(it)
-            }
-            return@supplyAsync roomList
-        }
-
-    }
-
-    fun load(id: String): Room {
-        val existingRoom = wechaty.getRoomCache().getIfPresent(id)
-        if (existingRoom != null) {
-            return existingRoom
-        }
-
-        val room = Room(wechaty, id)
-        wechaty.getRoomCache().put(id, room)
-        return room
     }
 
     fun ready(forceSync: Boolean = false): Future<Void> {
@@ -119,20 +94,20 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             }
 
             if (forceSync) {
-                puppet.roomPayloadDirty(id!!).get()
-                puppet.roomMemberPayloadDirty(id!!).get()
+                puppet.roomPayloadDirty(id).get()
+                puppet.roomMemberPayloadDirty(id).get()
             }
 
-            this.payload = puppet.roomPayload(id!!).get()
+            this.payload = puppet.roomPayload(id).get()
             log.info("get room payload is {} by id {}",payload,id)
             if (payload == null) {
                 throw Exception("no payload")
             }
 
-            val memberIdList = puppet.roomMemberList(id!!).get()
+            val memberIdList = puppet.roomMemberList(id).get()
 
             memberIdList.map {
-                wechaty.contact().load(it)
+                wechaty.contactManager.load(it)
             }.forEach {
                 it.ready()
             }
@@ -146,9 +121,9 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
             return memberList()
         }
 
-        val contactIdList = wechaty.getPuppet().roomMemberSearch(this.id!!, query).get()
+        val contactIdList = wechaty.getPuppet().roomMemberSearch(this.id, query).get()
         val contactList = contactIdList.map {
-            wechaty.contact().load(id!!)
+            wechaty.contactManager.load(id)
         }
 
         return contactList
@@ -157,14 +132,14 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
 
     fun memberList():List<Contact>{
 
-        val memberIdList = wechaty.getPuppet().roomMemberList(this.id!!).get()
+        val memberIdList = wechaty.getPuppet().roomMemberList(this.id).get()
 
         if(CollectionUtils.isEmpty(memberIdList)){
             return listOf()
         }
 
         val contactList = memberIdList.map {
-            wechaty.contact().load(id!!)
+            wechaty.contactManager.load(id)
         }
         return contactList
 
@@ -172,7 +147,7 @@ class Room(wechaty: Wechaty, var id: String? = null) : Accessory(wechaty), Sayab
 
     fun alias(contact: Contact):String?{
 
-        val roomMemberPayload = wechaty.getPuppet().roomMemberPayload(this.id!!, contact.id!!).get()
+        val roomMemberPayload = wechaty.getPuppet().roomMemberPayload(this.id, contact.id).get()
 
         return roomMemberPayload?.roomAlias
 

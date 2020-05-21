@@ -13,13 +13,8 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
-open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
+open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty) {
 
-    constructor(wechaty: Wechaty, id: String) : this(wechaty) {
-        this.id = id
-    }
-
-    var id: String? = null
     protected val puppet: Puppet = wechaty.getPuppet()
     protected var payload: ContactPayload? = null
 
@@ -27,7 +22,7 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
         when (something) {
 
             is String -> {
-                val messageSendText = puppet.messageSendText(id!!, something)
+                val messageSendText = puppet.messageSendText(id, something)
             }
 
         }
@@ -41,19 +36,19 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
         when (something) {
 
             is String -> {
-                msgId = puppet.messageSendText(id!!, something).get()
+                msgId = puppet.messageSendText(id, something).get()
             }
             is Contact -> {
-                msgId = puppet.messageSendContact(id!!, something.id!!).get()
+                msgId = puppet.messageSendContact(id, something.id).get()
             }
             is FileBox -> {
-                msgId = puppet.messageSendFile(id!!, something).get()
+                msgId = puppet.messageSendFile(id, something).get()
             }
             is UrlLink -> {
-                msgId = puppet.messageSendUrl(id!!, something.payload).get()
+                msgId = puppet.messageSendUrl(id, something.payload).get()
             }
             is MiniProgram -> {
-                msgId = puppet.messageSendMiniProgram(id!!, something.payload).get()
+                msgId = puppet.messageSendMiniProgram(id, something.payload).get()
             }
             else -> {
                 throw Exception("unsupported arg:$something")
@@ -62,37 +57,13 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
 
         if (msgId != null) {
 
-            val message = wechaty.message().load(msgId)
+            val message = wechaty.messageManager.load(msgId)
             message.ready()
             return message
         }
 
         return null;
 
-    }
-
-    fun findAll(query: ContactQueryFilter): Future<List<Contact>> {
-        val contactIdList = puppet.contactSearch(query, null).get()
-        val contactList = contactIdList.map {
-            load(it)
-        }
-
-        contactList.map {
-            it.ready()
-        }
-        return CompletableFuture.supplyAsync {
-            return@supplyAsync contactList
-        }
-
-    }
-
-    fun tags(): List<Tag> {
-
-        val tagIdList = wechaty.getPuppet().tagContactList().get()
-        val tagList = tagIdList.map {
-            this.wechaty.tag().load(it)
-        }
-        return tagList
     }
 
     fun sync() {
@@ -124,14 +95,23 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
         return payload?.name ?: ""
     }
 
-    open fun load(id: String): Contact {
-        if (this.id != null && this.id == id) {
-            return this
-        } else {
-            val contact = Contact(wechaty,id)
-            wechaty.getContactCache().put(id, contact)
-            return contact
+    fun setAlias(newAlias:String){
+        if(payload == null){
+            throw Exception("no payload")
         }
+        try {
+            puppet.contactAlias(id, newAlias).get()
+            puppet.contactPayloadDirty(id)
+            payload = puppet.contactPayload(id).get()
+        }catch (e:Exception){
+            log.error("alias({}) rejected: {}", newAlias, e.message)
+            throw e
+        }
+
+    }
+
+    fun getAlias():String?{
+        return payload?.alias ?:null
     }
 
     open fun avatar(): Future<FileBox> {
@@ -141,10 +121,5 @@ open class Contact(wechaty: Wechaty) : Sayable, Accessory(wechaty) {
 
     companion object {
         private val log = LoggerFactory.getLogger(Contact::class.java)
-
-        fun create(wechaty: Wechaty) {
-
-        }
-
     }
 }
