@@ -31,7 +31,7 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
 
     fun say(something: Any): Message? {
 
-        var msgId: String?
+        val msgId: String?
 
         when (something) {
 
@@ -76,9 +76,9 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
         }
         try {
             if (forceSyn) {
-                puppet.contactPayloadDirty(id!!)
+                puppet.contactPayloadDirty(id)
             }
-            this.payload = puppet.contactPayload(id!!).get()
+            this.payload = puppet.contactPayload(id).get()
         } catch (e: Exception) {
             log.error("ready() contactPayload {} error ", id, e)
             throw e

@@ -3,7 +3,6 @@ package io.github.wechaty.eventEmitter
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Multimaps
-import io.github.wechaty.listener.PuppetDongListener
 import io.github.wechaty.schemas.EventHeartbeatPayload
 import org.apache.commons.collections4.CollectionUtils
 import org.slf4j.LoggerFactory
