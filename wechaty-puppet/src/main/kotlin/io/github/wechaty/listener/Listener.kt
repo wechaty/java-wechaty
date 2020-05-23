@@ -61,7 +61,7 @@ interface PuppetResetListener{
 }
 
 @FunctionalInterface
-interface PuppetRoomJoinListerner{
+interface PuppetRoomJoinListener{
     fun handler(payload: EventRoomJoinPayload)
 //    override fun handler0(vararg any: Any) {
 //        handler(any[0] as EventRoomJoinPayload)
@@ -69,7 +69,7 @@ interface PuppetRoomJoinListerner{
 }
 
 @FunctionalInterface
-interface PuppetRoomLeaveListerner{
+interface PuppetRoomLeaveListener{
     fun handler(payload: EventRoomLeavePayload)
 //    override fun handler0(vararg any: Any) {
 //        handler(any[0] as EventRoomLeavePayload)
