@@ -380,14 +380,13 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.contactPayload(request)
-            val payload = ContactPayload()
+            val payload = ContactPayload(response.id)
             payload.address = response.address
             payload.alias = response.alias
             payload.avatar = response.avatar
             payload.city = response.city
             payload.friend = response.friend
             payload.gender = ContractGender.getByCode(response.gender.number)
-            payload.id = response.id
             payload.name = response.name
             payload.province = response.province
             payload.signature = response.signature
