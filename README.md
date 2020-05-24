@@ -5,7 +5,7 @@
 
 ![Java Wechaty](https://wechaty.github.io/java-wechaty/images/java-wechaty.png)
 
-[![Java Wechaty Getting Started](https://img.shields.io/badge/Java%20Wechaty-Getting%20Started-blue)](https://github.com/wechaty/java-wechaty-getting-started)
+[![Java Wechaty Getting Started](https://img.shields.io/badge/Java%20Wechaty-Getting%20Started-orange)](https://github.com/wechaty/java-wechaty-getting-started)
 
 ## Connecting Chatbots
 
