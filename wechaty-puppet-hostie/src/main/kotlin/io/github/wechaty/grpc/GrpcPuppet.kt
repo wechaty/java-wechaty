@@ -834,11 +834,10 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomPayload(request)
-            val payload = RoomPayload()
+            val payload = RoomPayload(response.id)
 
             payload.adminIdList = response.adminIdsList
             payload.avatar = response.avatar
-            payload.id = response.id
             payload.memberIdList = response.memberIdsList
             payload.ownerId = response.ownerId
             payload.topic = response.topic
