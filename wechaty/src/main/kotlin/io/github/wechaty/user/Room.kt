@@ -4,12 +4,9 @@ import io.github.wechaty.Accessory
 import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
 import io.github.wechaty.filebox.FileBox
-import io.github.wechaty.schemas.ContactPayload
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
-import io.github.wechaty.schemas.RoomQueryFilter
 import io.github.wechaty.type.Sayable
-import io.github.wechaty.utils.FutureUtils
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
