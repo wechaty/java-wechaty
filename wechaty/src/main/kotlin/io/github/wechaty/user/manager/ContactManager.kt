@@ -45,13 +45,22 @@ class ContactManager(wechaty: Wechaty):Accessory(wechaty) {
     }
 
     fun findAll(queryFilter: ContactQueryFilter):List<Contact>{
-        val contactIdList = wechaty.getPuppet().contactSearch(queryFilter).get()
+        return try{
+            val contactIdList = wechaty.getPuppet().contactSearch(queryFilter).get()
 
-        val contactList = contactIdList.map {
-            load(it)
-        }.filter { Objects.nonNull(it) }
-
-        return contactList
+            val contactList = contactIdList.mapNotNull {
+                try {
+                    load(it)
+                } catch (e: Exception) {
+                    log.error("findAll() contact.ready() exception:{}", e)
+                    null
+                }
+            }
+            contactList
+        }catch (e:Exception){
+            log.error("this.puppet.contactFindAll() rejected: {}",e)
+            listOf()
+        }
 
     }
 

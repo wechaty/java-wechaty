@@ -10,6 +10,8 @@ class RoomMemberQueryFilter() {
 class RoomQueryFilter {
     var id: String? = null
     var topic: String? = null
+
+    var topicRegex:Regex? =null
 }
 
 

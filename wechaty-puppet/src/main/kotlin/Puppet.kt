@@ -603,7 +603,7 @@ abstract class Puppet: EventEmitter{
         return Lists.newArrayList(keys)
     }
 
-    fun messageSearch(query: MessageQueryFilter): Future<List<String>?> {
+    fun messageSearch(query: MessageQueryFilter): Future<List<String>> {
         TODO("TODO")
     }
 
