@@ -1,18 +1,22 @@
 package io.github.wechaty.user
 
+import InviteListener
+import JoinListener
+import LeaveListener
+import MessageListener
+import TopicListener
 import io.github.wechaty.Accessory
 import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
+import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.filebox.FileBox
-import io.github.wechaty.schemas.ContactPayload
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
-import io.github.wechaty.schemas.RoomQueryFilter
 import io.github.wechaty.type.Sayable
-import io.github.wechaty.utils.FutureUtils
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
@@ -99,7 +103,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
             }
 
             this.payload = puppet.roomPayload(id).get()
-            log.info("get room payload is {} by id {}",payload,id)
+            log.info("get room payload is {} by id {}", payload, id)
             if (payload == null) {
                 throw Exception("no payload")
             }
@@ -115,9 +119,49 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
-    fun memberAll(query: RoomMemberQueryFilter?):List<Contact>{
+    fun emit(eventName: String, listener: InviteListener) {
+        super.emit(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as Contact, any[1] as RoomInvitation)
+            }
+        })
+    }
 
-        if(query == null){
+    fun emit(eventName: String, listener: LeaveListener) {
+        super.emit(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
+            }
+        })
+    }
+
+    fun emit(eventName: String, listener: MessageListener) {
+        super.emit(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as Message, any[1] as Date)
+            }
+        })
+    }
+
+    fun emit(eventName: String, listener: JoinListener) {
+        super.emit(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
+            }
+        })
+    }
+
+    fun emit(eventName: String, listener: TopicListener) {
+        super.emit(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as String, any[1] as String, any[2] as Contact, any[3] as Date)
+            }
+        })
+    }
+
+    fun memberAll(query: RoomMemberQueryFilter?): List<Contact> {
+
+        if (query == null) {
             return memberList()
         }
 
@@ -130,11 +174,11 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     }
 
-    fun memberList():List<Contact>{
+    fun memberList(): List<Contact> {
 
         val memberIdList = wechaty.getPuppet().roomMemberList(this.id).get()
 
-        if(CollectionUtils.isEmpty(memberIdList)){
+        if (CollectionUtils.isEmpty(memberIdList)) {
             return listOf()
         }
 
@@ -145,7 +189,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     }
 
-    fun alias(contact: Contact):String?{
+    fun alias(contact: Contact): String? {
 
         val roomMemberPayload = wechaty.getPuppet().roomMemberPayload(this.id, contact.id).get()
 
@@ -158,15 +202,15 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return payload != null
     }
 
-    companion object{
+    companion object {
         private val log = LoggerFactory.getLogger(Room::class.java)
     }
 }
 
 val ROOM_EVENT_DICT = mapOf(
-        "invite" to "tbw",
-        "join" to "tbw",
-        "leave" to "tbw",
-        "message" to "message that received in this room",
-        "topic" to "tbw"
+    "invite" to "tbw",
+    "join" to "tbw",
+    "leave" to "tbw",
+    "message" to "message that received in this room",
+    "topic" to "tbw"
 )
