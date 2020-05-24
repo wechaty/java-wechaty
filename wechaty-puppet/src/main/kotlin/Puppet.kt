@@ -425,7 +425,7 @@ abstract class Puppet: EventEmitter{
 
             if(query.aliasReg != null){
                 stream?.filter{
-                    query.nameReg!!.matches(it.alias ?: "")
+                    query.aliasReg!!.matches(it.alias ?: "")
                 }
             }
 
@@ -605,15 +605,63 @@ abstract class Puppet: EventEmitter{
 
     fun messageSearch(query: MessageQueryFilter): Future<List<String>> {
 
-        log.debug("messageSearch {}",query)
+        return CompletableFuture.supplyAsync {
 
-        val allMessageIdList = messageList()
+            log.debug("messageSearch {}", query)
 
-        val messagePayloadList = allMessageIdList.map {
-            messagePayload(it)
+            val allMessageIdList = messageList()
+
+            val messagePayloadList = allMessageIdList.map {
+                messagePayload(it).get()
+            }
+
+            val stream = messagePayloadList.stream()
+
+            if (StringUtils.isNotEmpty(query.fromId)) {
+                stream.filter {
+                    StringUtils.equals(it.fromId, query.fromId)
+                }
+            }
+
+            if (StringUtils.isNotEmpty(query.id)) {
+                stream.filter {
+                    StringUtils.equals(it.id, query.id)
+                }
+            }
+
+            if (StringUtils.isNotEmpty(query.roomId)) {
+                stream.filter {
+                    StringUtils.equals(it.roomId, query.roomId)
+                }
+            }
+
+            if (StringUtils.isNotEmpty(query.toId)) {
+                stream.filter {
+                    StringUtils.equals(it.toId, query.toId)
+                }
+            }
+
+            if (StringUtils.isNotEmpty(query.text)) {
+                stream.filter {
+                    StringUtils.equals(it.text, query.text)
+                }
+            }
+
+            if (query.textReg != null) {
+                stream.filter {
+                    query.textReg!!.matches(it.text ?: "")
+                }
+            }
+
+            if (query.type != null) {
+                stream.filter {
+                    query.type == it.type
+                }
+            }
+
+            return@supplyAsync stream.map { it.id }.collect(Collectors.toList())
         }
 
-        TODO()
 
     }
 
