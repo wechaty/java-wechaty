@@ -23,7 +23,7 @@ interface FriendshipListener{
 
 @FunctionalInterface
 interface HeartbeatListener{
-    fun handlder(data:Any)
+    fun handler(data:Any)
 }
 
 @FunctionalInterface

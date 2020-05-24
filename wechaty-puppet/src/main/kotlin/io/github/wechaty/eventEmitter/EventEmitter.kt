@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 open class EventEmitter : EventEmitterInterface {
 
@@ -39,9 +38,7 @@ open class EventEmitter : EventEmitterInterface {
     }
 
     override fun emit(eventName: String, vararg any: Any) {
-
-
-        var tolist: List<Listener>? = null
+        val tolist: List<Listener>?
         val list = map.get(eventName)
         if (CollectionUtils.isEmpty(list)) {
             log.warn("this eventName:${eventName} has no listener")

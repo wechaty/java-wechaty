@@ -604,7 +604,17 @@ abstract class Puppet: EventEmitter{
     }
 
     fun messageSearch(query: MessageQueryFilter): Future<List<String>> {
-        TODO("TODO")
+
+        log.debug("messageSearch {}",query)
+
+        val allMessageIdList = messageList()
+
+        val messagePayloadList = allMessageIdList.map {
+            messagePayload(it)
+        }
+
+        TODO()
+
     }
 
     protected fun messageQueryFilterFactory(query: MessageQueryFilter) {
