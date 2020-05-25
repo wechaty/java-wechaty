@@ -195,7 +195,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>io.github.wechaty.example.Main2</mainClass>
+                                    <mainClass>io.github.wechaty.example.Main</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
