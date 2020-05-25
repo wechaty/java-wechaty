@@ -136,7 +136,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
 
         if (StringUtils.isEmpty(endPoint) || StringUtils.equals(endPoint, "0.0.0.0")) {
-            throw Exception()
+            log.error("cannot get ip by token, check token")
+            throw Exception("cannot get ip by token, check token")
         }
         val newFixedThreadPool = newFixedThreadPool(16)
         channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().executor(newFixedThreadPool).build()
