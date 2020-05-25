@@ -51,15 +51,15 @@ data class MessagePayload(val id:String) {
 }
 
 class MessageQueryFilter {
-    private val fromId: String? = null
-    private val id: String? = null
-    private val roomId: String? = null
-    private val text: String? = null
-    private val toId: String? = null
-    private val type: MessageType? = null
-
+    var fromId: String? = null
+    var id: String? = null
+    var roomId: String? = null
+    var text: String? = null
+    var toId: String? = null
+    var type: MessageType? = null
+    var textReg:Regex? = null
     override fun toString(): String {
-        return "MessageQueryFilter(fromId=$fromId, id=$id, roomId=$roomId, text=$text, toId=$toId, type=$type)"
+        return "MessageQueryFilter(fromId=$fromId, id=$id, roomId=$roomId, text=$text, toId=$toId, type=$type, textReg=$textReg)"
     }
 
 

@@ -3,14 +3,12 @@ package io.github.wechaty.eventEmitter
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Multimaps
-import io.github.wechaty.listener.PuppetDongListener
 import io.github.wechaty.schemas.EventHeartbeatPayload
 import org.apache.commons.collections4.CollectionUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 open class EventEmitter : EventEmitterInterface {
 
@@ -40,9 +38,7 @@ open class EventEmitter : EventEmitterInterface {
     }
 
     override fun emit(eventName: String, vararg any: Any) {
-
-
-        var tolist: List<Listener>? = null
+        val tolist: List<Listener>?
         val list = map.get(eventName)
         if (CollectionUtils.isEmpty(list)) {
             log.warn("this eventName:${eventName} has no listener")
