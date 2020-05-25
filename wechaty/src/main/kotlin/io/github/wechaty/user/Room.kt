@@ -119,7 +119,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
-    fun emit(eventName: String, listener: InviteListener) {
+    fun on(eventName: String, listener: InviteListener) {
         super.emit(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Contact, any[1] as RoomInvitation)
@@ -127,7 +127,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         })
     }
 
-    fun emit(eventName: String, listener: LeaveListener) {
+    fun on(eventName: String, listener: LeaveListener) {
         super.emit(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
@@ -135,7 +135,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         })
     }
 
-    fun emit(eventName: String, listener: MessageListener) {
+    fun on(eventName: String, listener: MessageListener) {
         super.emit(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Message, any[1] as Date)
@@ -143,7 +143,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         })
     }
 
-    fun emit(eventName: String, listener: JoinListener) {
+    fun on(eventName: String, listener: JoinListener) {
         super.emit(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
@@ -151,12 +151,33 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         })
     }
 
-    fun emit(eventName: String, listener: TopicListener) {
+    fun on(eventName: String, listener: TopicListener) {
         super.emit(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as String, any[1] as String, any[2] as Contact, any[3] as Date)
             }
         })
+    }
+
+    fun add(contact: Contact): Future<Void> {
+        return CompletableFuture.supplyAsync {
+            puppet.roomAdd(this.id, contact.id).get()
+            return@supplyAsync null
+        }
+    }
+
+    fun del(contact: Contact): Future<Void> {
+        return CompletableFuture.supplyAsync {
+            puppet.roomDel(this.id, contact.id).get();
+            return@supplyAsync null
+        }
+    }
+
+    fun quit(): Future<Void> {
+        return CompletableFuture.supplyAsync {
+            puppet.roomQuit(this.id).get()
+            return@supplyAsync null
+        }
     }
 
     fun memberAll(query: RoomMemberQueryFilter?): List<Contact> {
