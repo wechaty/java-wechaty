@@ -33,7 +33,7 @@ val PUPPET_COUNT = AtomicLong()
  * puppet
  * @author zhengxin
  */
-abstract class Puppet: EventEmitter{
+abstract class Puppet : EventEmitter {
 
     @Volatile
     protected var state = StateEnum.OFF
@@ -54,7 +54,7 @@ abstract class Puppet: EventEmitter{
     private var id: String? = null
     protected var puppetOptions: PuppetOptions? = null
 
-    private val watchDog:WatchDog
+    private val watchDog: WatchDog
 
     /**
      *
@@ -65,10 +65,10 @@ abstract class Puppet: EventEmitter{
         count.addAndGet(1)
         this.puppetOptions = puppetOptions
 
-        val timeOut = puppetOptions.timeout ?:DEFAULT_WATCHDOG_TIMEOUT
-        watchDog = WatchDog(1000 * timeOut,"puppet")
+        val timeOut = puppetOptions.timeout ?: DEFAULT_WATCHDOG_TIMEOUT
+        watchDog = WatchDog(1000 * timeOut, "puppet")
 
-        on("heartbeat",object :PuppetHeartbeatListener{
+        on("heartbeat", object : PuppetHeartbeatListener {
             override fun handler(payload: EventHeartbeatPayload) {
                 log.debug("heartbeat -> ${payload.data}")
                 val watchdogFood = WatchdogFood(1000 * timeOut)
@@ -79,20 +79,22 @@ abstract class Puppet: EventEmitter{
 
 
 
-        this.watchDog.on("reset",object : WatchdogListener{
+        this.watchDog.on("reset", object : WatchdogListener {
             override fun handler(event: WatchdogFood) {
                 val payload = EventResetPayload(JsonUtils.write(event))
-                emit("reset",payload)
+                emit("reset", payload)
             }
         })
 
         // 一秒只有一次
         val rateLimiter = RateLimiter.create(1.0)
 
-        on("reset",object :PuppetResetListener{
+        on("reset", object : PuppetResetListener {
             override fun handler(payload: EventResetPayload) {
-                log.debug("get a reset message")
-                if(rateLimiter.tryAcquire()){
+
+            log.debug("get a reset message")
+            if(rateLimiter.tryAcquire()){
+
                     reset(payload.data)
                 }
             }
@@ -117,15 +119,15 @@ abstract class Puppet: EventEmitter{
         cacheMessagePayload = Caffeine.newBuilder().build()
     }
 
-    private fun initHeart(){
+    private fun initHeart() {
 
         executorService.scheduleAtFixedRate({
-            if(state == StateEnum.ON) {
+            if (state == StateEnum.ON) {
                 val incrementAndGet = HEARTBEAT_COUNTER.incrementAndGet()
                 log.debug("HEARTBEAT_COUNTER #{}", incrementAndGet)
                 ding("`recover CPR #${incrementAndGet}")
             }
-        },HOSTIE_KEEPALIVE_TIMEOUT,HOSTIE_KEEPALIVE_TIMEOUT,TimeUnit.MILLISECONDS)
+        }, HOSTIE_KEEPALIVE_TIMEOUT, HOSTIE_KEEPALIVE_TIMEOUT, TimeUnit.MILLISECONDS)
 
 //        heartbeatTimerId = vertx.setPeriodic(HOSTIE_KEEPALIVE_TIMEOUT) { id ->
 //            if(state == StateEnum.ON) {
@@ -143,10 +145,12 @@ abstract class Puppet: EventEmitter{
 
     //dong
     fun on(event: String, listener: PuppetDongListener) {
-        super.on(event,object:Listener{
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
 
+
                 log.debug("class Type is {}",any[0].javaClass.name)
+
 
                 listener.handler(any[0] as EventDongPayload)
             }
@@ -154,7 +158,7 @@ abstract class Puppet: EventEmitter{
     }
 
     fun on(event: String, listener: PuppetFriendshipListener) {
-        super.on(event,object:Listener{
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventFriendshipPayload)
             }
@@ -163,15 +167,15 @@ abstract class Puppet: EventEmitter{
 
     //dong
     fun on(event: String, listener: PuppetLogoutListener) {
-        super.on(event,object:Listener{
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventLogoutPayload)
             }
         })
     }
 
-    fun on(event: String,listener: PuppetRoomInviteListener){
-        super.on(event,object:Listener{
+    fun on(event: String, listener: PuppetRoomInviteListener) {
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventRoomInvitePayload)
             }
@@ -179,16 +183,32 @@ abstract class Puppet: EventEmitter{
 
     }
 
-    fun on(event: String,listener: PuppetRoomJoinListerner){
-        super.on(event,object :Listener{
+    fun on(event: String, listener: PuppetRoomJoinListener) {
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventRoomJoinPayload)
             }
         })
     }
 
-    fun on(event: String,listener: PuppetErrorListener){
-        super.on(event,object:Listener{
+    fun on(event: String, listener: PuppetRoomLeaveListener) {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventRoomLeavePayload)
+            }
+        })
+    }
+
+    fun on(event: String, listener: PuppetRoomTopicListener) {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as EventRoomTopicPayload)
+            }
+        })
+    }
+
+    fun on(event: String, listener: PuppetErrorListener) {
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventErrorPayload)
             }
@@ -196,10 +216,12 @@ abstract class Puppet: EventEmitter{
     }
 
     fun on(event: String, listener: PuppetScanListener) {
-        super.on(event,object:Listener{
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
 
+
                 log.debug("class Type is {}",any[0].javaClass.name)
+
 
                 listener.handler(any[0] as EventScanPayload)
             }
@@ -208,7 +230,7 @@ abstract class Puppet: EventEmitter{
     }
 
     fun on(event: String, listener: PuppetLoginListener) {
-        super.on(event,object:Listener{
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventLoginPayload)
             }
@@ -216,7 +238,7 @@ abstract class Puppet: EventEmitter{
     }
 
     fun on(event: String, listener: PuppetReadyListener) {
-        super.on(event,object:Listener{
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventReadyPayload)
             }
@@ -224,34 +246,36 @@ abstract class Puppet: EventEmitter{
     }
 
     fun on(event: String, listener: PuppetMessageListener) {
-        super.on(event,object:Listener{
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventMessagePayload)
             }
         })
     }
 
-    fun on(event:String,listener: PuppetHeartbeatListener){
-        super.on(event,object:Listener{
+    fun on(event: String, listener: PuppetHeartbeatListener) {
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
 
+
                 log.debug("class Type is {}",any[0].javaClass.name)
+
 
                 listener.handler(any[0] as EventHeartbeatPayload)
             }
         })
     }
 
-    fun on(event:String,listener: PuppetResetListener){
-        super.on(event,object:Listener{
+    fun on(event: String, listener: PuppetResetListener) {
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventResetPayload)
             }
         })
     }
 
-    fun on(event: String,listener: WatchdogListener){
-        super.on(event,object :Listener{
+    fun on(event: String, listener: WatchdogListener) {
+        super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as WatchdogFood)
             }
@@ -261,7 +285,7 @@ abstract class Puppet: EventEmitter{
 
     abstract fun start(): Future<Void>
     abstract fun stop(): Future<Void>
-    open fun unref(){
+    open fun unref() {
 
     }
 
@@ -354,20 +378,20 @@ abstract class Puppet: EventEmitter{
         log.debug("contractId is {}", contactId)
         val roomList = roomList().get()
         val roomPayloadFuture: List<CompletableFuture<RoomPayload>> = roomList
-                .map { roomId: String ->
-                    roomPayload(
-                            roomId
-                    )
-                }
-                .map(FutureUtils::toCompletable)
+            .map { roomId: String ->
+                roomPayload(
+                    roomId
+                )
+            }
+            .map(FutureUtils::toCompletable)
         val resultRoomIdList =
-                FutureUtils.sequence(roomPayloadFuture)
+            FutureUtils.sequence(roomPayloadFuture)
         val roomPayloadList = resultRoomIdList.get()
         val result =
-                roomPayloadList.filter { t: RoomPayload ->
-                    val memberIdList = t.memberIdList
-                    contactId in memberIdList
-                }.map(RoomPayload::id)
+            roomPayloadList.filter { t: RoomPayload ->
+                val memberIdList = t.memberIdList
+                contactId in memberIdList
+            }.map(RoomPayload::id)
         return CompletableFuture.completedFuture(result)
     }
 
@@ -467,6 +491,7 @@ abstract class Puppet: EventEmitter{
         val contactPayload = cacheContactPayload.getIfPresent(contactId)
 
         log.debug("contactPayload is {} by id {}", contactPayload,contactId)
+
         return contactPayload
     }
 
@@ -564,7 +589,7 @@ abstract class Puppet: EventEmitter{
 
     abstract fun messageContact(messageId: String): Future<String>
     abstract fun messageFile(messageId: String): Future<FileBox>
-    abstract fun messageImage(messageId: String,imageType:ImageType): Future<FileBox>
+    abstract fun messageImage(messageId: String, imageType: ImageType): Future<FileBox>
     abstract fun messageMiniProgram(messageId: String): Future<MiniProgramPayload>
     abstract fun messageUrl(messageId: String): Future<UrlLinkPayload>
 

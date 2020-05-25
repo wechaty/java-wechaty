@@ -7,74 +7,74 @@ import io.github.wechaty.user.Room
 import java.util.*
 
 @FunctionalInterface
-interface DongListener{
-    fun handler(data:String?)
+interface DongListener {
+    fun handler(data: String?)
 }
 
 @FunctionalInterface
-interface ErrorListener{
-    fun handler(error:String)
+interface ErrorListener {
+    fun handler(error: String)
 }
 
 @FunctionalInterface
-interface FriendshipListener{
-    fun handler(friendshipId:String)
+interface FriendshipListener {
+    fun handler(friendshipId: String)
 }
 
 @FunctionalInterface
 interface HeartbeatListener{
     fun handler(data:Any)
+
 }
 
 @FunctionalInterface
-interface ScanListener{
+interface ScanListener {
     fun handler(qrcode: String?, statusScanStatus: ScanStatus, data: String?)
 
 }
 
 @FunctionalInterface
-interface LoginListener{
-    fun handler(contactId:String)
+interface LoginListener {
+    fun handler(contactId: String)
 }
 
 @FunctionalInterface
-interface LogoutListener{
-    fun handler(contactId: String,reason:String?)
+interface LogoutListener {
+    fun handler(contactId: String, reason: String?)
 }
 
 @FunctionalInterface
-interface ResetListerner{
-    fun handler(reason:String)
+interface ResetListerner {
+    fun handler(reason: String)
 }
 
 @FunctionalInterface
-interface RoomJoinListener{
-//    fun handler(roomId:String,inviteeIdList:List<String>,inviterId:String,timestamp:Long)
-    fun handler(room: Room,inviteeList: List<Contact>,inviter: Contact,date: Date)
+interface RoomJoinListener {
+    fun handler(room: Room, inviteeList: List<Contact>, inviter: Contact, date: Date)
 }
 
 @FunctionalInterface
-interface RoomLeaveListerner{
-    fun handler(roomId: String,leaverIdList:List<String>,removerId:String,timestamp:Long)
+interface RoomLeaveListener {
+    fun handler(room: Room, leaverList: List<Contact>, remover: Contact, date: Date)
 }
 
 @FunctionalInterface
-interface RoomTopicListener{
-    fun handler(roomId: String,newTopic:String,oldTopic:String,changerId:String,timestamp:Long)
+interface RoomTopicListener {
+    fun handler(room: Room, newTopic: String, oldTopic: String, changer: Contact, date: Date)
 }
 
 @FunctionalInterface
-interface RoomInviteListener{
-    fun handler(roomInvitationId:String)
+interface RoomInviteListener {
+    fun handler(roomInvitationId: String)
 }
 
 @FunctionalInterface
-interface ReadyListener{
+interface ReadyListener {
     fun handler()
 }
 
 @FunctionalInterface
-interface MessageListener{
-    fun handler(message:Message)
+interface MessageListener {
+    fun handler(message: Message)
 
 }
