@@ -197,6 +197,9 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             val msg = messageManager.load(payload.messageId)
                             msg.ready().get()
                             emit("message", msg)
+
+                            val room = msg.room()
+                            room?.emit("message", msg)
                         }
                     })
                 }
@@ -236,8 +239,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
                             val date = Date(payload.timestamp * 1000)
                             emit("room-join", room, inviteeList, inviter, date)
-                            //TODO("room.emit")
-
+                            room.emit("join", inviteeList, inviter, date)
                         }
                     })
                 }
@@ -260,7 +262,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             val date = Date(payload.timestamp * 1000)
 
                             emit("room-leave", room, leaverList, remover, date)
-                            //TODO("room.emit")
+                            room.emit("leave", leaverList, remover, date)
                         }
                     })
                 }
@@ -276,7 +278,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             val date = Date(payload.timstamp * 1000)
 
                             emit("room-topic", room, payload.newTopic, payload.oldTopic, changer, date)
-                            //TODO("room.emit")
+                            room.emit("topic", payload.newTopic, payload.oldTopic, changer, date)
                         }
                     })
                 }

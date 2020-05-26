@@ -40,10 +40,12 @@ class ContactQueryFilter {
     var id: String? = null
     var name: String? = null
     var weixin: String? = null
+
+    var aliasReg:Regex? = null
+    var nameReg:Regex? = null
 }
 
-class ContactPayload {
-    var id: String? = null
+class ContactPayload(val id:String) {
     var gender: ContractGender? = null
     var type: ContractType? = null
     var name: String? = null
@@ -60,3 +62,7 @@ class ContactPayload {
         return "ContactPayload(id=$id, gender=$gender, type=$type, name=$name, avatar=$avatar, address=$address, alias=$alias, city=$city, friend=$friend, province=$province, signature=$signature, star=$star, weixin=$weixin)"
     }
 }
+
+typealias ContactPayloadFilterFunction = (payload:ContactPayload) -> Boolean
+typealias ContactPayloadFilterFactory  = (query: ContactQueryFilter) -> ContactPayloadFilterFunction
+
