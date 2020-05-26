@@ -20,6 +20,8 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
+const val FOUR_PER_EM_SPACE = "\u2005"
+
 class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     private val puppet: Puppet = wechaty.getPuppet()
@@ -54,9 +56,10 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
-    fun say(something: Any, vararg varList: List<Any>): Future<Any> {
+    fun say(something: Any, vararg varList: Any): Future<Any> {
 
         var msgId: String?
+        var text: String
 
         return CompletableFuture.supplyAsync {
             when (something) {
@@ -70,14 +73,32 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                                 throw Exception("mentionList must be contact when not using String array function call.")
                             }
                         }
-                        //todo(varList ? List<List<Any>>)
-                        mentionList = varList[0]
+                        mentionList = varList.toList()
+
+                        val mentionAlias = mentionList.map {
+                            contact ->
+                            val alias = alias(contact as Contact)
+                            val concatText = if (StringUtils.isNotBlank(alias)) {
+                                alias!!
+                            } else {
+                                contact.name()
+                            }
+                            return@map "@$concatText"
+                        }
+                        val mentionText = mentionAlias.joinToString(separator = FOUR_PER_EM_SPACE)
+                        text = mentionText
+                    } else {
+                        text = something
                     }
 
-                    msgId = wechaty.getPuppet().messageSendText(id, something).get()
+                    msgId = wechaty.getPuppet().messageSendText(id, text, mentionList.map { c -> (c as Contact).id }).get()
                 }
                 is FileBox -> {
                     msgId = wechaty.getPuppet().messageSendFile(id, something).get()
+                }
+
+                is Contact -> {
+                    msgId = wechaty.getPuppet().messageSendContact(id, something.id).get()
                 }
 
                 is UrlLink -> {
