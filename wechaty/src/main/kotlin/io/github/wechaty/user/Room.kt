@@ -54,14 +54,26 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
-    fun say(something: Any): Future<Any> {
+    fun say(something: Any, vararg varList: List<Any>): Future<Any> {
 
         var msgId: String?
 
         return CompletableFuture.supplyAsync {
             when (something) {
+                //TODO(array)
 
                 is String -> {
+                    var mentionList = listOf<Any>()
+                    if (varList.isNotEmpty()) {
+                        varList.forEach {
+                            if (it !is Contact) {
+                                throw Exception("mentionList must be contact when not using String array function call.")
+                            }
+                        }
+                        //todo(varList ? List<List<Any>>)
+                        mentionList = varList[0]
+                    }
+
                     msgId = wechaty.getPuppet().messageSendText(id, something).get()
                 }
                 is FileBox -> {
@@ -120,7 +132,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
     }
 
     fun on(eventName: String, listener: InviteListener) {
-        super.emit(eventName, object : Listener {
+        super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Contact, any[1] as RoomInvitation)
             }
@@ -128,7 +140,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
     }
 
     fun on(eventName: String, listener: LeaveListener) {
-        super.emit(eventName, object : Listener {
+        super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
             }
@@ -136,7 +148,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
     }
 
     fun on(eventName: String, listener: MessageListener) {
-        super.emit(eventName, object : Listener {
+        super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Message, any[1] as Date)
             }
@@ -144,7 +156,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
     }
 
     fun on(eventName: String, listener: JoinListener) {
-        super.emit(eventName, object : Listener {
+        super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
             }
@@ -152,7 +164,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
     }
 
     fun on(eventName: String, listener: TopicListener) {
-        super.emit(eventName, object : Listener {
+        super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as String, any[1] as String, any[2] as Contact, any[3] as Date)
             }
