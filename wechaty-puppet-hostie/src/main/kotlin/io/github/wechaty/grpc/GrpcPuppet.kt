@@ -13,6 +13,7 @@ import io.grpc.stub.StreamObserver
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.math.NumberUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
@@ -39,7 +40,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
 //    private var finishLatch:CountDownLatch? = null
 
-    private fun discoverHostieIpa(): String {
+    private fun discoverHostieIp():Pair<String,String>{
 
         val token = puppetOptions!!.token
 
@@ -51,7 +52,11 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             response ->
             val string = response.body!!.string()
             val readValue = JsonUtils.readValue<Map<String, String>>(string)
-            return readValue["ip"] ?: error("")
+
+            val ip = readValue["ip"] ?: error("cannot get ip by token, check token");
+            val port = readValue["port"] ?:"8788"
+
+            return Pair(ip,port)
         }
     }
 
@@ -130,16 +135,26 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     private fun startGrpcClient(): Future<Void> {
-        var endPoint = puppetOptions?.endPoint
-        if (StringUtils.isEmpty(endPoint)) {
-            endPoint = discoverHostieIpa()
+        val endPoint = puppetOptions?.endPoint
+        val discoverHostieIp:Pair<String,String>
+        discoverHostieIp = if (StringUtils.isEmpty(endPoint)) {
+            discoverHostieIp()
+        }else{
+            val split = StringUtils.split(endPoint, ":")
+            if(split.size == 1) {
+                Pair(split[0],"8788")
+            }else{
+                Pair(split[0],split[1])
+            }
+
         }
 
-        if (StringUtils.isEmpty(endPoint) || StringUtils.equals(endPoint, "0.0.0.0")) {
-            throw Exception()
+        if (StringUtils.isEmpty(endPoint) || StringUtils.equals(discoverHostieIp.first, "0.0.0.0")) {
+            log.error("cannot get ip by token, check token")
+            throw Exception("cannot get ip by token, check token")
         }
         val newFixedThreadPool = newFixedThreadPool(16)
-        channel = ManagedChannelBuilder.forAddress(endPoint, GRPC_PROT).usePlaintext().executor(newFixedThreadPool).build()
+        channel = ManagedChannelBuilder.forAddress(discoverHostieIp.first,NumberUtils.toInt(discoverHostieIp.second)).usePlaintext().executor(newFixedThreadPool).build()
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
         grpcAsyncClient = PuppetGrpc.newStub(channel)
