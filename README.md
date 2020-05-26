@@ -289,7 +289,6 @@ We decided to use Kotlin to develop the Java Wechaty!
 
 - [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
   - Website: [犀利豆的博客](https://xilidou.com/)
-- [@huan](https://github.com/huan) - Huan LI ([李卓桓](http://linkedin.com/in/zixia)), Tencent TVP of Chatbot, zixia@zixia.net
 
 ## Copyright & License
 
