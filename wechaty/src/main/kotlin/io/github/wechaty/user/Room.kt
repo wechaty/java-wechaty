@@ -316,6 +316,14 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     }
 
+    fun has(contact: Contact): Boolean {
+        val memberIdList = puppet.roomMemberList(id).get()
+        if (memberIdList.isEmpty()) {
+            return false
+        }
+        return memberIdList.any { it == contact.id }
+    }
+
     fun isRead(): Boolean {
         return payload != null
     }
