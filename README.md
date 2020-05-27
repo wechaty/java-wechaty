@@ -281,11 +281,11 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [Python Wechaty](https://github.com/wechaty/python-wechaty) - Python WeChat Bot SDK for Individual Account.
 - [Go Wechaty](https://github.com/wechaty/go-wechaty) - Go WeChat Bot SDK for Individual Account.
 
-## Contributors
+## Committers
 
 - [@redmaple1](https://github.com/redmaple1) Xiaoya Ren
 
-## Committers
+## Author
 
 - [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
   - Website: [犀利豆的博客](https://xilidou.com/)
