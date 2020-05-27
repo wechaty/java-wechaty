@@ -13,6 +13,7 @@ import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
 import io.github.wechaty.type.Sayable
+import io.github.wechaty.utils.QrcodeUtils
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -29,6 +30,10 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     fun sync(): Future<Void> {
         return ready(true)
+    }
+
+    fun isReady(): Boolean {
+        return this.payload != null
     }
 
     override fun say(something: Any, contact: Contact): Future<Any> {
@@ -75,8 +80,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                         }
                         mentionList = varList.toList()
 
-                        val mentionAlias = mentionList.map {
-                            contact ->
+                        val mentionAlias = mentionList.map { contact ->
                             val alias = alias(contact as Contact)
                             val concatText = if (StringUtils.isNotBlank(alias)) {
                                 alias!!
@@ -210,6 +214,66 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return CompletableFuture.supplyAsync {
             puppet.roomQuit(this.id).get()
             return@supplyAsync null
+        }
+    }
+
+    fun topic(newTopic: String?): Future<Any> {
+        if (!isReady()) {
+            log.warn("Room topic() room not ready")
+            throw Exception("not ready")
+        }
+
+        if (newTopic == null) {
+            if (payload != null && payload!!.topic != null) {
+                return CompletableFuture.supplyAsync {
+                    return@supplyAsync payload!!.topic
+                }
+            } else {
+                val memberIdList = puppet.roomMemberList(id).get()
+                val memberList = memberIdList.filter { it != puppet.selfId() }
+                    .map { wechaty.contactManager.load(it) }
+
+                var defaultTopic = ""
+                if (memberList.isNotEmpty()) {
+                    defaultTopic = memberList[0].name()
+                }
+
+                if (memberList.size >= 2) {
+                    for (index in 1..2) {
+                        defaultTopic += ",${memberList[index].name()}"
+                    }
+                }
+                return CompletableFuture.supplyAsync {
+                    return@supplyAsync defaultTopic
+                }
+            }
+        }
+
+        return CompletableFuture.supplyAsync {
+            try {
+                return@supplyAsync puppet.roomTopic(id, newTopic).get()
+            } catch (e: Exception) {
+                log.warn("Room topic(newTopic=$newTopic) exception:$e")
+                throw Exception(e)
+            }
+        }
+
+    }
+
+    fun announce(text: String?): Future<Any> {
+        return CompletableFuture.supplyAsync {
+            if (text == null) {
+                return@supplyAsync puppet.getRoomAnnounce(id).get()
+            } else {
+                return@supplyAsync puppet.setRoomAnnounce(id, text)
+            }
+        }
+    }
+
+    fun qrCode(): Future<String> {
+        return CompletableFuture.supplyAsync {
+            val qrCodeValue = puppet.roomQRCode(id).get()
+            return@supplyAsync QrcodeUtils.guardQrCodeValue(qrCodeValue)
         }
     }
 
