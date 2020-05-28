@@ -182,7 +182,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
@@ -193,7 +193,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>io.github.wechaty.example.Main</mainClass>
+                                    <mainClass>io.github.wechaty.examples.Main</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
