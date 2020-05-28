@@ -149,7 +149,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         }
 
-        if (StringUtils.isEmpty(endPoint) || StringUtils.equals(discoverHostieIp.first, "0.0.0.0")) {
+        if (StringUtils.isEmpty(discoverHostieIp.first) || StringUtils.equals(discoverHostieIp.first, "0.0.0.0")) {
             log.error("cannot get ip by token, check token")
             throw Exception("cannot get ip by token, check token")
         }
