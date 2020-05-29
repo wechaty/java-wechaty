@@ -6,4 +6,8 @@ data class UrlLinkPayload(val title: String,val url: String) {
 
    var thumbnailUrl: String? = null
 
+    override fun toString(): String {
+        return "UrlLinkPayload(title='$title', url='$url', description=$description, thumbnailUrl=$thumbnailUrl)"
+    }
+
 }

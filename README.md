@@ -5,6 +5,8 @@
 
 ![Java Wechaty](https://wechaty.github.io/java-wechaty/images/java-wechaty.png)
 
+[![Java Wechaty Getting Started](https://img.shields.io/badge/Java%20Wechaty-Getting%20Started-orange)](https://github.com/wechaty/java-wechaty-getting-started)
+
 ## Connecting Chatbots
 
 [![Powered by Wechaty](https://img.shields.io/badge/Powered%20By-Wechaty-brightgreen.svg)](https://github.com/Wechaty/wechaty)
@@ -279,15 +281,14 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [Python Wechaty](https://github.com/wechaty/python-wechaty) - Python WeChat Bot SDK for Individual Account.
 - [Go Wechaty](https://github.com/wechaty/go-wechaty) - Go WeChat Bot SDK for Individual Account.
 
-## Contributors
+## Committers
 
 - [@redmaple1](https://github.com/redmaple1) Xiaoya Ren
 
-## Committers
+## Author
 
 - [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
   - Website: [犀利豆的博客](https://xilidou.com/)
-- [@huan](https://github.com/huan) - Huan LI ([李卓桓](http://linkedin.com/in/zixia)), Tencent TVP of Chatbot, zixia@zixia.net
 
 ## Copyright & License
 

@@ -10,11 +10,12 @@ class RoomMemberQueryFilter() {
 class RoomQueryFilter {
     var id: String? = null
     var topic: String? = null
+
+    var topicRegex:Regex? =null
 }
 
 
-class RoomPayload {
-    var id: String = "";
+class RoomPayload (val id:String){
     var topic: String? = null
     var avatar: String? = null
     var memberIdList: List<String> = listOf()

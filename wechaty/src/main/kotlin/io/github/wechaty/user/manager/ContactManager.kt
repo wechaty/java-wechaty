@@ -9,7 +9,9 @@ import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.user.Contact
 import io.github.wechaty.user.ContactSelf
 import io.github.wechaty.user.Tag
+import org.apache.commons.collections4.CollectionUtils
 import org.slf4j.LoggerFactory
+import java.util.*
 
 class ContactManager(wechaty: Wechaty):Accessory(wechaty) {
 
@@ -33,12 +35,33 @@ class ContactManager(wechaty: Wechaty):Accessory(wechaty) {
 
     fun find(queryFilter: ContactQueryFilter):Contact?{
 
-        TODO()
+        val findAll = findAll(queryFilter)
 
+        if(CollectionUtils.isEmpty(findAll)){
+            return null
+        }
+
+        return findAll[0]
     }
 
     fun findAll(queryFilter: ContactQueryFilter):List<Contact>{
-        TODO()
+        return try{
+            val contactIdList = wechaty.getPuppet().contactSearch(queryFilter).get()
+
+            val contactList = contactIdList.mapNotNull {
+                try {
+                    load(it)
+                } catch (e: Exception) {
+                    log.error("findAll() contact.ready() exception:{}", e)
+                    null
+                }
+            }
+            contactList
+        }catch (e:Exception){
+            log.error("this.puppet.contactFindAll() rejected: {}",e)
+            listOf()
+        }
+
     }
 
     fun tags():List<Tag>{
