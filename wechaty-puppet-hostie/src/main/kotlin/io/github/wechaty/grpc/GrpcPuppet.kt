@@ -29,8 +29,6 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     private var channel: ManagedChannel? = null
 
-    private val GRPC_PROT = 8788
-
     private val CHATIE_ENDPOINT = "https://api.chatie.io/v0/hosties/"
 
     private val client: OkHttpClient = OkHttpClient()
@@ -75,7 +73,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         state = try {
             startGrpcClient().get()
             val state = channel!!.getState(true)
-            log.info(state.name)
+            log.debug(state.name)
             val startRequest = Base.StartRequest.newBuilder().build()
             val start = grpcClient!!.start(startRequest)
             startGrpcStream()
@@ -92,7 +90,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun stop(): Future<Void> {
 
-        log.info("stop()")
+        log.debug("stop()")
         if (state == StateEnum.OFF) {
             log.warn("stop() is called on a OFF puppet. await ready(off) and return.")
             return CompletableFuture.completedFuture(null)
@@ -129,7 +127,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun unref() {
 
-        log.info("unref")
+        log.debug("unref")
         super.unref()
 
     }
@@ -187,7 +185,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     fun stopGrpcClient(): Future<Void> {
 
         channel!!.shutdown().awaitTermination(5, TimeUnit.SECONDS)
-        log.info("grpc is shutdown")
+        log.debug("grpc is shutdown")
         return CompletableFuture.completedFuture(null)
     }
 
@@ -580,8 +578,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         val fileJson = file.toJsonString()
 
-        log.info("json is {}", fileJson)
-        log.info("json size is {}", fileJson.length)
+        log.debug("json is {}", fileJson)
+        log.debug("json size is {}", fileJson.length)
 
         val request = Message.MessageSendFileRequest.newBuilder()
                 .setConversationId(conversationId)
@@ -942,7 +940,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             val type = event.type
             val payload = event.payload
 
-            log.info("PuppetHostie $type payload $payload")
+            log.debug("PuppetHostie $type payload $payload")
 
             if (type != Event.EventType.EVENT_TYPE_HEARTBEAT) {
                 emit("heartbeat", EventHeartbeatPayload("heartbeat"))
@@ -1004,7 +1002,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
                 Event.EventType.EVENT_TYPE_SCAN -> {
                     val eventScanPayload = JsonUtils.readValue<EventScanPayload>(payload)
-                    log.info("scan pay load is {}", eventScanPayload)
+                    log.debug("scan pay load is {}", eventScanPayload)
                     emit("scan", eventScanPayload)
                 }
 
@@ -1018,7 +1016,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
 
                 else -> {
-                    log.info("PuppetHostie $type payload $payload")
+                    log.debug("PuppetHostie $type payload $payload")
                 }
 
 

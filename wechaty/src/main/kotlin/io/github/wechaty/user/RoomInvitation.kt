@@ -14,7 +14,7 @@ class RoomInvitation(wechaty: Wechaty,val id:String) : Accessory(wechaty){
         val inviter = inviter()
         val topic = topic()
 
-        log.info("accept with room{} & inviter {},read()",topic,inviter)
+        log.debug("accept with room{} & inviter {},read()",topic,inviter)
         inviter.ready()
     }
 

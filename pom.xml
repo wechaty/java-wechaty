@@ -5,7 +5,7 @@
     <groupId>io.github.wechaty</groupId>
     <artifactId>wechaty-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
     <name>kotlin-wechaty</name>
 
     <description>
@@ -25,8 +25,6 @@
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <dokka.version>0.10.1</dokka.version>
     </properties>
-
-
 
     <modules>
         <module>wechaty</module>
@@ -74,22 +72,28 @@
             </dependency>
 
 
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>2.13.1</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>2.13.1</version>
-            </dependency>
-            <dependency> <!-- 桥接：告诉Slf4j使用Log4j2 -->
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j-impl</artifactId>
-                <version>2.13.1</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.apache.logging.log4j</groupId>-->
+<!--                <artifactId>log4j-api</artifactId>-->
+<!--                <version>2.13.1</version>-->
+<!--            </dependency>-->
+<!--            &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>org.apache.logging.log4j</groupId>-->
+<!--                <artifactId>log4j-core</artifactId>-->
+<!--                <version>2.13.1</version>-->
+<!--            </dependency>-->
+<!--            <dependency> &lt;!&ndash; 桥接：告诉Slf4j使用Log4j2 &ndash;&gt;-->
+<!--                <groupId>org.apache.logging.log4j</groupId>-->
+<!--                <artifactId>log4j-slf4j-impl</artifactId>-->
+<!--                <version>2.13.1</version>-->
+<!--            </dependency>-->
+<!--            &lt;!&ndash; https://mvnrepository.com/artifact/com.lmax/disruptor &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>com.lmax</groupId>-->
+<!--                <artifactId>disruptor</artifactId>-->
+<!--                <version>3.4.2</version>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -107,13 +111,6 @@
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-kotlin</artifactId>
                 <version>2.11.0</version>
-            </dependency>
-
-            <!-- https://mvnrepository.com/artifact/io.netty/netty-tcnative-boringssl-static -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-tcnative-boringssl-static</artifactId>
-                <version>2.0.30.Final</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
@@ -145,11 +142,11 @@
             </dependency>
 
 
-            <dependency>
-                <groupId>com.tinder.statemachine</groupId>
-                <artifactId>statemachine</artifactId>
-                <version>0.2.0</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>com.tinder.statemachine</groupId>-->
+<!--                <artifactId>statemachine</artifactId>-->
+<!--                <version>0.2.0</version>-->
+<!--            </dependency>-->
 
             <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
             <dependency>
@@ -159,19 +156,19 @@
             </dependency>
 
 
-            <!-- https://mvnrepository.com/artifact/com.lmax/disruptor -->
-            <dependency>
-                <groupId>com.lmax</groupId>
-                <artifactId>disruptor</artifactId>
-                <version>3.4.2</version>
-            </dependency>
+<!--            &lt;!&ndash; https://mvnrepository.com/artifact/com.lmax/disruptor &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>com.lmax</groupId>-->
+<!--                <artifactId>disruptor</artifactId>-->
+<!--                <version>3.4.2</version>-->
+<!--            </dependency>-->
 
-            <!-- https://mvnrepository.com/artifact/io.grpc/grpc-kotlin-stub -->
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-kotlin-stub</artifactId>
-                <version>0.1.1</version>
-            </dependency>
+<!--            &lt;!&ndash; https://mvnrepository.com/artifact/io.grpc/grpc-kotlin-stub &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>io.grpc</groupId>-->
+<!--                <artifactId>grpc-kotlin-stub</artifactId>-->
+<!--                <version>0.1.1</version>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.hamcrest</groupId>
@@ -198,8 +195,8 @@
         </dependencies>
     </dependencyManagement>
 
-<!--    <build>-->
-<!--        <plugins>-->
+    <build>
+        <plugins>
 <!--            <plugin>-->
 <!--                <groupId>org.apache.maven.plugins</groupId>-->
 <!--                <artifactId>maven-gpg-plugin</artifactId>-->
@@ -220,8 +217,8 @@
 <!--                    </execution>-->
 <!--                </executions>-->
 <!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
+        </plugins>
+    </build>
 
 
     <contributors>
