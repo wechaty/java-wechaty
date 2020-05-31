@@ -1,6 +1,6 @@
 package io.github.wechaty;
 
-//import io.github.wechaty.user.Room
+//import io.github.io.github.user.Room
 
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener

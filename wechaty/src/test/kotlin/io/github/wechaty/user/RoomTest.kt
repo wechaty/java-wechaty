@@ -1,7 +1,6 @@
 package io.github.wechaty.user
 
 import io.github.wechaty.Wechaty
-import io.github.wechaty.util.MockitoHelper
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -10,6 +9,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
+import wechaty.utils.MockitoHelper
 
 /**
  * @author renxiaoya
