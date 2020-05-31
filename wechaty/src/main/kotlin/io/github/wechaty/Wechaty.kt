@@ -321,7 +321,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
             } catch (e: java.lang.Exception) {
                 log.error("StartMain stop exception ", e)
             }
-            log.info("jvm exit, all service stopped.")
+            log.info("wechaty stop")
             try {
                 LOCK.lock()
                 STOP.signal()

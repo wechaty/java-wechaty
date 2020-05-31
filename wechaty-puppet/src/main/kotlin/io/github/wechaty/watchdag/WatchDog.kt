@@ -31,7 +31,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
         super.on(event,object:Listener{
             override fun handler(vararg any: Any) {
                 val watchdogFood = WatchdogFood(timeOut)
-                log.info("sent reset message")
+                log.debug("sent reset message")
                 feed(watchdogFood)
                 listener.handler(watchdogFood)
 
@@ -47,7 +47,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
         }
         schedule = executorService.schedule({
             val watchdogFood = WatchdogFood(timeout)
-            log.info("sent reset message")
+            log.debug("sent reset message")
             emit("reset", watchdogFood)
         }, localTimeout, TimeUnit.MILLISECONDS)
 
@@ -63,7 +63,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
     }
 
     fun feed(food: WatchdogFood):Long{
-        log.info("feed dog $food")
+        log.debug("feed dog $food")
         if(food.timeout == 0L){
             food.timeout = defaultTimeOut
         }
@@ -74,7 +74,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
         this.lastFood = food
         this.timeOut = food.timeout
 
-        log.info("lastFeed is ${this.lastFeed}")
+        log.debug("lastFeed is ${this.lastFeed}")
 
         startTimer(food.timeout)
 

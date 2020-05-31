@@ -31,7 +31,6 @@ open class EventEmitter : EventEmitterInterface {
     private val map = Multimaps.synchronizedListMultimap(ArrayListMultimap.create<String, Listener>())
 
     override fun addListener(eventName: String, vararg listeners: Listener) {
-
         listeners.forEach {
             map.put(eventName, it)
         }
@@ -41,7 +40,7 @@ open class EventEmitter : EventEmitterInterface {
         val tolist: List<Listener>?
         val list = map.get(eventName)
         if (CollectionUtils.isEmpty(list)) {
-            log.warn("this eventName:${eventName} has no listener")
+            log.debug("this eventName:${eventName} has no listener")
             return
         }
         tolist = list.toList()
