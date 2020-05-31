@@ -8,7 +8,10 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import java.util.*
 
+const val MAX_LEN = 7089
+
 class QrcodeUtils {
+
 
     companion object {
 
@@ -47,6 +50,14 @@ class QrcodeUtils {
                 sb.append("\n")
             }
             return sb.toString()
+        }
+
+        @JvmStatic
+        fun guardQrCodeValue(value: String): String {
+            if (value.length > MAX_LEN) {
+                throw Exception("QR Code Value is larger then the max len. Did you return the image base64 text by mistake? See: https://github.com/wechaty/wechaty/issues/1889")
+            }
+            return value
         }
     }
 
