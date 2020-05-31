@@ -10,11 +10,6 @@
     <artifactId>wechaty-puppet-hostie</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
-        <dokka.version>0.10.1</dokka.version>
-    </properties>
-
     <dependencies>
 
         <dependency>
