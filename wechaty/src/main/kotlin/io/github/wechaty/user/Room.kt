@@ -1,10 +1,10 @@
 package io.github.wechaty.user
 
-import InviteListener
-import JoinListener
-import LeaveListener
-import MessageListener
-import TopicListener
+import io.github.wechaty.InviteListener
+import io.github.wechaty.JoinListener
+import io.github.wechaty.LeaveListener
+import io.github.wechaty.RoomInnerMessageListener
+import io.github.wechaty.TopicListener
 import io.github.wechaty.Accessory
 import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
@@ -172,10 +172,10 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         })
     }
 
-    fun on(eventName: String, listener: MessageListener) {
+    fun on(eventName: String, listenerRoomInner: RoomInnerMessageListener) {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
-                listener.handler(any[0] as Message, any[1] as Date)
+                listenerRoomInner.handler(any[0] as Message, any[1] as Date)
             }
         })
     }

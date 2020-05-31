@@ -1,3 +1,5 @@
+package io.github.wechaty
+
 import io.github.wechaty.user.Contact
 import io.github.wechaty.user.Message
 import io.github.wechaty.user.RoomInvitation
@@ -14,7 +16,7 @@ interface LeaveListener {
 }
 
 @FunctionalInterface
-interface MessageListener {
+interface RoomInnerMessageListener {
     fun handler(message: Message, date: Date)
 }
 

@@ -1,7 +1,7 @@
 package io.github.wechaty.examples;
 
 
-import io.github.wechaty.MessageListener;
+import io.github.wechaty.RoomInnerMessageListener;
 import io.github.wechaty.Wechaty;
 import io.github.wechaty.filebox.FileBox;
 import io.github.wechaty.user.Contact;
@@ -28,7 +28,7 @@ public class Main {
             System.out.println(QrcodeUtils.getQr(qrcode));
         });
 
-        bot.on("message", (MessageListener) message -> {
+        bot.on("message", (RoomInnerMessageListener) message -> {
 
             Contact from = message.from();
             Room room = message.room();
