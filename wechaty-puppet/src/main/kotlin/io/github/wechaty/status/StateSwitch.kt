@@ -37,7 +37,7 @@ class StateSwitch:EventEmitter(){
 
     fun on(state: StateEnum):StateEnum{
         val on = on()
-        log.info("statusSwitch $name on ${state.name} <- $on")
+        log.debug("statusSwitch $name on ${state.name} <- $on")
 
         onoff = true
         pending = (state == StateEnum.PENDING)

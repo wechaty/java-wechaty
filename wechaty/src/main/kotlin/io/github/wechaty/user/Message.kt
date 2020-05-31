@@ -182,7 +182,7 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
 
             this.payload = puppet.messagePayload(id!!).get()
 
-            log.info("message payload is {}",payload)
+            log.debug("message payload is {}",payload)
 
             if (payload == null) {
                 throw Exception("no playload")

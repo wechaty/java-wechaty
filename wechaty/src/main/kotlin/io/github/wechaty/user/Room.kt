@@ -140,7 +140,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
             }
 
             this.payload = puppet.roomPayload(id).get()
-            log.info("get room payload is {} by id {}", payload, id)
+            log.debug("get room payload is {} by id {}", payload, id)
             if (payload == null) {
                 throw Exception("no payload")
             }

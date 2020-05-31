@@ -35,7 +35,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
 
 
     fun add(contact: Contact, hello:String){
-        log.info("add contact: {} hello: {}",contact,hello)
+        log.debug("add contact: {} hello: {}",contact,hello)
         wechaty.getPuppet().friendshipAdd(contact.id!!,hello).get()
     }
 
