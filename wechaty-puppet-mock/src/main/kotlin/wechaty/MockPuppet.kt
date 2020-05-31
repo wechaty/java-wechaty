@@ -1,5 +1,6 @@
-package io.github.wechaty
+package wechaty
 
+import io.github.wechaty.Puppet
 import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.*
 import org.slf4j.LoggerFactory
@@ -7,7 +8,7 @@ import java.util.concurrent.Future
 
 class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun start(): Future<Void> {
-        TODO("Not yet implemented")
+
         log.info("MockPuppet start()")
 
         //TODO("StateSwitch")
@@ -26,6 +27,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         eventScanPayload.qrcode = "https://github.com/wechaty/wechaty-puppet-mock"
         emit("scan", eventScanPayload)
 
+        TODO("Not yet implemented")
 
     }
 

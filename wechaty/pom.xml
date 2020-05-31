@@ -30,6 +30,12 @@
         </dependency>
 
         <dependency>
+            <groupId>io.github.wechaty</groupId>
+            <artifactId>wechaty-puppet-mock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
         </dependency>
