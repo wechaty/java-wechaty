@@ -1,4 +1,4 @@
-package wechaty.utils
+package io.github.wechaty.utils
 
 import org.mockito.Mockito
 

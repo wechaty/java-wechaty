@@ -9,7 +9,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
-import wechaty.utils.MockitoHelper
+import io.github.wechaty.utils.MockitoHelper
 
 /**
  * @author renxiaoya

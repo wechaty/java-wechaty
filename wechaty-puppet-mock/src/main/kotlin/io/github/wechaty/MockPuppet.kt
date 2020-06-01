@@ -1,4 +1,4 @@
-package wechaty
+package io.github.wechaty
 
 import io.github.wechaty.Puppet
 import io.github.wechaty.filebox.FileBox
@@ -24,9 +24,11 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         this.state.on(true)
          */
         val eventScanPayload = EventScanPayload(ScanStatus.Cancel)
-        eventScanPayload.qrcode = "https://github.com/wechaty/wechaty-puppet-mock"
+        eventScanPayload.qrcode = "https://github.com/wechaty/java-wechaty/wechaty-puppet-mock"
         emit("scan", eventScanPayload)
 
+
+        val userPayload = MockData.getFakeContactPayload()
         TODO("Not yet implemented")
 
     }
