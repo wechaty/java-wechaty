@@ -34,6 +34,13 @@ class MockData {
             return FileBox.fromUrl(faker.avatar().image(), null)
         }
 
+        fun getMessagePayload(fromId: String, toId: String): MessagePayload {
+            val messagePayload = getFakeMessagePayload()
+            messagePayload.fromId = fromId
+            messagePayload.toId = toId
+            return messagePayload
+        }
+
         fun getFakeMessagePayload(): MessagePayload {
             val messagePayload = MessagePayload(UUID.randomUUID().toString())
             messagePayload.fromId = UUID.randomUUID().toString()
