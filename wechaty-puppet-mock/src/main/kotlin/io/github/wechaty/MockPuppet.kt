@@ -10,11 +10,7 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
-    private val timer: Timer
-
-    init {
-        timer = Timer()
-    }
+    private val timer: Timer = Timer()
 
     override fun start(): Future<Void> {
 
