@@ -44,12 +44,12 @@ abstract class Puppet : EventEmitter {
 
     private val executorService = Executors.newSingleThreadScheduledExecutor()
 
-    private lateinit var cacheContactPayload: Cache<String, ContactPayload>
-    private lateinit var cacheFriendshipPayload: Cache<String, FriendshipPayload>
-    private lateinit var cacheMessagePayload: Cache<String, MessagePayload>
-    private lateinit var cacheRoomPayload: Cache<String, RoomPayload>
-    private lateinit var cacheRoomMemberPayload: Cache<String, RoomMemberPayload>
-    private lateinit var cacheRoomInvitationPayload: Cache<String, RoomInvitationPayload>
+    protected lateinit var cacheContactPayload: Cache<String, ContactPayload>
+    protected lateinit var cacheFriendshipPayload: Cache<String, FriendshipPayload>
+    protected lateinit var cacheMessagePayload: Cache<String, MessagePayload>
+    protected lateinit var cacheRoomPayload: Cache<String, RoomPayload>
+    protected lateinit var cacheRoomMemberPayload: Cache<String, RoomMemberPayload>
+    protected lateinit var cacheRoomInvitationPayload: Cache<String, RoomInvitationPayload>
     private val count = AtomicLong()
     private var id: String? = null
     protected var puppetOptions: PuppetOptions? = null
