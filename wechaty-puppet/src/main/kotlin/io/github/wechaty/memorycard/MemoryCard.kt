@@ -5,7 +5,7 @@ import java.util.concurrent.Future
 
 class MemoryCard{
 
-    public var name:String? = null
+    private var name:String? = null
     protected var parent:MemoryCard? = null
     protected var payload:MemoryCardPayload ? = null
     protected var storage:StorageBackend? = null
@@ -13,36 +13,55 @@ class MemoryCard{
 
     private var options:MemoryCardOptions
 
-    constructor(name: String?,options:MemoryCardOptions){
-        if(name != null){
-            options.name = name
-        }
-        this.options = options
-        this.name = options.name
+    constructor(name: String?=null,options:MemoryCardOptions? = null){
 
-        (options.multiplex != null).let {
-            this.parent = options.multiplex!!.parent
+        val _optiones:MemoryCardOptions = options ?: MemoryCardOptions()
+
+        if(name != null){
+            if(options != null) {
+                _optiones.name = name
+            }
+        }
+        this.options = _optiones
+        this.name = _optiones.name
+
+        (_optiones.multiplex != null).let {
+            this.parent = _optiones.multiplex!!.parent
             this.payload = this.parent!!.payload
             this.multiplexNameList.addAll(parent!!.multiplexNameList)
-            this.multiplexNameList.add(options.multiplex!!.name)
+            this.multiplexNameList.add(_optiones.multiplex!!.name)
             this.storage = null
         }
 
-        (options.multiplex == null).let {
+        (_optiones.multiplex == null).let {
             this.payload = null
             this.multiplexNameList.clear()
-
-
         }
     }
 
     private fun getStore():StorageBackend?{
         log.debug("getStorage() for storage type: %s'",this.options)
-        TODO()
+
+        return StorageBackend.getStorage(
+            this.options.name!!,
+            this.options.storageOptions
+        )
+    }
+
+    fun load(){
+        this.payload = this.storage!!.load()
+    }
+
+    fun save(){
+        this.storage!!.save(this.payload!!)
     }
 
     companion object{
         private val log = LoggerFactory.getLogger(MemoryCard::class.java)
+
+        fun multiplex(memory:MemoryCard,name:String):MemoryCard{
+            return MemoryCard()
+        }
     }
 
 

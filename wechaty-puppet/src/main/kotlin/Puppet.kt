@@ -12,6 +12,7 @@ import io.github.wechaty.io.github.wechaty.watchdag.WatchDog
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogListener
 import io.github.wechaty.listener.*
+import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.FutureUtils
 import io.github.wechaty.utils.JsonUtils
@@ -41,6 +42,7 @@ abstract class Puppet : EventEmitter {
     private val HEARTBEAT_COUNTER = AtomicLong()
     private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
     private val DEFAULT_WATCHDOG_TIMEOUT = 60L
+    private var memory: MemoryCard
 
     private val executorService = Executors.newSingleThreadScheduledExecutor()
 
@@ -64,6 +66,10 @@ abstract class Puppet : EventEmitter {
 
         count.addAndGet(1)
         this.puppetOptions = puppetOptions
+
+        this.memory = MemoryCard()
+        this.memory.load()
+
 
         val timeOut = puppetOptions.timeout ?: DEFAULT_WATCHDOG_TIMEOUT
         watchDog = WatchDog(1000 * timeOut, "puppet")
@@ -898,6 +904,10 @@ abstract class Puppet : EventEmitter {
                 roomMemberRawPayloadParser(rawPayload).get()
             }
         }
+    }
+
+    fun setMemory(memoryCard: MemoryCard){
+        this.memory = memoryCard
     }
 
 //    fun getEventBus(): EventBus {

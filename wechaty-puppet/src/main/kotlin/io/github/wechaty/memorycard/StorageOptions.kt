@@ -24,3 +24,7 @@ class StorageNopOptions: StorageBackendOptions() {
 }
 
 typealias StorageFileOptions = StorageNopOptions
+
+val BACKEND_DICT = mapOf(
+    "file" to StorageFile::class
+)
