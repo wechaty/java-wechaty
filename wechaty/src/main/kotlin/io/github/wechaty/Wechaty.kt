@@ -275,7 +275,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
                             val changer = contactManager.loadSelf(payload.changerId)
                             changer.ready()
-                            val date = Date(payload.timstamp * 1000)
+                            val date = Date(payload.timestamp * 1000)
 
                             emit("room-topic", room, payload.newTopic, payload.oldTopic, changer, date)
                             room.emit("topic", payload.newTopic, payload.oldTopic, changer, date)

@@ -81,51 +81,62 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     override fun ding(data: String?) {
-        log.info("MockPuppet ding($data?:'')")
+        log.info("MockPuppet ding(${data ?: ""})")
         emit("dong", EventDongPayload(data ?: ""))
     }
 
     override fun contactSelfName(name: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactSelfName($name)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun contactSelfQRCode(): Future<String> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactSelfQRCode()")
+        return CompletableFuture.completedFuture(CHATIE_OFFICIAL_ACCOUNT_QRCODE)
     }
 
     override fun contactSelfSignature(signature: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactSelfSignature($signature)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun tagContactAdd(tagId: String, contactId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactAdd($tagId,$contactId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun tagContactDelete(tagId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactDelete($tagId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun tagContactList(contactId: String): Future<List<String>> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactList($contactId)")
+        return CompletableFuture.completedFuture(listOf())
     }
 
     override fun tagContactList(): Future<List<String>> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactList()")
+        return CompletableFuture.completedFuture(listOf())
     }
 
     override fun tagContactRemove(tagId: String, contactId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactRemove($tagId,$contactId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun contactAlias(contactId: String): Future<String> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactAlias($contactId)")
+        return CompletableFuture.completedFuture("mock alias")
     }
 
     override fun contactAlias(contactId: String, alias: String?): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactAlias($contactId,$alias)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun getContactAvatar(contactId: String): Future<FileBox> {
+        log.info("MockPuppet contactAvatar($contactId)")
         TODO("Not yet implemented")
     }
 
