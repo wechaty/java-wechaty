@@ -398,7 +398,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             payload.avatar = response.avatar
             payload.city = response.city
             payload.friend = response.friend
-            payload.gender = ContractGender.getByCode(response.gender.number)
+            payload.gender = ContactGender.getByCode(response.gender.number)
             payload.name = response.name
             payload.province = response.province
             payload.signature = response.signature

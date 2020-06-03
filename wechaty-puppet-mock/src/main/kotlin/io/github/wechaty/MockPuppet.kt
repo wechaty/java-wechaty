@@ -2,6 +2,7 @@ package io.github.wechaty
 
 import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.schemas.*
+import io.github.wechaty.utils.JsonUtils
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -131,105 +132,157 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     override fun contactAlias(contactId: String, alias: String?): Future<Void> {
-        log.info("MockPuppet contactAlias($contactId,$alias)")
+        log.info("MockPuppet getContactAvatar($contactId,$alias)")
         return CompletableFuture.completedFuture(null)
     }
 
     override fun getContactAvatar(contactId: String): Future<FileBox> {
-        log.info("MockPuppet contactAvatar($contactId)")
-        TODO("Not yet implemented")
+        log.info("MockPuppet getContactAvatar($contactId)")
+        return CompletableFuture.completedFuture(FileBox.fromFile("image/mock.png", "mock.png"))
     }
 
     override fun setContactAvatar(contactId: String, file: FileBox): Future<Void> {
-        TODO("Not yet implemented")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun contactList(): Future<List<String>> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactList()")
+
+        return CompletableFuture.completedFuture(listOf())
     }
 
     override fun contactRawPayload(contractId: String): Future<ContactPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactRawPayload($contractId)")
+        val contactPayload = ContactPayload(contractId)
+        contactPayload.name = "mock name"
+        return CompletableFuture.completedFuture(contactPayload)
     }
 
     override fun contactRawPayloadParser(rawPayload: ContactPayload): Future<ContactPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactRawPayloadParser($rawPayload)")
+        val contactPayload = ContactPayload(rawPayload.id)
+        contactPayload.avatar = "mock-avatar-data"
+        contactPayload.gender = ContactGender.Unknown
+        contactPayload.name = rawPayload.name
+        contactPayload.type = ContactType.Unknown
+        return CompletableFuture.completedFuture(contactPayload)
     }
 
     override fun friendshipAccept(friendshipId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet friendshipAccept($friendshipId)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun friendshipAdd(contractId: String, hello: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet friendshipAdd($contractId,$hello)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun friendshipSearchPhone(phone: String): Future<String?> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet friendshipSearchPhone($phone)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun friendshipSearchWeixin(weixin: String): Future<String?> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet friendshipSearchWeixin($weixin)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun friendshipRawPayload(friendshipId: String): Future<FriendshipPayload> {
-        TODO("Not yet implemented")
+        val friendshipPayload = FriendshipPayload()
+        friendshipPayload.id = friendshipId
+        return CompletableFuture.completedFuture(friendshipPayload)
     }
 
     override fun friendshipRawPayloadParser(rawPayload: FriendshipPayload): Future<FriendshipPayload> {
-        TODO("Not yet implemented")
+        return CompletableFuture.completedFuture(rawPayload)
     }
 
     override fun messageContact(messageId: String): Future<String> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageContact($messageId)")
+        return CompletableFuture.completedFuture("fake-id")
     }
 
     override fun messageFile(messageId: String): Future<FileBox> {
-        TODO("Not yet implemented")
+        return CompletableFuture.completedFuture(FileBox.fromBase64("cRH9qeL3XyVnaXJkppBuH20tf5JlcG9uFX1lL2IvdHRRRS9kMMQxOPLKNYIzQQ==", "mock-file$messageId.txt"))
     }
 
     override fun messageImage(messageId: String, imageType: ImageType): Future<FileBox> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageImage($messageId,$imageType)")
+        return CompletableFuture.completedFuture(FileBox.fromQRCode("fake-qrcode"))
     }
 
     override fun messageMiniProgram(messageId: String): Future<MiniProgramPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageMiniProgram($messageId)")
+        val miniProgramPayload = MiniProgramPayload()
+        miniProgramPayload.title = "mock title for $messageId"
+        return CompletableFuture.completedFuture(miniProgramPayload)
     }
 
     override fun messageUrl(messageId: String): Future<UrlLinkPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageUrl($messageId)")
+        return CompletableFuture.completedFuture(UrlLinkPayload("mock title for $messageId", "https://mock.url"))
     }
 
     override fun messageSendContact(conversationId: String, contactId: String): Future<String?> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageSendContact($conversationId,$contactId)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun messageSendFile(conversationId: String, file: FileBox): Future<String?> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageSendFile($conversationId,$file)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun messageSendMiniProgram(conversationId: String, miniProgramPayload: MiniProgramPayload): Future<String?> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageSendMiniProgram($conversationId,${JsonUtils.write(miniProgramPayload)})")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun messageSendText(conversationId: String, text: String, mentionList: List<String>?): Future<String?> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageSendText($conversationId,$text,${JsonUtils.write(mentionList ?: "")})")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun messageSendUrl(conversationId: String, urlLinkPayload: UrlLinkPayload): Future<String?> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageSendUrl($conversationId,${JsonUtils.write(urlLinkPayload)})")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun messageRecall(messageId: String): Future<Boolean> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageRecall($messageId)")
+
+        return CompletableFuture.completedFuture(false)
     }
 
     override fun messageRawPayload(messageId: String): Future<MessagePayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageRawPayload($messageId)")
+        val messagePayload = MessagePayload(messageId)
+        messagePayload.fromId = "from_id"
+        messagePayload.text = "mock message text"
+        messagePayload.toId = "to_id"
+        return CompletableFuture.completedFuture(messagePayload)
     }
 
     override fun messageRawPayloadParser(rawPayload: MessagePayload): Future<MessagePayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet messageRawPayloadParser($rawPayload)")
+        val messagePayload = MessagePayload(rawPayload.id)
+        messagePayload.fromId = rawPayload.fromId
+        messagePayload.mentionIdList = listOf()
+        messagePayload.text = rawPayload.text
+        messagePayload.timestamp = Date().time
+        messagePayload.toId = rawPayload.toId
+        messagePayload.type = MessageType.Text
+        return CompletableFuture.completedFuture(messagePayload)
     }
 
     override fun roomInvitationAccept(roomInvitation: String): Future<Void> {
