@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.github.wechaty</groupId>
         <artifactId>wechaty-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wechaty-puppet</artifactId>
@@ -40,21 +40,21 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
-        <!--log4j2核心包-->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-        </dependency>
+<!--        &lt;!&ndash;log4j2核心包&ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.logging.log4j</groupId>-->
+<!--            <artifactId>log4j-api</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.logging.log4j</groupId>-->
+<!--            <artifactId>log4j-core</artifactId>-->
+<!--        </dependency>-->
 
-        <!--用于与slf4j保持桥接-->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-        </dependency>
+<!--        &lt;!&ndash;用于与slf4j保持桥接&ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.logging.log4j</groupId>-->
+<!--            <artifactId>log4j-slf4j-impl</artifactId>-->
+<!--        </dependency>-->
         <!-- slf4j核心包-->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -95,10 +95,10 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.tinder.statemachine</groupId>
-            <artifactId>statemachine</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.tinder.statemachine</groupId>-->
+<!--            <artifactId>statemachine</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>

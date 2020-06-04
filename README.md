@@ -263,6 +263,14 @@ mvn install wechaty
 
 ### master
 
+### v0.1.1 (May 31 2020)
+
+1. update version to 0.1.1-SNAPSHOT
+1. finish all function of room
+1. remove log4j2 package from wechaty
+1. change all log level to debug
+1. remove log4j2.xml from wechaty
+
 ### v0.1 (May 18 2020)
 
 We decided to use Kotlin to develop the Java Wechaty!

@@ -79,10 +79,10 @@ data class EventRoomTopicPayload(
         var newTopic:String,
         var oldTopic:String,
         var roomId:String,
-        var timstamp:Long
+        var timestamp:Long
 ) {
     override fun toString(): String {
-        return "EventRoomTopicePayload(changerId='$changerId', newTopic='$newTopic', oldTopic='$oldTopic', roomId='$roomId', timstamp=$timstamp)"
+        return "EventRoomTopicePayload(changerId='$changerId', newTopic='$newTopic', oldTopic='$oldTopic', roomId='$roomId', timestamp=$timestamp)"
     }
 }
 

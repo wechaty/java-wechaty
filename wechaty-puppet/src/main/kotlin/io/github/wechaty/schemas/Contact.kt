@@ -17,11 +17,11 @@ enum class ContractGender(var code: Int) {
     }
 }
 
-enum class ContractType(var code: Int) {
+enum class ContactType(var code: Int) {
     Unknown(0), Personal(1), Official(2);
 
     companion object {
-        fun getByCode(code: Int): ContractType {
+        fun getByCode(code: Int): ContactType {
             val values = values()
             for (value in values) {
                 if (value.code == code) {
@@ -47,7 +47,7 @@ class ContactQueryFilter {
 
 class ContactPayload(val id:String) {
     var gender: ContractGender? = null
-    var type: ContractType? = null
+    var type: ContactType? = null
     var name: String? = null
     var avatar: String? = null
     var address: String? = null
