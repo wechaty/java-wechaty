@@ -5,6 +5,7 @@ import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
 import io.github.wechaty.WechatyOptions
 import io.github.wechaty.schemas.PuppetOptions
+import io.github.wechaty.user.manager.MessageManager
 import io.github.wechaty.utils.MockitoHelper
 import org.junit.After
 import org.junit.Before
@@ -14,6 +15,9 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.*
+import org.mockito.Spy
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 /**
  * @author renxiaoya
@@ -62,19 +66,23 @@ class RoomTest {
         contact1.sync()
         contact2.sync()
 
-//        `when`(room.alias(MockitoHelper.anyObject())).thenReturn("test-alias")
-//        val msgId = "test_msgId"
-//        `when`(wechaty.getPuppet().messageSendText("test-conversation-id"
-//            , "test-text"
-//            , listOf("test-mentioned")).get()).thenReturn(msgId)
-//        val msg = Mockito.mock(Message::class.java)
-//        `when`(wechaty.messageManager.load(msgId)).thenReturn(msg)
-//
+        val spyWechaty: Wechaty = spy(wechaty)
+        val spyRoom:Room = spy(room)
+        val spyPuppet:Puppet = spy(puppet)
+        `when`(spyRoom.alias(contact1)).thenReturn("test-contact1-alias")
+        `when`(spyRoom.alias(contact2)).thenReturn("test-contact2-alias")
+
+        val msgId = "test_msgId"
+        `when`(spyWechaty.getPuppet()).thenReturn(spyPuppet)
+        `when`(spyPuppet.messageSendText("test-conversation-id"
+            , "contact1 contact2"
+            , listOf("test-mentioned"))).thenReturn(CompletableFuture.completedFuture(msgId))
+        val msg = mock(Message::class.java)
+        val spyMessageManager:MessageManager = spy(wechaty.messageManager)
+        `when`(spyMessageManager.load(msgId)).thenReturn(msg)
+
         val text = "test-text"
-//        val contact3 = Contact(wechaty, "contact3")
-
-
-        room.say(text, listOf(contact1, contact2))
+        spyRoom.say(text, listOf(contact1, contact2))
 
     }
 }

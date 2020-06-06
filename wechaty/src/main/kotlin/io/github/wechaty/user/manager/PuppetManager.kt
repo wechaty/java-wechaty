@@ -12,7 +12,7 @@ import java.util.concurrent.Future
 class PuppetManager {
 
     companion object {
-        private val log = LoggerFactory.getLogger(MockPuppet::class.java)
+        private val log = LoggerFactory.getLogger(PuppetManager::class.java)
 
         @JvmStatic
         fun resolveInstance(wechatyOptions: WechatyOptions): Future<Puppet> {
