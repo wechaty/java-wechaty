@@ -1,9 +1,11 @@
 package io.github.wechaty.example;
 
 
+import io.github.wechaty.LoginListener;
 import io.github.wechaty.MessageListener;
 import io.github.wechaty.Wechaty;
 import io.github.wechaty.filebox.FileBox;
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum;
 import io.github.wechaty.user.Contact;
 import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
@@ -16,29 +18,21 @@ import java.util.concurrent.ExecutionException;
 
 public class Main {
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
+    public static void main(String[] args){
 
-        Wechaty bot = Wechaty.instance("your_token");
-
-        bot.on("scan", (qrcode, statusScanStatus, data) -> {
-            System.out.println(QrcodeUtils.getQr(qrcode));
-        });
-
-        bot.on("message", (MessageListener) message -> {
-
-            Contact from = message.from();
-            Room room = message.room();
-
-            String text = message.text();
-
-            if (StringUtils.equals(text, "#ding")) {
-                if (room != null) {
-                    room.say("dong");
+        Wechaty bot = Wechaty.instance("your_token")
+            .onScan((qrcode, statusScanStatus, data) -> System.out.println(QrcodeUtils.getQr(qrcode)))
+            .onLogin(user -> System.out.println(user))
+            .onMessage(message -> {
+                Room room = message.room();
+                String text = message.text();
+                if (StringUtils.equals(text, "#ding")) {
+                    if (room != null) {
+                        room.say("dong");
+                    }
                 }
-            }
-        });
+            }).start(true);
 
-        bot.start(true);
 //    }
 
 //        Room room = bot.room();

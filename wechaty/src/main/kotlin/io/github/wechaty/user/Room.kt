@@ -8,8 +8,10 @@ import io.github.wechaty.TopicListener
 import io.github.wechaty.Accessory
 import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
+import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.filebox.FileBox
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
 import io.github.wechaty.type.Sayable
@@ -160,44 +162,69 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
-    fun on(eventName: String, listener: InviteListener) {
+    fun onInvite(listener: InviteListener):Room{
+        return on(EventEnum.INVITE,listener)
+    }
+
+    fun onLeave(listener: LeaveListener):Room{
+        return on(EventEnum.LEAVE,listener)
+    }
+
+    fun onInnerMessage(listener: RoomInnerMessageListener):Room{
+        return on(EventEnum.MESSAGE,listener)
+    }
+
+    fun onJoin(listener: JoinListener):Room{
+        return on(EventEnum.JOIN,listener);
+    }
+
+    fun onTopic(listener: TopicListener):Room{
+        return on(EventEnum.TOPIC,listener)
+    }
+
+    private fun on(eventName: Event, listener: InviteListener):Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Contact, any[1] as RoomInvitation)
             }
         })
+        return this
     }
 
-    fun on(eventName: String, listener: LeaveListener) {
+    private fun on(eventName: Event, listener: LeaveListener):Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
             }
         })
+        return this
     }
 
-    fun on(eventName: String, listenerRoomInner: RoomInnerMessageListener) {
+    private fun on(eventName: Event, listenerRoomInner: RoomInnerMessageListener):Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listenerRoomInner.handler(any[0] as Message, any[1] as Date)
             }
         })
+        return this
     }
 
-    fun on(eventName: String, listener: JoinListener) {
+    private fun on(eventName: Event, listener: JoinListener):Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
             }
         })
+        return this
     }
 
-    fun on(eventName: String, listener: TopicListener) {
+    private fun on(eventName: Event, listener: TopicListener):Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as String, any[1] as String, any[2] as Contact, any[3] as Date)
             }
         })
+        return this
     }
 
     fun add(contact: Contact): Future<Void> {

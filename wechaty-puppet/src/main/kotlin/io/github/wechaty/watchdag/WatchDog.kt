@@ -1,7 +1,9 @@
 package io.github.wechaty.io.github.wechaty.watchdag
 
+import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
@@ -27,7 +29,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
         startTimer(defaultTimeOut)
     }
 
-    fun on(event:String,listener:WatchdogListener){
+    fun on(event:Event,listener:WatchdogListener){
         super.on(event,object:Listener{
             override fun handler(vararg any: Any) {
                 val watchdogFood = WatchdogFood(timeOut)
@@ -48,7 +50,7 @@ class WatchDog(var defaultTimeOut:Long =  60*1000,val name:String = "Bark"):Even
         schedule = executorService.schedule({
             val watchdogFood = WatchdogFood(timeout)
             log.debug("sent reset message")
-            emit("reset", watchdogFood)
+            emit(EventEnum.RESET, watchdogFood)
         }, localTimeout, TimeUnit.MILLISECONDS)
 
     }

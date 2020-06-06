@@ -52,11 +52,11 @@ Scan now, because other Wechaty Java developers want to talk with you too! (secr
 ```java
 class Bot{
   public static void main(String args[]){
-    bot = Wechaty.instance()
-      .on('scan', (qrcode, status, string) -> System.out.println('Scan QR Code to login: %s\nhttps://api.qrserver.com/v1/create-qr-code/?data=%s', status, encodeURIComponent(qrcode)))
-      .on('login', user -> System.out.println('User %s logined', user))
-      .on('message', message -> System.out.println('Message: %s', message))
-      .start();
+    Wechaty bot = Wechaty.instance()
+      .onScan((qrcode, statusScanStatus, data) -> System.out.println(QrcodeUtils.getQr(qrcode)))
+      .onLogin(user -> System.out.println("User logined :" + user))
+      .onMessage(message -> System.out.println("Message:" + message))
+      .start(true);
   }
 }
 ```
@@ -238,9 +238,9 @@ If you are interested in the translation and want to look at how it works, it wi
 3. Run
 
     ```shell
-    java -jar target/examples-0.1.1-SNAPSHOT-jar-with-dependencies.jar 
+    java -jar target/wechaty-example-1.0.0-SNAPSHOT-jar-with-dependencies.jar
     # or run in background  
-    nohup java -jar target/examples-0.1.1-SNAPSHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
+    nohup java -jar target/wechaty-example-1.0.0-SNAPSHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
     ```
 
 4. enjoy
@@ -264,9 +264,11 @@ mvn install wechaty
 
 ### master
 
-### v0.1.1 (June 6 2020)
-1. update wechaty grpc to 0.16.1
-2. move examples from wechaty to independent module. Make example easy to use.
+### v0.1.2 (June 6 2020)
+1. change method `on(Event:String,Listener:listener)` to `onEvent(Listener:listener)`. See examples
+2. update version to 0.1.2
+3. update wechaty grpc to 0.16.1
+4. move examples from wechaty to independent module. Make example easy to use.
 
 ### v0.1.1 (May 31 2020)
 
