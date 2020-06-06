@@ -264,6 +264,9 @@ mvn install wechaty
 
 ### master
 
+### v0.1.3 (June 6 2020)
+1. support plugins!
+
 ### v0.1.2 (June 6 2020)
 1. change method `on(Event:String,Listener:listener)` to `onEvent(Listener:listener)`. See examples
 2. update version to 0.1.2
