@@ -38,7 +38,7 @@
 
             <dependency>
                 <groupId>io.github.wechaty</groupId>
-                <version>0.11.25</version>
+                <version>0.16.1</version>
                 <artifactId>grpc</artifactId>
             </dependency>
 
@@ -72,28 +72,28 @@
             </dependency>
 
 
-<!--            <dependency>-->
-<!--                <groupId>org.apache.logging.log4j</groupId>-->
-<!--                <artifactId>log4j-api</artifactId>-->
-<!--                <version>2.13.1</version>-->
-<!--            </dependency>-->
-<!--            &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core &ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>org.apache.logging.log4j</groupId>-->
-<!--                <artifactId>log4j-core</artifactId>-->
-<!--                <version>2.13.1</version>-->
-<!--            </dependency>-->
-<!--            <dependency> &lt;!&ndash; 桥接：告诉Slf4j使用Log4j2 &ndash;&gt;-->
-<!--                <groupId>org.apache.logging.log4j</groupId>-->
-<!--                <artifactId>log4j-slf4j-impl</artifactId>-->
-<!--                <version>2.13.1</version>-->
-<!--            </dependency>-->
-<!--            &lt;!&ndash; https://mvnrepository.com/artifact/com.lmax/disruptor &ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>com.lmax</groupId>-->
-<!--                <artifactId>disruptor</artifactId>-->
-<!--                <version>3.4.2</version>-->
-<!--            </dependency>-->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>2.13.1</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>2.13.1</version>
+            </dependency>
+            <dependency> <!-- 桥接：告诉Slf4j使用Log4j2 -->
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>2.13.1</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.lmax/disruptor -->
+            <dependency>
+                <groupId>com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>3.4.2</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -141,28 +141,12 @@
                 <version>2.6</version>
             </dependency>
 
-
-<!--            <dependency>-->
-<!--                <groupId>com.tinder.statemachine</groupId>-->
-<!--                <artifactId>statemachine</artifactId>-->
-<!--                <version>0.2.0</version>-->
-<!--            </dependency>-->
-
             <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
                 <version>4.6.0</version>
             </dependency>
-
-
-<!--            &lt;!&ndash; https://mvnrepository.com/artifact/com.lmax/disruptor &ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>com.lmax</groupId>-->
-<!--                <artifactId>disruptor</artifactId>-->
-<!--                <version>3.4.2</version>-->
-<!--            </dependency>-->
-
 <!--            &lt;!&ndash; https://mvnrepository.com/artifact/io.grpc/grpc-kotlin-stub &ndash;&gt;-->
 <!--            <dependency>-->
 <!--                <groupId>io.grpc</groupId>-->

@@ -41,6 +41,7 @@ abstract class Puppet : EventEmitter {
     private val HEARTBEAT_COUNTER = AtomicLong()
     private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
     private val DEFAULT_WATCHDOG_TIMEOUT = 60L
+//    private var memory: MemoryCard
 
     private val executorService = Executors.newSingleThreadScheduledExecutor()
 
@@ -64,6 +65,10 @@ abstract class Puppet : EventEmitter {
 
         count.addAndGet(1)
         this.puppetOptions = puppetOptions
+
+//        this.memory = MemoryCard()
+//        this.memory.load()
+
 
         val timeOut = puppetOptions.timeout ?: DEFAULT_WATCHDOG_TIMEOUT
         watchDog = WatchDog(1000 * timeOut, "puppet")
@@ -899,6 +904,10 @@ abstract class Puppet : EventEmitter {
             }
         }
     }
+
+//    fun setMemory(memoryCard: MemoryCard){
+//        this.memory = memoryCard
+//    }
 
 //    fun getEventBus(): EventBus {
 //        return eb
