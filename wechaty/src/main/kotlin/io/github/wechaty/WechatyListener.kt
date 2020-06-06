@@ -2,6 +2,7 @@ package io.github.wechaty
 
 import io.github.wechaty.schemas.ScanStatus
 import io.github.wechaty.user.Contact
+import io.github.wechaty.user.ContactSelf
 import io.github.wechaty.user.Message
 import io.github.wechaty.user.Room
 import java.util.*
@@ -35,7 +36,7 @@ interface ScanListener {
 
 @FunctionalInterface
 interface LoginListener {
-    fun handler(contactId: String)
+    fun handler(self: ContactSelf)
 }
 
 @FunctionalInterface
@@ -78,3 +79,4 @@ interface MessageListener {
     fun handler(message: Message)
 
 }
+

@@ -2,9 +2,11 @@ package io.github.wechaty;
 
 //import io.github.io.github.user.Room
 
+import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.grpc.GrpcPuppet
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.listener.*
 //import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
@@ -43,12 +45,12 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 //    }
 
 
-    fun start(await: Boolean = false) {
+    fun start(await: Boolean = false):Wechaty {
 
         initPuppet()
         puppet.start().get()
         status = StateEnum.ON
-        emit("start", "")
+        emit(EventEnum.START, "")
 
         if (await) {
             addHook()
@@ -62,7 +64,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 LOCK.unlock()
             }
         }
-
+        return this
     }
 
     fun stop() {
@@ -73,48 +75,86 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return wechatyOptions.name
     }
 
-    fun on(event: String, listener: DongListener) {
-
+    fun onLogin(listener: LoginListener):Wechaty{
+        return on(EventEnum.LOGIN,listener)
     }
 
-    fun on(event: String, listener: ScanListener) {
+    fun onScan(listener: ScanListener):Wechaty{
+        return on(EventEnum.SCAN,listener);
+    }
+
+    fun onRoomJoin(listener: RoomJoinListener):Wechaty {
+        return on(EventEnum.ROOM_JOIN,listener)
+    }
+
+    fun onRoomLeave(listener: RoomLeaveListener):Wechaty {
+        return on(EventEnum.ROOM_LEAVE,listener)
+    }
+
+    fun onRoomTopic(listener: RoomTopicListener):Wechaty {
+        return on(EventEnum.ROOM_TOPIC,listener)
+    }
+
+    fun onMessage(listener: MessageListener):Wechaty{
+        return on(EventEnum.MESSAGE,listener)
+    }
+
+    private fun on(event: Event,listener:LoginListener):Wechaty{
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as ContactSelf)
+            }
+        })
+        return this
+    }
+
+    private fun on(event: Event, listener: DongListener):Wechaty {
+        return this
+    }
+
+    private fun on(event: Event, listener: ScanListener):Wechaty{
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as String, any[1] as ScanStatus, any[2] as String)
             }
         })
+        return this
     }
 
-    fun on(event: String, listener: MessageListener) {
+    private fun on(event: Event, listener: MessageListener):Wechaty {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Message)
             }
         })
+        return this
     }
 
-    fun on(eventName: String, listener: RoomJoinListener) {
+    private fun on(eventName: Event, listener: RoomJoinListener):Wechaty {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Room, any[1] as List<Contact>, any[2] as Contact, any[3] as Date)
             }
         })
+        return this
     }
 
-    fun on(eventName: String, listener: RoomLeaveListener) {
+    private fun on(eventName: Event, listener: RoomLeaveListener):Wechaty {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Room, any[1] as List<Contact>, any[2] as Contact, any[3] as Date)
             }
         })
+        return this
     }
 
-    fun on(eventName: String, listener: RoomTopicListener) {
+    private fun on(eventName: Event, listener: RoomTopicListener):Wechaty {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Room, any[1] as String, any[2] as String, any[3] as Contact, any[4] as Date)
             }
         })
+        return this
     }
 
     private fun initPuppet() {
@@ -138,98 +178,98 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     }
 
 
-    protected fun initPuppetEventBridge(puppet: Puppet) {
+    private fun initPuppetEventBridge(puppet: Puppet) {
 
         val eventNameList = PUPPET_EVENT_DICT.keys
 
         eventNameList.forEach {
 
             when (it) {
-                "dong" -> {
+                EventEnum.DONG -> {
                     puppet.on(it, object : PuppetDongListener {
                         override fun handler(payload: EventDongPayload) {
-                            emit("dong", payload.data)
+                            emit(EventEnum.DONG, payload.data)
                         }
                     })
                 }
 
-                "error" -> {
+                EventEnum.ERROR -> {
                     puppet.on(it, object : PuppetErrorListener {
                         override fun handler(payload: EventErrorPayload) {
-                            emit("error", Exception(payload.data))
+                            emit(EventEnum.ERROR, Exception(payload.data))
                         }
                     })
                 }
 
-                "heartbeat" -> {
+                EventEnum.HEART_BEAT -> {
                     puppet.on(it, object : PuppetHeartbeatListener {
                         override fun handler(payload: EventHeartbeatPayload) {
-                            emit("heartbeat", payload.data)
+                            emit(EventEnum.HEART_BEAT, payload.data)
                         }
                     })
                 }
 
-                "friendship" -> {
+                EventEnum.FRIENDSHIP -> {
                     puppet.on(it, object : PuppetFriendshipListener {
                         override fun handler(payload: EventFriendshipPayload) {
                             val friendship = friendship().load(payload.friendshipId)
                             friendship.ready()
-                            emit("friendship", friendship)
+                            emit(EventEnum.FRIENDSHIP, friendship)
                         }
                     })
                 }
-                "login" -> {
+                EventEnum.LOGIN -> {
                     puppet.on(it, object : PuppetLoginListener {
                         override fun handler(payload: EventLoginPayload) {
                             val contact = contactManager.loadSelf(payload.contactId)
                             contact.ready()
-                            emit("login", contact)
+                            emit(EventEnum.LOGIN, contact)
                         }
                     })
                 }
 
-                "logout" -> {
+                EventEnum.LOGOUT -> {
                     puppet.on(it, object : PuppetLogoutListener {
                         override fun handler(payload: EventLogoutPayload) {
                             val contact = contactManager.loadSelf(payload.contactId)
                             contact.ready()
-                            emit("logout", contact, payload.data)
+                            emit(EventEnum.LOGOUT, contact, payload.data)
                         }
                     })
                 }
 
-                "message" -> {
+                EventEnum.MESSAGE -> {
                     puppet.on(it, object : PuppetMessageListener {
                         override fun handler(payload: EventMessagePayload) {
                             val msg = messageManager.load(payload.messageId)
                             msg.ready().get()
-                            emit("message", msg)
+                            emit(EventEnum.MESSAGE, msg)
 
                             val room = msg.room()
-                            room?.emit("message", msg)
+                            room?.emit(EventEnum.MESSAGE, msg)
                         }
                     })
                 }
 
-                "ready" -> {
+                EventEnum.READY -> {
                     puppet.on(it, object : PuppetReadyListener {
                         override fun handler(payload: EventReadyPayload) {
-                            emit("ready");
+                            emit(EventEnum.READY);
                             readyState = StateEnum.ON
                         }
                     })
                 }
 
-                "room-invite" -> {
+                EventEnum.ROOM_INVITE -> {
                     puppet.on(it, object : PuppetRoomInviteListener {
                         override fun handler(payload: EventRoomInvitePayload) {
                             val roomInvitation = roomInvitationMessage.load(payload.roomInvitationId)
-                            emit("room-invite", roomInvitation)
+                            emit(EventEnum.ROOM_INVITE, roomInvitation)
                         }
                     })
                 }
 
-                "room-join" -> {
+                EventEnum.ROOM_JOIN -> {
                     puppet.on(it, object : PuppetRoomJoinListener {
                         override fun handler(payload: EventRoomJoinPayload) {
                             val room = roomManager.load(payload.roomId)
@@ -245,14 +285,14 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             inviter.ready()
 
                             val date = Date(payload.timestamp * 1000)
-                            emit("room-join", room, inviteeList, inviter, date)
-                            room.emit("join", inviteeList, inviter, date)
+                            emit(EventEnum.ROOM_JOIN, room, inviteeList, inviter, date)
+                            room.emit(EventEnum.JOIN, inviteeList, inviter, date)
                         }
                     })
                 }
 
 
-                "room-leave" -> {
+                EventEnum.ROOM_LEAVE -> {
                     puppet.on(it, object : PuppetRoomLeaveListener {
                         override fun handler(payload: EventRoomLeavePayload) {
                             val room = roomManager.load(payload.roomId)
@@ -268,13 +308,13 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             remover.ready()
                             val date = Date(payload.timestamp * 1000)
 
-                            emit("room-leave", room, leaverList, remover, date)
-                            room.emit("leave", leaverList, remover, date)
+                            emit(EventEnum.ROOM_LEAVE, room, leaverList, remover, date)
+                            room.emit(EventEnum.LEAVE, leaverList, remover, date)
                         }
                     })
                 }
 
-                "room-topic" -> {
+                EventEnum.ROOM_TOPIC -> {
                     puppet.on(it, object : PuppetRoomTopicListener {
                         override fun handler(payload: EventRoomTopicPayload) {
                             val room = roomManager.load(payload.roomId)
@@ -284,16 +324,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             changer.ready()
                             val date = Date(payload.timestamp * 1000)
 
-                            emit("room-topic", room, payload.newTopic, payload.oldTopic, changer, date)
-                            room.emit("topic", payload.newTopic, payload.oldTopic, changer, date)
+                            emit(EventEnum.ROOM_TOPIC, room, payload.newTopic, payload.oldTopic, changer, date)
+                            room.emit(EventEnum.TOPIC, payload.newTopic, payload.oldTopic, changer, date)
                         }
                     })
                 }
 
-                "scan" -> {
+                EventEnum.SCAN -> {
                     puppet.on(it, object : PuppetScanListener {
                         override fun handler(payload: EventScanPayload) {
-                            emit("scan", payload.qrcode ?: "", payload.status, payload.data ?: "")
+                            emit(EventEnum.SCAN, payload.qrcode ?: "", payload.status, payload.data ?: "")
                         }
                     })
                 }

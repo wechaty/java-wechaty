@@ -2,6 +2,7 @@ package io.github.wechaty.io.github.wechaty.status
 
 import io.github.wechaty.StateEnum
 import io.github.wechaty.eventEmitter.EventEmitter
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
@@ -42,7 +43,7 @@ class StateSwitch:EventEmitter(){
         onoff = true
         pending = (state == StateEnum.PENDING)
 
-        emit("on",state.name)
+        emit(EventEnum.ON,state.name)
         TODO()
     }
 
