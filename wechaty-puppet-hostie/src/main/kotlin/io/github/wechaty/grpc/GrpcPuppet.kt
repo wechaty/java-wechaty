@@ -5,6 +5,7 @@ import io.github.wechaty.Puppet
 import io.github.wechaty.StateEnum
 import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.grpc.puppet.*
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.JsonUtils
 import io.grpc.ManagedChannel
@@ -20,6 +21,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import kotlin.system.exitProcess
 
 /**
  * puppet
@@ -98,7 +100,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         try {
             if (logonoff()) {
-                emit("logout",EventLogoutPayload(getId()!!,"logout"))
+                emit(EventEnum.LOGOUT,EventLogoutPayload(getId()!!,"logout"))
 
                 this.setId(null)
             }
@@ -149,7 +151,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         if (StringUtils.isEmpty(discoverHostieIp.first) || StringUtils.equals(discoverHostieIp.first, "0.0.0.0")) {
             log.error("cannot get ip by token, check token")
-            throw Exception("cannot get ip by token, check token")
+            exitProcess(1)
         }
         val newFixedThreadPool = newFixedThreadPool(16)
         channel = ManagedChannelBuilder.forAddress(discoverHostieIp.first,NumberUtils.toInt(discoverHostieIp.second)).usePlaintext().executor(newFixedThreadPool).build()
@@ -168,7 +170,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             override fun onError(t: Throwable?) {
                 log.error("error of grpc",t)
                 val payload = EventResetPayload(t?.message ?:"")
-                emit("reset",payload)
+                emit(EventEnum.RESET,payload)
             }
 
             override fun onCompleted() {
@@ -201,7 +203,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         } catch (e: Exception) {
             log.error("logout() rejection: %s", e)
         } finally {
-            emit("logout",EventLogoutPayload(getId()!!,"logout"))
+            emit(EventEnum.LOGOUT,EventLogoutPayload(getId()!!,"logout"))
         }
         return CompletableFuture.completedFuture(null)
     }
@@ -943,67 +945,67 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             log.debug("PuppetHostie $type payload $payload")
 
             if (type != Event.EventType.EVENT_TYPE_HEARTBEAT) {
-                emit("heartbeat", EventHeartbeatPayload("heartbeat"))
+                emit(EventEnum.HEART_BEAT, EventHeartbeatPayload("heartbeat"))
             }
 
             when (type) {
-                Event.EventType.EVENT_TYPE_DONG -> emit("dong", JsonUtils.readValue<EventDongPayload>(payload))
+                Event.EventType.EVENT_TYPE_DONG -> emit(EventEnum.DONG, JsonUtils.readValue<EventDongPayload>(payload))
 
                 Event.EventType.EVENT_TYPE_ERROR -> {
-                    emit("error", JsonUtils.readValue<EventErrorPayload>(payload))
+                    emit(EventEnum.ERROR, JsonUtils.readValue<EventErrorPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_HEARTBEAT -> {
                     val heartbeatPayload = JsonUtils.readValue<EventHeartbeatPayload>(payload)
-                    emit("heartbeat", heartbeatPayload)
+                    emit(EventEnum.HEART_BEAT, heartbeatPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_FRIENDSHIP -> {
                     val friendshipPayload = JsonUtils.readValue<EventFriendshipPayload>(payload)
-                    emit("friendship", friendshipPayload)
+                    emit(EventEnum.FRIENDSHIP, friendshipPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_LOGIN -> {
                     val loginPayload = JsonUtils.readValue<EventLoginPayload>(payload)
                     setId(loginPayload.contactId)
-                    emit("login", loginPayload)
+                    emit(EventEnum.LOGIN, loginPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_LOGOUT -> {
                     this.setId("")
-                    emit("logout", JsonUtils.readValue<EventLogoutPayload>(payload))
+                    emit(EventEnum.LOGOUT, JsonUtils.readValue<EventLogoutPayload>(payload))
                 }
 
 
                 Event.EventType.EVENT_TYPE_MESSAGE -> {
                     val eventMessagePayload = JsonUtils.readValue<EventMessagePayload>(payload)
-                    emit("message", eventMessagePayload)
+                    emit(EventEnum.MESSAGE, eventMessagePayload)
                 }
 
                 Event.EventType.EVENT_TYPE_READY -> {
-                    emit("ready", JsonUtils.readValue<EventReadyPayload>(payload))
+                    emit(EventEnum.READY, JsonUtils.readValue<EventReadyPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_INVITE -> {
-                    emit("room-invite", JsonUtils.readValue<EventRoomInvitePayload>(payload))
+                    emit(EventEnum.ROOM_INVITE, JsonUtils.readValue<EventRoomInvitePayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_JOIN -> {
-                    emit("room-join", JsonUtils.readValue<EventRoomJoinPayload>(payload))
+                    emit(EventEnum.ROOM_JOIN, JsonUtils.readValue<EventRoomJoinPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_LEAVE -> {
-                    emit("room-leave", JsonUtils.readValue<EventRoomLeavePayload>(payload))
+                    emit(EventEnum.ROOM_LEAVE, JsonUtils.readValue<EventRoomLeavePayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_ROOM_TOPIC -> {
-                    emit("room-topic", JsonUtils.readValue<EventRoomTopicPayload>(payload))
+                    emit(EventEnum.ROOM_TOPIC, JsonUtils.readValue<EventRoomTopicPayload>(payload))
                 }
 
                 Event.EventType.EVENT_TYPE_SCAN -> {
                     val eventScanPayload = JsonUtils.readValue<EventScanPayload>(payload)
                     log.debug("scan pay load is {}", eventScanPayload)
-                    emit("scan", eventScanPayload)
+                    emit(EventEnum.SCAN, eventScanPayload)
                 }
 
                 Event.EventType.EVENT_TYPE_RESET -> {

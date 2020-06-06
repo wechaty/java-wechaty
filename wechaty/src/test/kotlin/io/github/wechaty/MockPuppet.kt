@@ -1,6 +1,7 @@
 package io.github.wechaty
 
 import io.github.wechaty.filebox.FileBox
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.schemas.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Future
@@ -24,7 +25,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
          */
         val eventScanPayload = EventScanPayload(ScanStatus.Cancel)
         eventScanPayload.qrcode = "https://github.com/wechaty/wechaty-puppet-mock"
-        emit("scan", eventScanPayload)
+        emit(EventEnum.SCAN, eventScanPayload)
 
 
     }

@@ -5,7 +5,7 @@
     <groupId>io.github.wechaty</groupId>
     <artifactId>wechaty-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.2-SNAPSHOT</version>
     <name>kotlin-wechaty</name>
 
     <description>

@@ -5,9 +5,11 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import com.google.common.util.concurrent.RateLimiter
+import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.filebox.FileBox
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.io.github.wechaty.watchdag.WatchDog
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogListener
@@ -23,7 +25,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
-import java.util.stream.Collector
 import java.util.stream.Collectors
 
 
@@ -73,7 +74,7 @@ abstract class Puppet : EventEmitter {
         val timeOut = puppetOptions.timeout ?: DEFAULT_WATCHDOG_TIMEOUT
         watchDog = WatchDog(1000 * timeOut, "puppet")
 
-        on("heartbeat", object : PuppetHeartbeatListener {
+        on(EventEnum.HEART_BEAT, object : PuppetHeartbeatListener {
             override fun handler(payload: EventHeartbeatPayload) {
                 log.debug("heartbeat -> ${payload.data}")
                 val watchdogFood = WatchdogFood(1000 * timeOut)
@@ -84,17 +85,17 @@ abstract class Puppet : EventEmitter {
 
 
 
-        this.watchDog.on("reset", object : WatchdogListener {
+        this.watchDog.on(EventEnum.RESET, object : WatchdogListener {
             override fun handler(event: WatchdogFood) {
                 val payload = EventResetPayload(JsonUtils.write(event))
-                emit("reset", payload)
+                emit(EventEnum.RESET, payload)
             }
         })
 
         // 一秒只有一次
         val rateLimiter = RateLimiter.create(1.0)
 
-        on("reset", object : PuppetResetListener {
+        on(EventEnum.RESET, object : PuppetResetListener {
             override fun handler(payload: EventResetPayload) {
 
             log.debug("get a reset message")
@@ -149,7 +150,7 @@ abstract class Puppet : EventEmitter {
 //    }
 
     //dong
-    fun on(event: String, listener: PuppetDongListener) {
+    fun on(event: Event, listener: PuppetDongListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
 
@@ -162,7 +163,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetFriendshipListener) {
+    fun on(event: Event, listener: PuppetFriendshipListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventFriendshipPayload)
@@ -171,7 +172,7 @@ abstract class Puppet : EventEmitter {
     }
 
     //dong
-    fun on(event: String, listener: PuppetLogoutListener) {
+    fun on(event: Event, listener: PuppetLogoutListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventLogoutPayload)
@@ -179,7 +180,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetRoomInviteListener) {
+    fun on(event: Event, listener: PuppetRoomInviteListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventRoomInvitePayload)
@@ -188,7 +189,7 @@ abstract class Puppet : EventEmitter {
 
     }
 
-    fun on(event: String, listener: PuppetRoomJoinListener) {
+    fun on(event: Event, listener: PuppetRoomJoinListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventRoomJoinPayload)
@@ -196,7 +197,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetRoomLeaveListener) {
+    fun on(event: Event, listener: PuppetRoomLeaveListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventRoomLeavePayload)
@@ -204,7 +205,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetRoomTopicListener) {
+    fun on(event: Event, listener: PuppetRoomTopicListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventRoomTopicPayload)
@@ -212,7 +213,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetErrorListener) {
+    fun on(event: Event, listener: PuppetErrorListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventErrorPayload)
@@ -220,7 +221,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetScanListener) {
+    fun on(event: Event, listener: PuppetScanListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
 
@@ -234,7 +235,7 @@ abstract class Puppet : EventEmitter {
 
     }
 
-    fun on(event: String, listener: PuppetLoginListener) {
+    fun on(event: Event, listener: PuppetLoginListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventLoginPayload)
@@ -242,7 +243,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetReadyListener) {
+    fun on(event: Event, listener: PuppetReadyListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventReadyPayload)
@@ -250,7 +251,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetMessageListener) {
+    fun on(event: Event, listener: PuppetMessageListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventMessagePayload)
@@ -258,7 +259,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetHeartbeatListener) {
+    fun on(event: Event, listener: PuppetHeartbeatListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
 
@@ -271,7 +272,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: PuppetResetListener) {
+    fun on(event: Event, listener: PuppetResetListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as EventResetPayload)
@@ -279,7 +280,7 @@ abstract class Puppet : EventEmitter {
         })
     }
 
-    fun on(event: String, listener: WatchdogListener) {
+    fun on(event: Event, listener: WatchdogListener) {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as WatchdogFood)
@@ -318,7 +319,7 @@ abstract class Puppet : EventEmitter {
                 throw RuntimeException("must logout first before login again!")
             }
             id = userId
-            emit("login", userId)
+            emit(EventEnum.LOGIN, userId)
         }
     }
 

@@ -28,19 +28,19 @@ open class EventEmitter : EventEmitterInterface {
     }
 
 
-    private val map = Multimaps.synchronizedListMultimap(ArrayListMultimap.create<String, Listener>())
+    private val map = Multimaps.synchronizedListMultimap(ArrayListMultimap.create<Event, Listener>())
 
-    override fun addListener(eventName: String, vararg listeners: Listener) {
+    override fun addListener(event:Event, vararg listeners: Listener) {
         listeners.forEach {
-            map.put(eventName, it)
+            map.put(event, it)
         }
     }
 
-    override fun emit(eventName: String, vararg any: Any) {
+    override fun emit(event:Event, vararg any: Any) {
         val tolist: List<Listener>?
-        val list = map.get(eventName)
+        val list = map.get(event)
         if (CollectionUtils.isEmpty(list)) {
-            log.debug("this eventName:${eventName} has no listener")
+            log.debug("this eventName:${event} has no listener")
             return
         }
         tolist = list.toList()
@@ -51,7 +51,7 @@ open class EventEmitter : EventEmitterInterface {
         }
     }
 
-    override fun eventNames(): List<String> {
+    override fun eventNames(): List<Event> {
         val keySet = map.keySet()
         return Lists.newArrayList(keySet)
     }
@@ -60,42 +60,42 @@ open class EventEmitter : EventEmitterInterface {
         return maxListeners
     }
 
-    override fun listenerCount(eventName: String): Int {
-        return map.get(eventName).size
+    override fun listenerCount(event:Event): Int {
+        return map.get(event).size
     }
 
-    override fun listeners(eventName: String): List<Listener> {
-        return map.get(eventName)
+    override fun listeners(event:Event): List<Listener> {
+        return map.get(event)
     }
 
-    override fun on(eventName: String, listener: Listener) {
-        map.put(eventName, listener)
+    override fun on(event:Event, listener: Listener) {
+        map.put(event, listener)
     }
 
     /**
      * can not work well on multithreading
      */
-    override fun once(eventName: String, listener: Listener) {
+    override fun once(event:Event, listener: Listener) {
         val wrapListener = object : Listener {
             override fun handler(vararg any: Any) {
-                removeListener(eventName, this)
+                removeListener(event, this)
                 listener.handler(*any)
             }
         }
 
-        map.put(eventName, wrapListener)
+        map.put(event, wrapListener)
 
     }
 
-    override fun removeAllListeners(eventName: String): Boolean {
-        map.removeAll(eventName)
+    override fun removeAllListeners(event:Event): Boolean {
+        map.removeAll(event)
         return true
 
 
     }
 
-    override fun removeListener(eventName: String, listener: Listener): Boolean {
-        return map.remove(eventName, listener)
+    override fun removeListener(event:Event, listener: Listener): Boolean {
+        return map.remove(event, listener)
     }
 
     override fun clean() {
@@ -120,43 +120,43 @@ open class EventEmitter : EventEmitterInterface {
 interface EventEmitterInterface {
 
     // AddListener is an alias for .On(eventName, listener).
-    fun addListener(eventName: String, vararg listeners: Listener)
+    fun addListener(event:Event, vararg listeners: Listener)
 
     // Emit fires a particular event,
     // Synchronously calls each of the listeners registered for the event named
     // eventName, in the order they were registered,
     // passing the supplied arguments to each.
-    fun emit(eventName: String, vararg any: Any)
+    fun emit(event:Event, vararg any: Any)
 
     // EventNames returns an array listing the events for which the emitter has registered listeners.
     // The values in the array will be strings.
-    fun eventNames(): List<String>
+    fun eventNames(): List<Event>
 
     // GetMaxListeners returns the max listeners for this emitter
     // see SetMaxListeners
     fun getMaxListeners(): Int
     // ListenerCount returns the length of all registered listeners to a particular event
 
-    fun listenerCount(eventName: String): Int
+    fun listenerCount(event:Event): Int
 
     // Listeners returns a copy of the array of listeners for the event named eventName.
-    fun listeners(eventName: String): List<Listener>
+    fun listeners(event:Event): List<Listener>
 
     // On registers a particular listener for an event, func receiver parameter(s) is/are optional
-    fun on(eventName: String, listener: Listener)
+    fun on(event:Event, listener: Listener)
 
     // Once adds a one time listener function for the event named eventName.
     // The next time eventName is triggered, this listener is removed and then invoked.
-    fun once(eventName: String, listener: Listener)
+    fun once(event:Event, listener: Listener)
 
     // RemoveAllListeners removes all listeners, or those of the specified eventName.
     // Note that it will remove the event itself.
     // Returns an indicator if event and listeners were found before the remove.
-    fun removeAllListeners(eventName: String): Boolean
+    fun removeAllListeners(event:Event): Boolean
 
     // RemoveListener removes given listener from the event named eventName.
     // Returns an indicator whether listener was removed
-    fun removeListener(eventName: String, listener: Listener): Boolean
+    fun removeListener(event:Event, listener: Listener): Boolean
 
     // Clear removes all events and all listeners, restores Events to an empty value
     fun clean()
@@ -176,28 +176,4 @@ interface Listener {
     fun handler(vararg any: Any)
 }
 
-fun main() {
-
-    val eventEmitter = EventEmitter()
-
-    eventEmitter.once("test", object : Listener {
-        override fun handler(vararg any: Any) {
-
-            val name = any[0]
-
-
-            val eventHeartbeatPayload = name as EventHeartbeatPayload
-
-            println(eventHeartbeatPayload)
-
-
-        }
-
-    })
-
-    eventEmitter.emit("test", EventHeartbeatPayload("test"))
-    eventEmitter.emit("test", EventHeartbeatPayload("test"))
-
-    Thread.sleep(10000)
-
-}
+interface Event
