@@ -227,7 +227,7 @@ If you are interested in the translation and want to look at how it works, it wi
 
 ## Usage
 
-1. Add a token to class `io.github.wechaty.example.Main` in folder `Examples/src/main/java`
+1. Add a token to class `io.github.wechaty.example.Main` in folder `examples/src/main/java`
 2. Build:
 
     ```shell
@@ -238,7 +238,7 @@ If you are interested in the translation and want to look at how it works, it wi
 3. Run
 
     ```shell
-    java -jar target/examples-0.1.1-SNAPSHOT-jar-with-dependencies.jar 
+    java -jar target/examples-0.1.1-SNAPSHOT-jar-with-dependencies.jar 
     # or run in background  
     nohup java -jar target/examples-0.1.1-SNAPSHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
     ```
