@@ -118,7 +118,8 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     }
 
     private fun initPuppet() {
-        this.puppet = GrpcPuppet(puppetOptions)
+//        this.puppet = GrpcPuppet(puppetOptions)
+        this.puppet = PuppetManager.resolveInstance(wechatyOptions).get()
         initPuppetEventBridge(puppet)
     }
 

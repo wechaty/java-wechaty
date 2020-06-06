@@ -286,79 +286,121 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     override fun roomInvitationAccept(roomInvitation: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomInvitationAccept($roomInvitation)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun roomInvitationRawPayload(roomInvitationId: String): Future<RoomInvitationPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomInvitationRawPayload($roomInvitationId)")
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun roomInvitationRawPayloadParser(rawPayload: RoomInvitationPayload): Future<RoomInvitationPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet rromInvitationRawPayloadParser(${JsonUtils.write(rawPayload)})")
+        return CompletableFuture.completedFuture(rawPayload)
     }
 
     override fun roomAdd(roomId: String, contactId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomAdd($roomId,$contactId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun roomAvatar(roomId: String): Future<FileBox> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomAvatar($roomId)")
+
+        val roomPayload = this.roomPayload(roomId).get()
+        if (roomPayload.avatar != null) {
+            return CompletableFuture.completedFuture(FileBox.fromUrl(roomPayload.avatar!!, "room-avatar"))
+        }
+        log.warn("MockPuppet roomAvatar() avatar not found,use the chatie default.")
+        return CompletableFuture.completedFuture(qrCodeForChatie())
     }
 
     override fun roomCreate(contactIdList: List<String>, topic: String?): Future<String> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomCreate($contactIdList,$topic)")
+        return CompletableFuture.completedFuture("mock_room_id")
     }
 
     override fun roomDel(roomId: String, contactId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomDel($roomId,$contactId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun roomList(): Future<List<String>> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomList()")
+
+        return CompletableFuture.completedFuture(listOf())
     }
 
     override fun roomQRCode(roomId: String): Future<String> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomQRCode($roomId)")
+        return CompletableFuture.completedFuture("$roomId mock qrcode")
     }
 
     override fun roomQuit(roomId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomQuit($roomId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun roomTopic(roomId: String): Future<String?>? {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomTopic($roomId)")
+        return CompletableFuture.completedFuture("mock room topic")
     }
 
     override fun roomTopic(roomId: String, topic: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomTopic($roomId,$topic)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun roomRawPayload(roomId: String): Future<RoomPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomRawPayload($roomId)")
+        val roomPayload = RoomPayload(roomId)
+        roomPayload.memberIdList = listOf()
+        roomPayload.ownerId = "mock_room_owner_id"
+        roomPayload.topic = "mock topic"
+        return CompletableFuture.completedFuture(roomPayload)
     }
 
     override fun roomRawPayloadParser(roomPayload: RoomPayload): Future<RoomPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomRawPayloadParser(${JsonUtils.write(roomPayload)})")
+        val payload = RoomPayload(roomPayload.id)
+        payload.ownerId = roomPayload.id
+        payload.adminIdList = listOf()
+        payload.memberIdList = listOf()
+        payload.topic = "mock topic"
+        return CompletableFuture.completedFuture(payload)
     }
 
     override fun getRoomAnnounce(roomId: String): Future<String> {
-        TODO("Not yet implemented")
+        return CompletableFuture.completedFuture("mock announcement for $roomId")
     }
 
     override fun setRoomAnnounce(roomId: String, text: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet setRoomAnnounce($roomId,$text)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun roomMemberList(roomId: String): Future<List<String>> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomMemberList($roomId)")
+        return CompletableFuture.completedFuture(listOf())
     }
 
     override fun roomMemberRawPayload(roomId: String, contactId: String): Future<RoomMemberPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomMemberRawPayload($roomId,$contactId)")
+        val roomMemberPayload = RoomMemberPayload()
+        roomMemberPayload.avatar = "mock-avatar-data"
+        roomMemberPayload.id = "xx"
+        roomMemberPayload.name = "mock-name"
+        roomMemberPayload.roomAlias = "yy"
+
+        return CompletableFuture.completedFuture(roomMemberPayload)
     }
 
     override fun roomMemberRawPayloadParser(rawPayload: RoomMemberPayload): Future<RoomMemberPayload> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet roomMemberRawPayloadParser(${JsonUtils.write(rawPayload)})")
+        return CompletableFuture.completedFuture(rawPayload)
     }
 
     companion object {
