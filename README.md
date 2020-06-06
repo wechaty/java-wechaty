@@ -227,19 +227,20 @@ If you are interested in the translation and want to look at how it works, it wi
 
 ## Usage
 
-1. Add a token to class `io.github.wechaty.examples.Main` in folder `wechaty/src/main/java`
+1. Add a token to class `io.github.wechaty.example.Main` in folder `examples/src/main/java`
 2. Build:
 
     ```shell
+    cd examples/  
     mvn install
     ```
 
 3. Run
 
     ```shell
-    java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar   
+    java -jar target/examples-0.1.1-SNAPSHOT-jar-with-dependencies.jar 
     # or run in background  
-    nohup java -jar wechaty/target/wechaty-1.0.0-SNAPSOHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
+    nohup java -jar target/examples-0.1.1-SNAPSHOT-jar-with-dependencies.jar &>> nohup.out & tailf nohup.out
     ```
 
 4. enjoy
@@ -263,6 +264,10 @@ mvn install wechaty
 
 ### master
 
+### v0.1.1 (June 6 2020)
+1. update wechaty grpc to 0.16.1
+2. move examples from wechaty to independent module. Make example easy to use.
+
 ### v0.1.1 (May 31 2020)
 
 1. update version to 0.1.1-SNAPSHOT
@@ -285,9 +290,11 @@ We decided to use Kotlin to develop the Java Wechaty!
 
 ## Related Projects
 
-- [Wechaty](https://github.com/wechaty/wechaty) - WeChat Bot SDK for Individual Account in TypeScript
-- [Python Wechaty](https://github.com/wechaty/python-wechaty) - Python WeChat Bot SDK for Individual Account.
-- [Go Wechaty](https://github.com/wechaty/go-wechaty) - Go WeChat Bot SDK for Individual Account.
+- [Wechaty](https://github.com/wechaty/wechaty) - Conversatioanl AI Chatot SDK for Wechaty Individual Accounts (TypeScript)
+- [Python Wechaty](https://github.com/wechaty/python-wechaty) - Python WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Python)
+- [Go Wechaty](https://github.com/wechaty/go-wechaty) - Go WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Go)
+- [Java Wechaty](https://github.com/wechaty/java-wechaty) - Java WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Java)
+- [Scala Wechaty](https://github.com/wechaty/scala-wechaty) - Scala WeChaty Conversational AI Chatbot SDK for WechatyIndividual Accounts (Scala)
 
 ## Committers
 
