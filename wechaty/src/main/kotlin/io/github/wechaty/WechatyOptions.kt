@@ -16,3 +16,5 @@ class WechatyOptions {
     var ioToken:String? = null
 
 }
+ typealias WechatyPlugin = (Wechaty) -> Unit
+
