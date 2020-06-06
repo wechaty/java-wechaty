@@ -33,6 +33,7 @@
             <groupId>io.github.wechaty</groupId>
             <artifactId>wechaty-puppet-mock</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

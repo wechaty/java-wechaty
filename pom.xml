@@ -147,12 +147,6 @@
                 <artifactId>okhttp</artifactId>
                 <version>4.6.0</version>
             </dependency>
-<!--            &lt;!&ndash; https://mvnrepository.com/artifact/io.grpc/grpc-kotlin-stub &ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>io.grpc</groupId>-->
-<!--                <artifactId>grpc-kotlin-stub</artifactId>-->
-<!--                <version>0.1.1</version>-->
-<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.hamcrest</groupId>

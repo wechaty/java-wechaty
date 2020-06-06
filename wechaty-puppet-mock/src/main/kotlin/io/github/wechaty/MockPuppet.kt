@@ -1,6 +1,7 @@
 package io.github.wechaty
 
 import io.github.wechaty.filebox.FileBox
+import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.schemas.*
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -30,7 +31,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
          */
         val eventScanPayload = EventScanPayload(ScanStatus.Cancel)
         eventScanPayload.qrcode = "https://github.com/wechaty/java-wechaty/wechaty-puppet-mock"
-        emit("scan", eventScanPayload)
+        emit(EventEnum.SCAN, eventScanPayload)
 
 
         val userPayload = MockData.getFakeContactPayload()
@@ -38,7 +39,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         setId(userPayload.id)
 
-        emit("login", EventLoginPayload(userPayload.id))
+        emit(EventEnum.LOGIN, EventLoginPayload(userPayload.id))
 
         timer.scheduleAtFixedRate(0, 5000) {
             val fromContactPayload = MockData.getFakeContactPayload()
@@ -47,7 +48,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
             cacheMessagePayload.put(messagePayload.id, messagePayload)
             log.info("MockPuppet start() schedule pretending received a new message:${messagePayload.id}")
-            emit("message", EventMessagePayload(messagePayload.id))
+            emit(EventEnum.MESSAGE, EventMessagePayload(messagePayload.id))
         }
         return CompletableFuture.completedFuture(null)
     }
@@ -74,7 +75,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         log.info("MockPuppet logout()")
         val id = getId() ?: throw Exception("logout before login?")
 
-        emit("logout", EventLogoutPayload(id, "test"))
+        emit(EventEnum.LOGOUT, EventLogoutPayload(id, "test"))
         setId(null)
 
         return CompletableFuture.completedFuture(null)
@@ -82,7 +83,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun ding(data: String?) {
         log.info("MockPuppet ding(${data ?: ""})")
-        emit("dong", EventDongPayload(data ?: ""))
+        emit(EventEnum.DONG, EventDongPayload(data ?: ""))
     }
 
     override fun contactSelfName(name: String): Future<Void> {
