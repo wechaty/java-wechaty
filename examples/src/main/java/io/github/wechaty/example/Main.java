@@ -1,4 +1,4 @@
-package io.github.wechaty.examples;
+package io.github.wechaty.example;
 
 
 import io.github.wechaty.MessageListener;
@@ -16,11 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 public class Main {
 
-    private static OkHttpClient client = new OkHttpClient();
-
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
-
-        FileBox fileBox = FileBox.fromUrl("https://img.xilidou.com/img/dong.jpg", null, null);
 
         Wechaty bot = Wechaty.instance("your_token");
 

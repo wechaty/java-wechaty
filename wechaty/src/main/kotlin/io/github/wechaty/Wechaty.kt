@@ -6,7 +6,7 @@ import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.grpc.GrpcPuppet
 import io.github.wechaty.listener.*
-import io.github.wechaty.memorycard.MemoryCard
+//import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
 import io.github.wechaty.user.*
 import io.github.wechaty.user.manager.*
@@ -30,7 +30,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     @Volatile
     private var status = StateEnum.OFF
 
-    private var memory:MemoryCard? = null
+//    private var memory:MemoryCard? = null
 
     val tagManager: TagManager = TagManager(this)
     val contactManager = ContactManager(this)
@@ -38,9 +38,9 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val roomManager = RoomManager(this)
     val roomInvitationMessage = RoomInvitationManager(this)
 
-    init {
-        this.memory = wechatyOptions.memory
-    }
+//    init {
+//        this.memory = wechatyOptions.memory
+//    }
 
 
     fun start(await: Boolean = false) {

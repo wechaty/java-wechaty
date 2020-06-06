@@ -422,7 +422,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
                 .build()
 
         return CompletableFuture.supplyAsync {
-            grpcClient!!.frendshipAccept(request)
+            grpcClient!!.friendshipAccept(request)
             return@supplyAsync null
         }
     }
