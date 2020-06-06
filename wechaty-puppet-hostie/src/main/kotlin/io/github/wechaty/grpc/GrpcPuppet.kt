@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.math.NumberUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
@@ -406,7 +405,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             payload.province = response.province
             payload.signature = response.signature
             payload.star = response.star
-            payload.type = ContractType.getByCode(response.type.number)
+            payload.type = ContactType.getByCode(response.type.number)
             payload.weixin = response.weixin
             payload
         }

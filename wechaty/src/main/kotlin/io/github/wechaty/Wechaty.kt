@@ -1,6 +1,6 @@
 package io.github.wechaty;
 
-//import io.github.wechaty.user.Room
+//import io.github.io.github.user.Room
 
 import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
@@ -322,7 +322,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
                             val changer = contactManager.loadSelf(payload.changerId)
                             changer.ready()
-                            val date = Date(payload.timstamp * 1000)
+                            val date = Date(payload.timestamp * 1000)
 
                             emit(EventEnum.ROOM_TOPIC, room, payload.newTopic, payload.oldTopic, changer, date)
                             room.emit(EventEnum.TOPIC, payload.newTopic, payload.oldTopic, changer, date)

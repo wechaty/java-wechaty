@@ -30,6 +30,7 @@
         <module>wechaty</module>
         <module>wechaty-puppet</module>
         <module>wechaty-puppet-hostie</module>
+        <module>wechaty-puppet-mock</module>
     </modules>
 
     <dependencyManagement>
@@ -168,13 +169,16 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>3.3.3</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.12</version>
-                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.javafaker</groupId>
+                <artifactId>javafaker</artifactId>
+                <version>1.0.2</version>
             </dependency>
 
         </dependencies>

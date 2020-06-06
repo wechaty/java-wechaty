@@ -1,14 +1,19 @@
 package io.github.wechaty
 
 import io.github.wechaty.filebox.FileBox
-import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.schemas.*
 import org.slf4j.LoggerFactory
+import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
+import kotlin.concurrent.scheduleAtFixedRate
 
 class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
+
+    private val timer: Timer = Timer()
+
     override fun start(): Future<Void> {
-        TODO("Not yet implemented")
+
         log.info("MockPuppet start()")
 
         //TODO("StateSwitch")
@@ -24,65 +29,114 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         this.state.on(true)
          */
         val eventScanPayload = EventScanPayload(ScanStatus.Cancel)
-        eventScanPayload.qrcode = "https://github.com/wechaty/wechaty-puppet-mock"
-        emit(EventEnum.SCAN, eventScanPayload)
+        eventScanPayload.qrcode = "https://github.com/wechaty/java-wechaty/wechaty-puppet-mock"
+        emit("scan", eventScanPayload)
 
 
+        val userPayload = MockData.getFakeContactPayload()
+        cacheContactPayload.put(userPayload.id, userPayload)
+
+        setId(userPayload.id)
+
+        emit("login", EventLoginPayload(userPayload.id))
+
+        timer.scheduleAtFixedRate(0, 5000) {
+            val fromContactPayload = MockData.getFakeContactPayload()
+            cacheContactPayload.put(fromContactPayload.id, fromContactPayload)
+            val messagePayload = MockData.getMessagePayload(fromContactPayload.id, userPayload.id)
+
+            cacheMessagePayload.put(messagePayload.id, messagePayload)
+            log.info("MockPuppet start() schedule pretending received a new message:${messagePayload.id}")
+            emit("message", EventMessagePayload(messagePayload.id))
+        }
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun stop(): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet stop()")
+        //TODO StateSwitch
+        /*
+        if (this.state.off()) {
+          log.warn('PuppetMock', 'stop() is called on a OFF puppet. await ready(off) and return.')
+          await this.state.ready('off')
+          return
+        }
+
+        this.state.off('pending')
+         */
+        timer.cancel()
+
+        //this.state.off(true)
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun logout(): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet logout()")
+        val id = getId() ?: throw Exception("logout before login?")
+
+        emit("logout", EventLogoutPayload(id, "test"))
+        setId(null)
+
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun ding(data: String?) {
-        TODO("Not yet implemented")
+        log.info("MockPuppet ding(${data ?: ""})")
+        emit("dong", EventDongPayload(data ?: ""))
     }
 
     override fun contactSelfName(name: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactSelfName($name)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun contactSelfQRCode(): Future<String> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactSelfQRCode()")
+        return CompletableFuture.completedFuture(CHATIE_OFFICIAL_ACCOUNT_QRCODE)
     }
 
     override fun contactSelfSignature(signature: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactSelfSignature($signature)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun tagContactAdd(tagId: String, contactId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactAdd($tagId,$contactId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun tagContactDelete(tagId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactDelete($tagId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun tagContactList(contactId: String): Future<List<String>> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactList($contactId)")
+        return CompletableFuture.completedFuture(listOf())
     }
 
     override fun tagContactList(): Future<List<String>> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactList()")
+        return CompletableFuture.completedFuture(listOf())
     }
 
     override fun tagContactRemove(tagId: String, contactId: String): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet tagContactRemove($tagId,$contactId)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun contactAlias(contactId: String): Future<String> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactAlias($contactId)")
+        return CompletableFuture.completedFuture("mock alias")
     }
 
     override fun contactAlias(contactId: String, alias: String?): Future<Void> {
-        TODO("Not yet implemented")
+        log.info("MockPuppet contactAlias($contactId,$alias)")
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun getContactAvatar(contactId: String): Future<FileBox> {
+        log.info("MockPuppet contactAvatar($contactId)")
         TODO("Not yet implemented")
     }
 
