@@ -61,6 +61,19 @@ class Bot{
 }
 ```
 
+if use plugins 
+```java     
+class Bot{
+  public static void main(String args[]){
+    Wechaty bot = Wechaty.instance()
+            .use(
+                WechatyPlugins.ScanPlugin(), 
+                WechatyPlugins.DingDongPlugin(null))
+            .start(true);
+  }
+}
+```
+
 ## Development
 
 To be writen:

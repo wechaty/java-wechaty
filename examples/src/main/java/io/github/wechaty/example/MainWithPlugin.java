@@ -7,7 +7,7 @@ public class MainWithPlugin {
 
     public static void main(String[] args) {
 
-        Wechaty bot = Wechaty.instance("your-token")
+        Wechaty bot = Wechaty.instance("your_token")
             .use(WechatyPlugins.ScanPlugin(), WechatyPlugins.DingDongPlugin(null))
             .start(true);
 
