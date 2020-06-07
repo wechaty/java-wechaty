@@ -1,6 +1,5 @@
 package io.github.wechaty;
 
-//import io.github.io.github.user.Room
 
 import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
@@ -25,6 +24,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
     private lateinit var puppet: Puppet
     private val puppetOptions: PuppetOptions = wechatyOptions.puppetOptions!!
+    private val globalPluginList: MutableList<WechatyPlugin> = mutableListOf()
 
     @Volatile
     private var readyState = StateEnum.OFF
@@ -40,9 +40,10 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val roomManager = RoomManager(this)
     val roomInvitationMessage = RoomInvitationManager(this)
 
-//    init {
+    init {
 //        this.memory = wechatyOptions.memory
-//    }
+        installGlobalPlugin()
+    }
 
 
     fun start(await: Boolean = false):Wechaty {
@@ -97,6 +98,19 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
     fun onMessage(listener: MessageListener):Wechaty{
         return on(EventEnum.MESSAGE,listener)
+    }
+
+    fun use(vararg plugins: WechatyPlugin):Wechaty{
+        plugins.forEach {
+            it(this)
+        }
+        return this
+    }
+
+    private fun installGlobalPlugin(){
+        for (item in globalPluginList) {
+            item(this)
+        }
     }
 
     private fun on(event: Event,listener:LoginListener):Wechaty{

@@ -62,6 +62,19 @@ class Bot{
 }
 ```
 
+if use plugins 
+```java     
+class Bot{
+  public static void main(String args[]){
+    Wechaty bot = Wechaty.instance()
+            .use(
+                WechatyPlugins.ScanPlugin(), 
+                WechatyPlugins.DingDongPlugin(null))
+            .start(true);
+  }
+}
+```
+
 ## Development
 
 To be writen:
@@ -264,6 +277,9 @@ mvn install wechaty
 ## History
 
 ### master
+
+### v0.1.3 (June 6 2020)
+1. support plugins!
 
 ### v0.1.2 (June 6 2020)
 1. change method `on(Event:String,Listener:listener)` to `onEvent(Listener:listener)`. See examples
