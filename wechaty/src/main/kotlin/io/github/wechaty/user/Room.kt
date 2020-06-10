@@ -75,10 +75,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                 is String -> {
                     var mentionList = listOf<Any>()
                     if (varList.isNotEmpty()) {
-                        val list = varList[0]
-                        if (list !is List<*>){
-                            throw Exception("room say contact args not valid")
-                        }
+                        val list = varList[0] as? List<*> ?: throw Exception("room say contact args not valid")
                         list.forEach {
                             if (it !is Contact) {
                                 throw Exception("mentionList must be contact when not using String array function call.")

@@ -250,7 +250,7 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageSendText(conversationId: String, text: String, mentionList: List<String>?): Future<String?> {
         log.info("MockPuppet messageSendText($conversationId,$text,${JsonUtils.write(mentionList ?: "")})")
 
-        return CompletableFuture.completedFuture(null)
+        return CompletableFuture.completedFuture("mock-msg-$conversationId")
     }
 
     override fun messageSendUrl(conversationId: String, urlLinkPayload: UrlLinkPayload): Future<String?> {
