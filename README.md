@@ -6,6 +6,7 @@
 ![Java Wechaty](https://wechaty.github.io/java-wechaty/images/java-wechaty.png)
 
 [![Java Wechaty Getting Started](https://img.shields.io/badge/Java%20Wechaty-Getting%20Started-orange)](https://github.com/wechaty/java-wechaty-getting-started)
+[![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
 
 ## Connecting Chatbots
 
@@ -57,6 +58,19 @@ class Bot{
       .onLogin(user -> System.out.println("User logined :" + user))
       .onMessage(message -> System.out.println("Message:" + message))
       .start(true);
+  }
+}
+```
+
+if use plugins 
+```java     
+class Bot{
+  public static void main(String args[]){
+    Wechaty bot = Wechaty.instance()
+            .use(
+                WechatyPlugins.ScanPlugin(), 
+                WechatyPlugins.DingDongPlugin(null))
+            .start(true);
   }
 }
 ```
@@ -264,6 +278,9 @@ mvn install wechaty
 
 ### master
 
+### v0.1.3 (June 6 2020)
+1. support plugins!
+
 ### v0.1.2 (June 6 2020)
 1. change method `on(Event:String,Listener:listener)` to `onEvent(Listener:listener)`. See examples
 2. update version to 0.1.2
@@ -297,6 +314,15 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [Go Wechaty](https://github.com/wechaty/go-wechaty) - Go WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Go)
 - [Java Wechaty](https://github.com/wechaty/java-wechaty) - Java WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Java)
 - [Scala Wechaty](https://github.com/wechaty/scala-wechaty) - Scala WeChaty Conversational AI Chatbot SDK for WechatyIndividual Accounts (Scala)
+
+
+## Badge
+
+[![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
+
+```md
+[![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
+```
 
 ## Committers
 
