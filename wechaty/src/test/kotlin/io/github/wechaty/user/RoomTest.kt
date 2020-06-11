@@ -36,7 +36,7 @@ class RoomTest {
         puppet = MockPuppet(PuppetOptions())
         val wechatyOptions = WechatyOptions()
         wechatyOptions.name = "MockWechaty"
-        wechatyOptions.puppet = "wechaty-puppet-mock"
+        wechatyOptions.puppet = "io.github.wechaty.MockPuppet"
         wechatyOptions.puppetOptions = PuppetOptions()
         wechaty = Wechaty.instance(wechatyOptions)
         wechaty.start()
