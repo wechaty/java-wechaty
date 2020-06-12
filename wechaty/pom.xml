@@ -25,15 +25,9 @@
 
         <dependency>
             <groupId>io.github.wechaty</groupId>
-            <artifactId>wechaty-puppet-hostie</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.wechaty</groupId>
             <artifactId>wechaty-puppet-mock</artifactId>
             <version>${project.version}</version>
-<!--            <scope>test</scope>-->
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -75,10 +69,11 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.lmax/disruptor -->
-<!--        <dependency>-->
-<!--            <groupId>com.lmax</groupId>-->
-<!--            <artifactId>disruptor</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>

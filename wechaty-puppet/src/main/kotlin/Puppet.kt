@@ -98,8 +98,8 @@ abstract class Puppet : EventEmitter {
         on(EventEnum.RESET, object : PuppetResetListener {
             override fun handler(payload: EventResetPayload) {
 
-            log.debug("get a reset message")
-            if(rateLimiter.tryAcquire()){
+                log.debug("get a reset message")
+                if (rateLimiter.tryAcquire()) {
 
                     reset(payload.data)
                 }
@@ -155,7 +155,7 @@ abstract class Puppet : EventEmitter {
             override fun handler(vararg any: Any) {
 
 
-                log.debug("class Type is {}",any[0].javaClass.name)
+                log.debug("class Type is {}", any[0].javaClass.name)
 
 
                 listener.handler(any[0] as EventDongPayload)
@@ -226,7 +226,7 @@ abstract class Puppet : EventEmitter {
             override fun handler(vararg any: Any) {
 
 
-                log.debug("class Type is {}",any[0].javaClass.name)
+                log.debug("class Type is {}", any[0].javaClass.name)
 
 
                 listener.handler(any[0] as EventScanPayload)
@@ -264,7 +264,7 @@ abstract class Puppet : EventEmitter {
             override fun handler(vararg any: Any) {
 
 
-                log.debug("class Type is {}",any[0].javaClass.name)
+                log.debug("class Type is {}", any[0].javaClass.name)
 
 
                 listener.handler(any[0] as EventHeartbeatPayload)
@@ -291,6 +291,7 @@ abstract class Puppet : EventEmitter {
 
     abstract fun start(): Future<Void>
     abstract fun stop(): Future<Void>
+    abstract fun setPuppetName()
     open fun unref() {
 
     }
@@ -348,6 +349,7 @@ abstract class Puppet : EventEmitter {
      * contactSelf
      */
     abstract fun contactSelfName(name: String): Future<Void>
+
     abstract fun contactSelfQRCode(): Future<String>
     abstract fun contactSelfSignature(signature: String): Future<Void>
 
@@ -362,6 +364,7 @@ abstract class Puppet : EventEmitter {
      *
      */
     abstract fun tagContactAdd(tagId: String, contactId: String): Future<Void>
+
     abstract fun tagContactDelete(tagId: String): Future<Void>
     abstract fun tagContactList(contactId: String): Future<List<String>>
     abstract fun tagContactList(): Future<List<String>>
@@ -373,6 +376,7 @@ abstract class Puppet : EventEmitter {
      *
      */
     abstract fun contactAlias(contactId: String): Future<String>
+
     abstract fun contactAlias(contactId: String, alias: String?): Future<Void>
     abstract fun getContactAvatar(contactId: String): Future<FileBox>
     abstract fun setContactAvatar(contactId: String, file: FileBox): Future<Void>
@@ -422,39 +426,39 @@ abstract class Puppet : EventEmitter {
                 return@supplyAsync list
             }
 
-            val stream = list?.stream()?.map{contactPayload(it).get()}
-            if(StringUtils.isNotBlank(query.name)){
+            val stream = list?.stream()?.map { contactPayload(it).get() }
+            if (StringUtils.isNotBlank(query.name)) {
                 stream?.filter {
                     StringUtils.equals(query.name, it.name)
                 }
             }
 
-            if(StringUtils.isNotBlank(query.alias)){
+            if (StringUtils.isNotBlank(query.alias)) {
                 stream?.filter {
                     StringUtils.equals(query.alias, it.alias)
                 }
             }
 
-            if(StringUtils.isNotBlank(query.id)){
+            if (StringUtils.isNotBlank(query.id)) {
                 stream?.filter {
                     StringUtils.equals(query.alias, it.alias)
                 }
             }
 
-            if(StringUtils.isNotBlank(query.weixin)){
+            if (StringUtils.isNotBlank(query.weixin)) {
                 stream?.filter {
                     StringUtils.equals(query.alias, it.alias)
                 }
             }
 
-            if(query.nameReg != null){
-                stream?.filter{
+            if (query.nameReg != null) {
+                stream?.filter {
                     query.nameReg!!.matches(it.name ?: "")
                 }
             }
 
-            if(query.aliasReg != null){
-                stream?.filter{
+            if (query.aliasReg != null) {
+                stream?.filter {
                     query.aliasReg!!.matches(it.alias ?: "")
                 }
             }
@@ -468,7 +472,7 @@ abstract class Puppet : EventEmitter {
         }
     }
 
-    fun ContactPayloadFilterFactory(query:ContactQueryFilter):ContactPayloadFilterFunction{
+    fun ContactPayloadFilterFactory(query: ContactQueryFilter): ContactPayloadFilterFunction {
 
         val clz = query::class.java
         val fields = clz.fields
@@ -490,13 +494,11 @@ abstract class Puppet : EventEmitter {
     }
 
 
-
-
     protected fun contactPayloadCache(contactId: String): ContactPayload? {
 
         val contactPayload = cacheContactPayload.getIfPresent(contactId)
 
-        log.debug("contactPayload is {} by id {}", contactPayload,contactId)
+        log.debug("contactPayload is {} by id {}", contactPayload, contactId)
 
         return contactPayload
     }
@@ -529,6 +531,7 @@ abstract class Puppet : EventEmitter {
      *
      */
     abstract fun friendshipAccept(friendshipId: String): Future<Void>
+
     abstract fun friendshipAdd(contractId: String, hello: String): Future<Void>
     abstract fun friendshipSearchPhone(phone: String): Future<String?>
     abstract fun friendshipSearchWeixin(weixin: String): Future<String?>
@@ -594,6 +597,7 @@ abstract class Puppet : EventEmitter {
      */
 
     abstract fun messageContact(messageId: String): Future<String>
+
     abstract fun messageFile(messageId: String): Future<FileBox>
     abstract fun messageImage(messageId: String, imageType: ImageType): Future<FileBox>
     abstract fun messageMiniProgram(messageId: String): Future<MiniProgramPayload>
@@ -790,6 +794,7 @@ abstract class Puppet : EventEmitter {
      *
      */
     abstract fun roomAdd(roomId: String, contactId: String): Future<Void>
+
     abstract fun roomAvatar(roomId: String): Future<FileBox>
     abstract fun roomCreate(contactIdList: List<String>, topic: String?): Future<String>
 
@@ -809,6 +814,7 @@ abstract class Puppet : EventEmitter {
      */
 
     abstract fun getRoomAnnounce(roomId: String): Future<String>
+
     abstract fun setRoomAnnounce(roomId: String, text: String): Future<Void>
     abstract fun roomMemberList(roomId: String): Future<List<String>>
 

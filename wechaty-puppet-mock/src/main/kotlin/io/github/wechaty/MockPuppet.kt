@@ -72,6 +72,10 @@ class MockPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         return CompletableFuture.completedFuture(null)
     }
 
+    override fun setPuppetName() {
+        puppetOptions!!.name = "io.github.wechaty.MockPuppet"
+    }
+
     override fun logout(): Future<Void> {
         log.info("MockPuppet logout()")
         val id = getId() ?: throw Exception("logout before login?")

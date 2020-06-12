@@ -35,27 +35,26 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     private val client: OkHttpClient = OkHttpClient()
 
     private var grpcClient: PuppetGrpc.PuppetBlockingStub? = null
-    private var grpcAsyncClient:PuppetGrpc.PuppetStub? = null
+    private var grpcAsyncClient: PuppetGrpc.PuppetStub? = null
 
 //    private var finishLatch:CountDownLatch? = null
 
-    private fun discoverHostieIp():Pair<String,String>{
+    private fun discoverHostieIp(): Pair<String, String> {
 
         val token = puppetOptions!!.token
 
         val request: Request = Request.Builder()
-                .url(CHATIE_ENDPOINT + token)
-                .build()
+            .url(CHATIE_ENDPOINT + token)
+            .build()
 
-        client.newCall(request).execute().use {
-            response ->
+        client.newCall(request).execute().use { response ->
             val string = response.body!!.string()
             val readValue = JsonUtils.readValue<Map<String, String>>(string)
 
             val ip = readValue["ip"] ?: error("cannot get ip by token, check token");
-            val port = readValue["port"] ?:"8788"
+            val port = readValue["port"] ?: "8788"
 
-            return Pair(ip,port)
+            return Pair(ip, port)
         }
     }
 
@@ -99,7 +98,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         try {
             if (logonoff()) {
-                emit(EventEnum.LOGOUT,EventLogoutPayload(getId()!!,"logout"))
+                emit(EventEnum.LOGOUT, EventLogoutPayload(getId()!!, "logout"))
 
                 this.setId(null)
             }
@@ -125,6 +124,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         return CompletableFuture.completedFuture(null)
     }
 
+    override fun setPuppetName() {
+        puppetOptions!!.name = "io.github.wechaty.grpc.GrpcPuppet"
+    }
 
     override fun unref() {
 
@@ -135,15 +137,15 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     private fun startGrpcClient(): Future<Void> {
         val endPoint = puppetOptions?.endPoint
-        val discoverHostieIp:Pair<String,String>
+        val discoverHostieIp: Pair<String, String>
         discoverHostieIp = if (StringUtils.isEmpty(endPoint)) {
             discoverHostieIp()
-        }else{
+        } else {
             val split = StringUtils.split(endPoint, ":")
-            if(split.size == 1) {
-                Pair(split[0],"8788")
-            }else{
-                Pair(split[0],split[1])
+            if (split.size == 1) {
+                Pair(split[0], "8788")
+            } else {
+                Pair(split[0], split[1])
             }
 
         }
@@ -153,7 +155,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             exitProcess(1)
         }
         val newFixedThreadPool = newFixedThreadPool(16)
-        channel = ManagedChannelBuilder.forAddress(discoverHostieIp.first,NumberUtils.toInt(discoverHostieIp.second)).usePlaintext().executor(newFixedThreadPool).build()
+        channel = ManagedChannelBuilder.forAddress(discoverHostieIp.first, NumberUtils.toInt(discoverHostieIp.second)).usePlaintext().executor(newFixedThreadPool).build()
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
         grpcAsyncClient = PuppetGrpc.newStub(channel)
@@ -161,15 +163,15 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     private fun startGrpcStream() {
-        val streamObserver = object :StreamObserver<Event.EventResponse>{
+        val streamObserver = object : StreamObserver<Event.EventResponse> {
             override fun onNext(event: Event.EventResponse?) {
                 onGrpcStreamEvent(event!!)
             }
 
             override fun onError(t: Throwable?) {
-                log.error("error of grpc",t)
-                val payload = EventResetPayload(t?.message ?:"")
-                emit(EventEnum.RESET,payload)
+                log.error("error of grpc", t)
+                val payload = EventResetPayload(t?.message ?: "")
+                emit(EventEnum.RESET, payload)
             }
 
             override fun onCompleted() {
@@ -179,7 +181,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
 
         val request = Event.EventRequest.newBuilder().build()
-        grpcAsyncClient!!.event(request,streamObserver)
+        grpcAsyncClient!!.event(request, streamObserver)
     }
 
 
@@ -202,15 +204,15 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         } catch (e: Exception) {
             log.error("logout() rejection: %s", e)
         } finally {
-            emit(EventEnum.LOGOUT,EventLogoutPayload(getId()!!,"logout"))
+            emit(EventEnum.LOGOUT, EventLogoutPayload(getId()!!, "logout"))
         }
         return CompletableFuture.completedFuture(null)
     }
 
     override fun ding(data: String?) {
         val request = Base.DingRequest.newBuilder()
-                .setData(data)
-                .build()
+            .setData(data)
+            .build()
 
         CompletableFuture.runAsync {
             try {
@@ -223,8 +225,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun contactSelfName(name: String): Future<Void> {
         val request = Contact.ContactSelfNameRequest.newBuilder()
-                .setName(name)
-                .build()
+            .setName(name)
+            .build()
         return CompletableFuture.supplyAsync {
             grpcClient!!.contactSelfName(request)
             null
@@ -244,8 +246,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun contactSelfSignature(signature: String): Future<Void> {
 
         val request = Contact.ContactSelfSignatureRequest.newBuilder()
-                .setSignature(signature)
-                .build()
+            .setSignature(signature)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.contactSelfSignature(request)
@@ -256,9 +258,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun tagContactAdd(tagId: String, contactId: String): Future<Void> {
 
         val request = Tag.TagContactAddRequest.newBuilder()
-                .setId(tagId)
-                .setContactId(contactId)
-                .build()
+            .setId(tagId)
+            .setContactId(contactId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.tagContactAdd(request)
@@ -270,8 +272,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun tagContactDelete(tagId: String): Future<Void> {
 
         val request = Tag.TagContactDeleteRequest.newBuilder()
-                .setId(tagId)
-                .build()
+            .setId(tagId)
+            .build()
         return CompletableFuture.supplyAsync {
             grpcClient!!.tagContactDelete(request)
             return@supplyAsync null
@@ -281,14 +283,14 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun tagContactList(contactId: String): Future<List<String>> {
 
         val stringValue = StringValue.newBuilder()
-                .setValue(contactId)
-                .build()
+            .setValue(contactId)
+            .build()
 
         return CompletableFuture.supplyAsync {
 
             val request = Tag.TagContactListRequest.newBuilder()
-                    .setContactId(stringValue)
-                    .build()
+                .setContactId(stringValue)
+                .build()
             val contactList = grpcClient!!.tagContactList(request)
             contactList.idsList
         }
@@ -306,9 +308,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun tagContactRemove(tagId: String, contactId: String): Future<Void> {
 
         val request = Tag.TagContactRemoveRequest.newBuilder()
-                .setId(tagId)
-                .setContactId(contactId)
-                .build()
+            .setId(tagId)
+            .setContactId(contactId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.tagContactRemove(request)
@@ -322,8 +324,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         return CompletableFuture.supplyAsync {
             val request = Contact.ContactAliasRequest.newBuilder()
-                    .setId(contactId)
-                    .build()
+                .setId(contactId)
+                .build()
             val response = grpcClient!!.contactAlias(request)
             val alias = response.alias
             return@supplyAsync alias.value
@@ -334,9 +336,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         val stringValue = StringValue.newBuilder().setValue(alias).build()
         val request = Contact.ContactAliasRequest.newBuilder()
-                .setId(contactId)
-                .setAlias(stringValue)
-                .build()
+            .setId(contactId)
+            .setAlias(stringValue)
+            .build()
 
         return CompletableFuture.supplyAsync() {
             grpcClient!!.contactAlias(request)
@@ -347,8 +349,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun getContactAvatar(contactId: String): Future<FileBox> {
         val request = Contact.ContactAvatarRequest.newBuilder()
-                .setId(contactId)
-                .build()
+            .setId(contactId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.contactAvatar(request)
@@ -365,9 +367,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         val value = StringValue.newBuilder().setValue(toJsonString)
 
         val request = Contact.ContactAvatarRequest.newBuilder()
-                .setId(contactId)
-                .setFilebox(value)
-                .build()
+            .setId(contactId)
+            .setFilebox(value)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.contactAvatar(request)
@@ -389,8 +391,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun contactRawPayload(contractId: String): Future<ContactPayload> {
 
         val request = Contact.ContactPayloadRequest.newBuilder()
-                .setId(contractId)
-                .build()
+            .setId(contractId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.contactPayload(request)
@@ -419,8 +421,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun friendshipAccept(friendshipId: String): Future<Void> {
 
         val request = Friendship.FriendshipAcceptRequest.newBuilder()
-                .setId(friendshipId)
-                .build()
+            .setId(friendshipId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.friendshipAccept(request)
@@ -431,9 +433,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun friendshipAdd(contractId: String, hello: String): Future<Void> {
 
         val request = Friendship.FriendshipAddRequest.newBuilder()
-                .setContactId(contractId)
-                .setHello(hello)
-                .build()
+            .setContactId(contractId)
+            .setHello(hello)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.friendshipAdd(request)
@@ -445,8 +447,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun friendshipSearchPhone(phone: String): Future<String?> {
 
         val request = Friendship.FriendshipSearchPhoneRequest.newBuilder()
-                .setPhone(phone)
-                .build()
+            .setPhone(phone)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.friendshipSearchPhone(request)
@@ -456,8 +458,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun friendshipSearchWeixin(weixin: String): Future<String?> {
         val request = Friendship.FriendshipSearchWeixinRequest.newBuilder()
-                .setWeixin(weixin)
-                .build()
+            .setWeixin(weixin)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.friendshipSearchWeixin(request)
@@ -468,8 +470,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun friendshipRawPayload(friendshipId: String): Future<FriendshipPayload> {
 
         val request = Friendship.FriendshipPayloadRequest.newBuilder()
-                .setId(friendshipId)
-                .build()
+            .setId(friendshipId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.friendshipPayload(request)
@@ -493,8 +495,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun messageContact(messageId: String): Future<String> {
         val request = Message.MessageContactRequest.newBuilder()
-                .setId(messageId)
-                .build()
+            .setId(messageId)
+            .build()
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageContact(request)
             response.id
@@ -504,8 +506,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageFile(messageId: String): Future<FileBox> {
 
         val request = Message.MessageFileRequest.newBuilder()
-                .setId(messageId)
-                .build()
+            .setId(messageId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageFile(request)
@@ -519,9 +521,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
         val imageType1 = Message.ImageType.forNumber(imageType.code)
         val request = Message.MessageImageRequest.newBuilder()
-                .setId(messageId)
-                .setType(imageType1)
-                .build()
+            .setId(messageId)
+            .setType(imageType1)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageImage(request)
@@ -534,8 +536,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageMiniProgram(messageId: String): Future<MiniProgramPayload> {
 
         val request = Message.MessageMiniProgramRequest.newBuilder()
-                .setId(messageId)
-                .build()
+            .setId(messageId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageMiniProgram(request)
@@ -548,8 +550,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageUrl(messageId: String): Future<UrlLinkPayload> {
 
         val request = Message.MessageUrlRequest.newBuilder()
-                .setId(messageId)
-                .build()
+            .setId(messageId)
+            .build()
 
         return CompletableFuture.supplyAsync {
 
@@ -564,9 +566,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageSendContact(conversationId: String, contactId: String): Future<String?> {
 
         val request = Message.MessageSendContactRequest.newBuilder()
-                .setContactId(contactId)
-                .setConversationId(conversationId)
-                .build()
+            .setContactId(contactId)
+            .setConversationId(conversationId)
+            .build()
 
 
         return CompletableFuture.supplyAsync {
@@ -583,9 +585,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         log.debug("json size is {}", fileJson.length)
 
         val request = Message.MessageSendFileRequest.newBuilder()
-                .setConversationId(conversationId)
-                .setFilebox(fileJson)
-                .build()
+            .setConversationId(conversationId)
+            .setFilebox(fileJson)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageSendFile(request)
@@ -597,9 +599,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageSendMiniProgram(conversationId: String, miniProgramPayload: MiniProgramPayload): Future<String?> {
 
         val request = Message.MessageSendMiniProgramRequest.newBuilder()
-                .setConversationId(conversationId)
-                .setMiniProgram(JsonUtils.write(miniProgramPayload))
-                .build()
+            .setConversationId(conversationId)
+            .setMiniProgram(JsonUtils.write(miniProgramPayload))
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageSendMiniProgram(request)
@@ -610,9 +612,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun messageSendText(conversationId: String, text: String, mentionList: List<String>?): Future<String?> {
         val request = Message.MessageSendTextRequest.newBuilder()
-                .setConversationId(conversationId)
-                .setText(text)
-                .build()
+            .setConversationId(conversationId)
+            .setText(text)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageSendText(request)
@@ -624,9 +626,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun messageSendUrl(conversationId: String, urlLinkPayload: UrlLinkPayload): Future<String?> {
 
         val request = Message.MessageSendUrlRequest.newBuilder()
-                .setConversationId(conversationId)
-                .setUrlLink(JsonUtils.write(urlLinkPayload))
-                .build()
+            .setConversationId(conversationId)
+            .setUrlLink(JsonUtils.write(urlLinkPayload))
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageSendUrl(request)
@@ -638,8 +640,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
     override fun messageRecall(messageId: String): Future<Boolean> {
         val request = Message.MessageRecallRequest.newBuilder()
-                .setId(messageId)
-                .build()
+            .setId(messageId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.messageRecall(request)
@@ -674,8 +676,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomInvitationAccept(roomInvitation: String): Future<Void> {
 
         val request = RoomInvitation.RoomInvitationAcceptRequest.newBuilder()
-                .setId(roomInvitation)
-                .build()
+            .setId(roomInvitation)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.roomInvitationAccept(request)
@@ -686,8 +688,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomInvitationRawPayload(roomInvitationId: String): Future<RoomInvitationPayload> {
 
         val request = RoomInvitation.RoomInvitationPayloadRequest.newBuilder()
-                .setId(roomInvitationId)
-                .build()
+            .setId(roomInvitationId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomInvitationPayload(request)
@@ -716,9 +718,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomAdd(roomId: String, contactId: String): Future<Void> {
 
         val request = Room.RoomAddRequest.newBuilder()
-                .setContactId(contactId)
-                .setId(roomId)
-                .build()
+            .setContactId(contactId)
+            .setId(roomId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.roomAdd(request)
@@ -730,8 +732,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomAvatar(roomId: String): Future<FileBox> {
 
         val request = Room.RoomAvatarRequest.newBuilder()
-                .setId(roomId)
-                .build()
+            .setId(roomId)
+            .build()
 
         return CompletableFuture.supplyAsync {
 
@@ -747,9 +749,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomCreate(contactIdList: List<String>, topic: String?): Future<String> {
 
         val request = Room.RoomCreateRequest.newBuilder()
-                .setTopic(topic)
-                .addAllContactIds(contactIdList)
-                .build()
+            .setTopic(topic)
+            .addAllContactIds(contactIdList)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomCreate(request)
@@ -762,9 +764,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomDel(roomId: String, contactId: String): Future<Void> {
 
         val request = Room.RoomDelRequest.newBuilder()
-                .setId(roomId)
-                .setContactId(contactId)
-                .build()
+            .setId(roomId)
+            .setContactId(contactId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.roomDel(request)
@@ -787,8 +789,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomQRCode(roomId: String): Future<String> {
 
         val request = Room.RoomQRCodeRequest.newBuilder()
-                .setId(roomId)
-                .build()
+            .setId(roomId)
+            .build()
 
 
         return CompletableFuture.supplyAsync {
@@ -801,8 +803,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomQuit(roomId: String): Future<Void> {
 
         val request = Room.RoomQuitRequest.newBuilder()
-                .setId(roomId)
-                .build()
+            .setId(roomId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.roomQuit(request)
@@ -814,8 +816,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomTopic(roomId: String): Future<String?>? {
 
         val request = Room.RoomTopicRequest.newBuilder()
-                .setId(roomId)
-                .build()
+            .setId(roomId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomTopic(request)
@@ -830,9 +832,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         val value = StringValue.newBuilder().setValue(topic)
 
         val request = Room.RoomTopicRequest.newBuilder()
-                .setId(roomId)
-                .setTopic(value)
-                .build()
+            .setId(roomId)
+            .setTopic(value)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.roomTopic(request)
@@ -843,8 +845,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomRawPayload(roomId: String): Future<RoomPayload> {
 
         val request = Room.RoomPayloadRequest.newBuilder()
-                .setId(roomId)
-                .build()
+            .setId(roomId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomPayload(request)
@@ -867,8 +869,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun getRoomAnnounce(roomId: String): Future<String> {
 
         val request = Room.RoomAnnounceRequest.newBuilder()
-                .setId(roomId)
-                .build()
+            .setId(roomId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomAnnounce(request)
@@ -883,9 +885,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         val value = StringValue.newBuilder().setValue(text)
 
         val request = Room.RoomAnnounceRequest.newBuilder()
-                .setId(roomId)
-                .setText(value)
-                .build()
+            .setId(roomId)
+            .setText(value)
+            .build()
 
         return CompletableFuture.supplyAsync {
             grpcClient!!.roomAnnounce(request)
@@ -898,8 +900,8 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomMemberList(roomId: String): Future<List<String>> {
 
         val request = RoomMember.RoomMemberListRequest.newBuilder()
-                .setId(roomId)
-                .build()
+            .setId(roomId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomMemberList(request)
@@ -912,9 +914,9 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     override fun roomMemberRawPayload(roomId: String, contactId: String): Future<RoomMemberPayload> {
 
         val request = RoomMember.RoomMemberPayloadRequest.newBuilder()
-                .setId(roomId)
-                .setMemberId(contactId)
-                .build()
+            .setId(roomId)
+            .setMemberId(contactId)
+            .build()
 
         return CompletableFuture.supplyAsync {
             val response = grpcClient!!.roomMemberPayload(request)
@@ -1027,7 +1029,6 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
 
     }
-
 
 
     companion object {

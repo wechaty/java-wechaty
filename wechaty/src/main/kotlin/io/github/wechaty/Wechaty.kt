@@ -4,7 +4,6 @@ package io.github.wechaty;
 import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
-import io.github.wechaty.grpc.GrpcPuppet
 import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.listener.*
 //import io.github.wechaty.memorycard.MemoryCard

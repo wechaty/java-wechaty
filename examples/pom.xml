@@ -17,6 +17,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <dokka.version>0.10.1</dokka.version>
+        <wechaty.version>0.1.3-SNAPSHOT</wechaty.version>
     </properties>
 
     <dependencies>
@@ -24,7 +25,12 @@
         <dependency>
             <groupId>io.github.wechaty</groupId>
             <artifactId>wechaty</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
+            <version>${wechaty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.wechaty</groupId>
+            <artifactId>wechaty-puppet-hostie</artifactId>
+            <version>${wechaty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

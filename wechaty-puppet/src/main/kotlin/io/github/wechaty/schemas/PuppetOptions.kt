@@ -5,5 +5,6 @@ class PuppetOptions {
     var timeout: Long? = null
     var token: String? = null
     var puppetOptionKey: String? = null
+    var name: String = "DEFAULT"
 }
 
