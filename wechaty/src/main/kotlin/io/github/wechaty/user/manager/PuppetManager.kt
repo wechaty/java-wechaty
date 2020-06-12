@@ -6,6 +6,7 @@ import io.github.wechaty.schemas.PuppetOptions
 import io.github.wechaty.utils.JsonUtils
 import org.reflections.Reflections
 import org.reflections.util.ClasspathHelper
+import org.reflections.util.ConfigurationBuilder
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
@@ -21,8 +22,12 @@ class PuppetManager {
         fun resolveInstance(wechatyOptions: WechatyOptions): Future<Puppet> {
             log.info("PuppetManager resolveInstance(${JsonUtils.write(wechatyOptions)})")
 
-            val reflections = Reflections(ClasspathHelper.forPackage(REFLECTION_BASE_PACKAGE, Thread.currentThread().contextClassLoader))
+            val reflections = Reflections(ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(REFLECTION_BASE_PACKAGE, Thread.currentThread().contextClassLoader)))
+
             val subTypes: Set<*> = reflections.getSubTypesOf(Puppet::class.java)
+            if (subTypes.isEmpty()) {
+                throw java.lang.RuntimeException("expect one puppet,but can not found any one.")
+            }
 
             if (subTypes.size > 1) {
                 throw RuntimeException("expect one puppet,but found ${subTypes.size}")

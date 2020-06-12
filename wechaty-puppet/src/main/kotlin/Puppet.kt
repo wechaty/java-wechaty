@@ -426,39 +426,39 @@ abstract class Puppet : EventEmitter {
                 return@supplyAsync list
             }
 
-            val stream = list?.stream()?.map { contactPayload(it).get() }
+            var stream = list?.stream()?.map { contactPayload(it).get() }
             if (StringUtils.isNotBlank(query.name)) {
-                stream?.filter {
+                stream = stream?.filter {
                     StringUtils.equals(query.name, it.name)
                 }
             }
 
             if (StringUtils.isNotBlank(query.alias)) {
-                stream?.filter {
+                stream = stream?.filter {
                     StringUtils.equals(query.alias, it.alias)
                 }
             }
 
             if (StringUtils.isNotBlank(query.id)) {
-                stream?.filter {
+                stream = stream?.filter {
                     StringUtils.equals(query.alias, it.alias)
                 }
             }
 
             if (StringUtils.isNotBlank(query.weixin)) {
-                stream?.filter {
+                stream = stream?.filter {
                     StringUtils.equals(query.alias, it.alias)
                 }
             }
 
             if (query.nameReg != null) {
-                stream?.filter {
+                stream = stream?.filter {
                     query.nameReg!!.matches(it.name ?: "")
                 }
             }
 
             if (query.aliasReg != null) {
-                stream?.filter {
+                stream = stream?.filter {
                     query.aliasReg!!.matches(it.alias ?: "")
                 }
             }
@@ -650,46 +650,46 @@ abstract class Puppet : EventEmitter {
                 messagePayload(it).get()
             }
 
-            val stream = messagePayloadList.stream()
+            var stream = messagePayloadList.stream()
 
             if (StringUtils.isNotEmpty(query.fromId)) {
-                stream.filter {
+                stream = stream.filter {
                     StringUtils.equals(it.fromId, query.fromId)
                 }
             }
 
             if (StringUtils.isNotEmpty(query.id)) {
-                stream.filter {
+                stream = stream.filter {
                     StringUtils.equals(it.id, query.id)
                 }
             }
 
             if (StringUtils.isNotEmpty(query.roomId)) {
-                stream.filter {
+                stream = stream.filter {
                     StringUtils.equals(it.roomId, query.roomId)
                 }
             }
 
             if (StringUtils.isNotEmpty(query.toId)) {
-                stream.filter {
+                stream = stream.filter {
                     StringUtils.equals(it.toId, query.toId)
                 }
             }
 
             if (StringUtils.isNotEmpty(query.text)) {
-                stream.filter {
+                stream = stream.filter {
                     StringUtils.equals(it.text, query.text)
                 }
             }
 
             if (query.textReg != null) {
-                stream.filter {
+                stream = stream.filter {
                     query.textReg!!.matches(it.text ?: "")
                 }
             }
 
             if (query.type != null) {
-                stream.filter {
+                stream = stream.filter {
                     query.type == it.type
                 }
             }
