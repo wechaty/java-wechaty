@@ -278,6 +278,12 @@ mvn install wechaty
 
 ### master
 
+### v0.1.4 (June 13 2020)
+1. use `PuppetManager` to manage multi puppet implementations.
+2. add mock puppet.
+3. remove puppet implementations from wechaty pom. Which implementation to use depends on which implementation jar in your pom.
+4. fix some bugs.
+
 ### v0.1.3 (June 6 2020)
 1. support plugins!
 
