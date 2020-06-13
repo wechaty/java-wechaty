@@ -1,11 +1,11 @@
 package io.github.wechaty.schemas
 
 
-enum class ContractGender(var code: Int) {
+enum class ContactGender(var code: Int) {
     Unknown(0), Male(1), Female(2);
 
     companion object {
-        fun getByCode(code: Int): ContractGender {
+        fun getByCode(code: Int): ContactGender {
             val values = values()
             for (value in values) {
                 if (value.code == code) {
@@ -46,7 +46,7 @@ class ContactQueryFilter {
 }
 
 class ContactPayload(val id:String) {
-    var gender: ContractGender? = null
+    var gender: ContactGender? = null
     var type: ContactType? = null
     var name: String? = null
     var avatar: String? = null

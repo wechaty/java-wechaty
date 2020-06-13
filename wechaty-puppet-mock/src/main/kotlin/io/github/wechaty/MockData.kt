@@ -21,7 +21,7 @@ class MockData {
             contactPayload.avatar = faker.avatar().toString()
             contactPayload.city = faker.address().city()
             contactPayload.friend = true
-            contactPayload.gender = ContractGender.Male
+            contactPayload.gender = ContactGender.Male
             contactPayload.name = faker.name().firstName()
             contactPayload.province = faker.address().state()
             contactPayload.signature = faker.lorem().sentence()

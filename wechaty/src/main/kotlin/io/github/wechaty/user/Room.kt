@@ -75,12 +75,13 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                 is String -> {
                     var mentionList = listOf<Any>()
                     if (varList.isNotEmpty()) {
-                        varList.forEach {
+                        val list = varList[0] as? List<*> ?: throw Exception("room say contact args not valid")
+                        list.forEach {
                             if (it !is Contact) {
                                 throw Exception("mentionList must be contact when not using String array function call.")
                             }
                         }
-                        mentionList = varList.toList()
+                        mentionList = list as List<Any>
 
                         val mentionAlias = mentionList.map { contact ->
                             val alias = alias(contact as Contact)

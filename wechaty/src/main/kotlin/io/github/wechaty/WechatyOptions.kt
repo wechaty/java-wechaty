@@ -9,7 +9,8 @@ class WechatyOptions {
 
     var name:String = "Wechaty"
 
-    var puppet:String = "wechaty-puppet-hostie"
+//    var puppet:String = "wechaty-puppet-hostie"
+    var puppet:String = "io.github.wechaty.grpc.GrpcPuppet"
 
     var puppetOptions:PuppetOptions? = null
 
