@@ -1,12 +1,7 @@
 package io.github.wechaty.example;
 
 
-import io.github.wechaty.LoginListener;
-import io.github.wechaty.MessageListener;
 import io.github.wechaty.Wechaty;
-import io.github.wechaty.filebox.FileBox;
-import io.github.wechaty.io.github.wechaty.schemas.EventEnum;
-import io.github.wechaty.user.Contact;
 import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
 import okhttp3.OkHttpClient;
