@@ -291,7 +291,7 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
         if(this.type() != MessageType.Image){
             throw Exception("not a image type, type is "+ this.type())
         }
-        return wechaty.imageMessager.create(this.id);
+        return wechaty.imageManager.create(this.id);
     }
 
     fun toContact():Contact{
