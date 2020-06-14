@@ -37,7 +37,8 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val contactManager = ContactManager(this)
     val messageManager = MessageManager(this)
     val roomManager = RoomManager(this)
-    val roomInvitationMessage = RoomInvitationManager(this)
+    val roomInvitationMessager = RoomInvitationManager(this)
+    val imageMessager = ImageManager(this)
 
     init {
 //        this.memory = wechatyOptions.memory
@@ -277,7 +278,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 EventEnum.ROOM_INVITE -> {
                     puppet.on(it, object : PuppetRoomInviteListener {
                         override fun handler(payload: EventRoomInvitePayload) {
-                            val roomInvitation = roomInvitationMessage.load(payload.roomInvitationId)
+                            val roomInvitation = roomInvitationMessager.load(payload.roomInvitationId)
                             emit(EventEnum.ROOM_INVITE, roomInvitation)
                         }
                     })
