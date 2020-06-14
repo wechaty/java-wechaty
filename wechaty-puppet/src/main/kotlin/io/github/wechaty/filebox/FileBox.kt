@@ -19,84 +19,88 @@ import java.util.concurrent.Future
 class FileBox(options: FileBoxOptions) {
 
     @JsonProperty
-    private var mimeType: String? = null
-    @JsonProperty
-    private  var base64  : String? = null
-    @JsonProperty
-    private  var remoteUrl : String? = null
-    @JsonProperty
-    private  var qrCode    : String? = null
-    @JsonProperty
-    private  var buffer    : ByteArray?=null
-    private  var localPath : String? = null
-    @JsonProperty
-    private var headers : OutgoingHttpHeaders? = null
-    @JsonProperty
-    private var name :String? = null
-    @JsonProperty
-    private var metadata: Metadata? = null
-    @JsonProperty
-    private lateinit var boxType:FileBoxType
+    var mimeType: String? = null
 
-    private val client:OkHttpClient = OkHttpClient()
+    @JsonProperty
+    var base64: String? = null
+
+    @JsonProperty
+    var remoteUrl: String? = null
+
+    @JsonProperty
+    var qrCode: String? = null
+
+    @JsonProperty
+    var buffer: ByteArray? = null
+    var localPath: String? = null
+
+    @JsonProperty
+    var headers: OutgoingHttpHeaders? = null
+
+    @JsonProperty
+    var name: String? = null
+
+    @JsonProperty
+    var metadata: Metadata? = null
+
+    @JsonProperty
+    var boxType: FileBoxType
+
+    private val client: OkHttpClient = OkHttpClient()
 
     init {
-        when(options){
-            is FileBoxOptionsBuffer ->{
+        when (options) {
+            is FileBoxOptionsBuffer -> {
                 this.name = options.name
                 this.boxType = options.type
                 this.buffer = options.buffer
             }
 
-            is FileBoxOptionsFile ->{
+            is FileBoxOptionsFile -> {
                 this.name = options.name
                 this.boxType = options.type
                 this.localPath = options.path
             }
 
-            is FileBoxOptionsUrl ->{
+            is FileBoxOptionsUrl -> {
                 this.name = options.name
                 this.boxType = options.type
                 this.remoteUrl = options.url
                 this.headers = options.headers
             }
 
-            is FileBoxOptionsStream ->{
+            is FileBoxOptionsStream -> {
                 this.name = options.name
                 this.boxType = options.type
             }
 
-            is FileBoxOptionsQRCode ->{
+            is FileBoxOptionsQRCode -> {
                 this.name = options.name
                 this.boxType = options.type
                 this.qrCode = options.qrCode
             }
 
-            is FileBoxOptionsBase64 ->{
+            is FileBoxOptionsBase64 -> {
                 this.name = options.name
                 this.boxType = options.type
                 this.base64 = options.base64
             }
-            
-            
-
         }
-
     }
 
-    fun type():FileBoxType{
+    fun type(): FileBoxType {
         return this.boxType
     }
 
-    fun ready():Future<Void>{
-        if(this.boxType == FileBoxType.Url){
+    fun ready(): Future<Void> {
+        if (this.boxType == FileBoxType.Url) {
 
         }
 
         return CompletableFuture.completedFuture(null);
     }
 
-    fun syncRemoteName():Future<Void>{
+    fun syncRemoteName(): Future<Void> {
 
         val httpHeadHeader = httpHeadHeader(this.remoteUrl!!)
 
@@ -121,29 +125,28 @@ class FileBox(options: FileBoxOptions) {
 
     }
 
-    private fun httpHeadHeader(url:String):Map<String, List<String>>{
+    private fun httpHeadHeader(url: String): Map<String, List<String>> {
 
         val request: Request = Request.Builder()
-                .url(url)
-                .build()
+            .url(url)
+            .build()
 
-        client.newCall(request).execute().use {
-            response ->
+        client.newCall(request).execute().use { response ->
             val headers = response.headers
             return headers.toMultimap()
         }
     }
 
-    fun toJsonString():String {
+    fun toJsonString(): String {
         buffer = toByte(this)
 
         return JsonUtils.write(this)
 
     }
 
-    fun toByte(fileBox: FileBox):ByteArray?{
-        when(fileBox.type()){
-            FileBoxType.File ->{
+    fun toByte(fileBox: FileBox): ByteArray? {
+        when (fileBox.type()) {
+            FileBoxType.File -> {
 
                 val file = File(ClassLoader.getSystemResource("dong.jpg").path)
 
@@ -151,24 +154,24 @@ class FileBox(options: FileBoxOptions) {
 
             }
 
-            FileBoxType.Url ->{
+            FileBoxType.Url -> {
                 return null;
             }
 
-            else ->{
+            else -> {
                 TODO()
             }
 
         }
     }
 
-    companion object{
+    companion object {
 
         @JvmStatic
-        fun fromFile(path:String,name:String):FileBox{
+        fun fromFile(path: String, name: String): FileBox {
             var localname = name
 
-            if(StringUtils.isEmpty(name)){
+            if (StringUtils.isEmpty(name)) {
                 localname = FilenameUtils.getBaseName(path)
             }
 
@@ -178,70 +181,70 @@ class FileBox(options: FileBoxOptions) {
         }
 
         @JvmStatic
-        fun fromJson(obj:String):FileBox{
+        fun fromJson(obj: String): FileBox {
 
-            return JsonUtils.readValue<FileBox>(obj)
+//            return JsonUtils.readValue<FileBox>(obj)
 
-//            val jsonObject = JsonObject(obj)
-//
-//            var fileBox:FileBox
-//
-//            val type = jsonObject.getInteger("boxType")
-//
-//            when(type){
-//
-//                FileBoxType.Base64.code ->{
-//                    fileBox = fromBase64(
-//                            jsonObject.getString("base64"),
-//                            jsonObject.getString("name")
-//                    )
-//                }
-//
-//                FileBoxType.Url.code ->{
-//                    fileBox = fromUrl(
-//                            jsonObject.getString("name"),
-//                            jsonObject.getString("remoteUrl")
-//                    )
-//                }
-//
-//                FileBoxType.QRcode.code ->{
-//                    fileBox = fromQRCode(
-//                            jsonObject.getString("qrCode")
-//                    )
-//                }
-//                else ->{
-//                    throw Exception("unknown filebox json object{type} $jsonObject")
-//                }
-//            }
-//
-//            fileBox.metadata = jsonObject.get("metadata")
-//            return fileBox;
+            val jsonNode = JsonUtils.mapper.readTree(obj)
+
+            var fileBox: FileBox
+
+            val type = jsonNode.findValue("boxType").asInt()
+
+            when (type) {
+
+                FileBoxType.Base64.code -> {
+                    fileBox = fromBase64(
+                        jsonNode.findValue("base64").asText(),
+                        jsonNode.findValue("name").asText()
+                    )
+                }
+
+                FileBoxType.Url.code -> {
+                    fileBox = fromUrl(
+                        jsonNode.findValue("name").asText(),
+                        jsonNode.findValue("remoteUrl").asText()
+                    )
+                }
+
+                FileBoxType.QRcode.code -> {
+                    fileBox = fromQRCode(
+                        jsonNode.findValue("qrCode").asText()
+                    )
+                }
+                else -> {
+                    throw Exception("unknown filebox json object{type} $jsonNode")
+                }
+            }
+
+//            fileBox.metadata = jsonNode.get("metadata")
+            return fileBox;
         }
 
         @JvmStatic
-        fun fromBase64(base64: String,name:String):FileBox{
+        fun fromBase64(base64: String, name: String): FileBox {
             val options = FileBoxOptionsBase64(base64 = base64, name = name)
             return FileBox(options)
         }
 
         @JvmStatic
-        fun fromDataUrl(dataUrl: String,name:String):FileBox{
+        fun fromDataUrl(dataUrl: String, name: String): FileBox {
             val base64 = dataUrlToBase64(dataUrl);
-            return fromBase64(base64,name)
+            return fromBase64(base64, name)
         }
 
         @JvmStatic
-        fun fromQRCode(qrCode:String):FileBox{
+        fun fromQRCode(qrCode: String): FileBox {
             val optionsQRCode = FileBoxOptionsQRCode(name = "qrcode.png", qrCode = qrCode)
             return FileBox(optionsQRCode)
         }
 
         @JvmStatic
-        fun fromUrl(url:String,name: String?,headers: OutgoingHttpHeaders? = null):FileBox{
+        fun fromUrl(url: String, name: String?, headers: OutgoingHttpHeaders? = null): FileBox {
 
-            var localName :String? = name
+            var localName: String? = name
 
-            if(StringUtils.isEmpty(url)){
+            if (StringUtils.isEmpty(url)) {
                 val parsedUrl = URL(url)
                 localName = parsedUrl.path
             }
@@ -253,22 +256,13 @@ class FileBox(options: FileBoxOptions) {
         }
 
 
-
         /**
          * ?????
          */
-        fun dataUrlToBase64(dataUrl :String):String{
+        fun dataUrlToBase64(dataUrl: String): String {
             val split = StringUtils.split(dataUrl, ",")
             return split[split.size - 1]
         }
 
     }
-
-
-
-
-
-
-
-
 }

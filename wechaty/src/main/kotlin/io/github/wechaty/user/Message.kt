@@ -283,6 +283,25 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
         }
     }
 
+    fun file():FileBox{
+        return this.toFileBox()
+    }
+
+    fun toImage():Image{
+        if(this.type() != MessageType.Image){
+            throw Exception("not a image type, type is "+ this.type())
+        }
+        return wechaty.imageMessager.create(this.id);
+
+    }
+
+    fun toFileBox():FileBox{
+        if(this.type() == MessageType.Text){
+            throw Exception("text message no file")
+        }
+        return wechaty.getPuppet().messageFile(this.id).get()
+    }
+
 
     override fun toString():String{
         return "Message(payload=$payload,id=$id)"
