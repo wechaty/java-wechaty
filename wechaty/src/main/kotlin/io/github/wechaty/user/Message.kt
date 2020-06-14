@@ -292,8 +292,43 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
             throw Exception("not a image type, type is "+ this.type())
         }
         return wechaty.imageMessager.create(this.id);
-
     }
+
+    fun toContact():Contact{
+
+        if(this.type() != MessageType.Contact){
+            throw Exception("message not a ShareCard")
+        }
+
+        val contactId = wechaty.getPuppet().messageContact(this.id).get()
+        if(StringUtils.isEmpty(contactId)){
+            throw Exception("can not get contact id by message ${this.id}")
+        }
+
+        val contact = wechaty.contactManager.load(contactId)
+        contact.ready()
+        return contact
+    }
+
+    fun toUrlLink():UrlLink{
+        if(this.type() != MessageType.Url){
+            throw Exception("message not a Url Link")
+        }
+
+        val urlPayload = wechaty.getPuppet().messageUrl(this.id).get()
+        return UrlLink(urlPayload)
+    }
+
+    fun toMiniProgram():MiniProgram{
+
+        if(this.type() != MessageType.MiniProgram){
+            throw Exception("message not a MiniProgram")
+        }
+
+        val miniProgramPayload = wechaty.getPuppet().messageMiniProgram(this.id).get()
+        return MiniProgram(miniProgramPayload)
+    }
+
 
     fun toFileBox():FileBox{
         if(this.type() == MessageType.Text){
