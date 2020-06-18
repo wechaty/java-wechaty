@@ -321,7 +321,6 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [Java Wechaty](https://github.com/wechaty/java-wechaty) - Java WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Java)
 - [Scala Wechaty](https://github.com/wechaty/scala-wechaty) - Scala WeChaty Conversational AI Chatbot SDK for WechatyIndividual Accounts (Scala)
 
-
 ## Badge
 
 [![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
@@ -329,6 +328,17 @@ We decided to use Kotlin to develop the Java Wechaty!
 ```md
 [![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
 ```
+
+## Contributors
+
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/0)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/0)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/1)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/1)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/2)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/2)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/3)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/3)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/4)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/4)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/5)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/5)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/6)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/6)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/7)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/7)
 
 ## Committers
 
