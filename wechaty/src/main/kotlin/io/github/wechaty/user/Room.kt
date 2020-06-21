@@ -356,9 +356,25 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return payload != null
     }
 
+    fun owner():Contact?{
+        val ownerId = payload?.ownerId
+
+        return if(ownerId.isNullOrBlank()){
+            null
+        }else{
+            return wechaty.contactManager.load(ownerId)
+        }
+    }
+
+    fun avatar():FileBox{
+        log.debug("avatar:{}",avatar())
+        return puppet.roomAvatar(this.id).get()
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(Room::class.java)
     }
+
 }
 
 val ROOM_EVENT_DICT = mapOf(
