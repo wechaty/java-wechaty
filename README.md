@@ -1,7 +1,7 @@
 # java-wechaty
 
 ![Java CI with Maven](https://github.com/wechaty/java-wechaty/workflows/Java%20CI%20with%20Maven/badge.svg)
-[![Java Version](https://img.shields.io/maven-central/v/io.github.wechaty/wechaty?label=Java)](https://mvnrepository.com/artifact/io.github.wechaty/wechaty)
+[![Java Version](https://img.shields.io/maven-central/v/io.github.wechaty/wechaty?label=Maven)](https://mvnrepository.com/artifact/io.github.wechaty/wechaty)
 
 ![Java Wechaty](https://wechaty.github.io/java-wechaty/images/java-wechaty.png)
 
