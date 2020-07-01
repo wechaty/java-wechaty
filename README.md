@@ -15,12 +15,6 @@
 
 Wechaty is a RPA SDK for Wechat **Individual** Account that can help you create a chatbot in 6 lines of Java.
 
-## WORK IN PROGRESS
-
-Work in progress...
-
-Please come back after 4 weeks...
-
 ## Voice of the Developers
 
 > "Wechaty is a great solution, I believe there would be much more users recognize it." [link](https://github.com/Wechaty/wechaty/pull/310#issuecomment-285574472)  
@@ -277,6 +271,14 @@ mvn install wechaty
 ## History
 
 ### master
+
+### v0.4 (Jun 19, 2020)
+
+Java(Kotlin) Wechaty **BETA** Released!
+
+Read more from our Multi-language Wechaty Beta Release event from our blog:
+
+- [Multi Language Wechaty Beta Release Announcement!](https://wechaty.github.io/2020/06/19/multi-language-wechaty-beta-release/)
 
 ### v0.1.4 (June 13 2020)
 1. use `PuppetManager` to manage multi puppet implementations.
