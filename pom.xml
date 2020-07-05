@@ -30,6 +30,7 @@
         <module>wechaty</module>
         <module>wechaty-puppet</module>
         <module>wechaty-puppet-hostie</module>
+        <module>examples</module>
         <module>wechaty-puppet-mock</module>
     </modules>
 
