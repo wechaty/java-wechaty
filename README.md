@@ -1,9 +1,9 @@
 # java-wechaty
 
 ![Java CI with Maven](https://github.com/wechaty/java-wechaty/workflows/Java%20CI%20with%20Maven/badge.svg)
-[![Java Version](https://img.shields.io/maven-central/v/io.github.wechaty/wechaty?label=Java)](https://mvnrepository.com/artifact/io.github.wechaty/wechaty)
+[![Java Version](https://img.shields.io/maven-central/v/io.github.wechaty/wechaty?label=Maven)](https://mvnrepository.com/artifact/io.github.wechaty/wechaty)
 
-![Java Wechaty](https://wechaty.github.io/java-wechaty/images/java-wechaty.png)
+![Java Wechaty](docs/images/java-wechaty.png)
 
 [![Java Wechaty Getting Started](https://img.shields.io/badge/Java%20Wechaty-Getting%20Started-orange)](https://github.com/wechaty/java-wechaty-getting-started)
 [![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
@@ -14,12 +14,6 @@
 [![Kotlin](https://img.shields.io/badge/%3C%2F%3E-Kotlin-orange.svg)](https://kotlinlang.org)
 
 Wechaty is a RPA SDK for Wechat **Individual** Account that can help you create a chatbot in 6 lines of Java.
-
-## WORK IN PROGRESS
-
-Work in progress...
-
-Please come back after 4 weeks...
 
 ## Voice of the Developers
 
@@ -278,6 +272,14 @@ mvn install wechaty
 
 ### master
 
+### v0.4 (Jun 19, 2020)
+
+Java(Kotlin) Wechaty **BETA** Released!
+
+Read more from our Multi-language Wechaty Beta Release event from our blog:
+
+- [Multi Language Wechaty Beta Release Announcement!](https://wechaty.github.io/2020/06/19/multi-language-wechaty-beta-release/)
+
 ### v0.1.4 (June 13 2020)
 1. use `PuppetManager` to manage multi puppet implementations.
 2. add mock puppet.
@@ -321,7 +323,6 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [Java Wechaty](https://github.com/wechaty/java-wechaty) - Java WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Java)
 - [Scala Wechaty](https://github.com/wechaty/scala-wechaty) - Scala WeChaty Conversational AI Chatbot SDK for WechatyIndividual Accounts (Scala)
 
-
 ## Badge
 
 [![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
@@ -329,6 +330,17 @@ We decided to use Kotlin to develop the Java Wechaty!
 ```md
 [![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
 ```
+
+## Contributors
+
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/0)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/0)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/1)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/1)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/2)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/2)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/3)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/3)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/4)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/4)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/5)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/5)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/6)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/6)
+[![contributors](https://sourcerer.io/fame/huan/wechaty/java-wechaty/images/7)](https://sourcerer.io/fame/huan/wechaty/java-wechaty/links/7)
 
 ## Committers
 
