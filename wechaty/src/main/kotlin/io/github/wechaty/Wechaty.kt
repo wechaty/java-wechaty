@@ -80,6 +80,9 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return on(EventEnum.LOGIN,listener)
     }
 
+    fun onLogout(listener: LogoutListener): Wechaty {
+        return on(EventEnum.LOGOUT, listener)
+    }
     fun onScan(listener: ScanListener):Wechaty{
         return on(EventEnum.SCAN,listener);
     }
@@ -122,6 +125,14 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return this
     }
 
+    private fun on(event: Event, listener: LogoutListener): Wechaty {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as String, any[1] as String)
+            }
+        })
+        return this
+    }
     private fun on(event: Event, listener: DongListener):Wechaty {
         return this
     }
@@ -248,7 +259,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                         override fun handler(payload: EventLogoutPayload) {
                             val contact = contactManager.loadSelf(payload.contactId)
                             contact.ready()
-                            emit(EventEnum.LOGOUT, contact, payload.data)
+                            emit(EventEnum.LOGOUT, contact.id, payload.data)
                         }
                     })
                 }

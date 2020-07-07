@@ -16,13 +16,17 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>io.github.wechaty</groupId>
             <artifactId>wechaty-puppet</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <!-- 方便测试 -->
+        <dependency>
+            <groupId>io.github.wechaty</groupId>
+            <artifactId>wechaty-puppet-hostie</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.github.wechaty</groupId>
             <artifactId>wechaty-puppet-mock</artifactId>
@@ -107,6 +111,7 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
