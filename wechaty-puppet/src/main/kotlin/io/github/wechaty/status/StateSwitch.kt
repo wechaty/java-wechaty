@@ -2,6 +2,7 @@ package io.github.wechaty.io.github.wechaty.status
 
 import io.github.wechaty.StateEnum
 import io.github.wechaty.eventEmitter.EventEmitter
+import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
@@ -36,22 +37,61 @@ class StateSwitch:EventEmitter(){
         }
     }
 
-    fun on(state: StateEnum):StateEnum{
+    fun on(state: StateEnum):StateEnum  {
         val on = on()
-        log.debug("statusSwitch $name on ${state.name} <- $on")
+        log.debug("statusSwitch $name on ${state.name} <- ${on}")
 
         onoff = true
         pending = (state == StateEnum.PENDING)
 
-        emit(EventEnum.ON,state.name)
-        TODO()
+        emit(EventEnum.ON, state.name)
+        return on
     }
 
-    fun on():StateEnum{
-        TODO()
+    fun on(): StateEnum {
+        val on =
+            if (this.onoff == true)
+                if (this.pending == true)
+                    StateEnum.PENDING
+                else
+                    StateEnum.ON
+            else
+                StateEnum.OFF
+        log.info("StateSwitch, <%s> on() is %s", this.name, on)
+        return on
     }
 
-    companion object{
+    fun off(state: StateEnum) {
+        log.info("StateSwitch, <%s> off(%s) <- (%s)", this.name, state, this.off())
+        this.onoff = false
+        this.pending = (state == StateEnum.PENDING)
+        this.emit(StateEnum.OFF, state)
+
+//        if (this.onResolver == null) {
+//
+//        }
+    }
+
+    fun off(): StateEnum {
+        val off =
+            if (!this.onoff)
+                if (this.pending)
+                    StateEnum.PENDING
+                else
+                    StateEnum.ON
+            else
+                StateEnum.OFF
+        log.info("StateSwitch, <%s> off() is %s", this.name, off)
+        return off
+    }
+
+    fun addEventListener(type: StateEnum, listener: Listener) {
+        super.addListener(type, listener)
+    }
+    fun removeEventListener(type: StateEnum, listener: Listener) {
+        super.removeListener(type, listener)
+    }
+    companion object {
         private val log = LoggerFactory.getLogger(StateSwitch::class.java)
     }
 
