@@ -14,9 +14,9 @@ import java.io.File
 import java.lang.Exception
 import kotlin.math.abs
 
-class StorageFile(val name: String, var options: StorageBackendOptions) : StorageBackend(name,options) {
+class StorageFile(val name: String, var options: StorageBackendOptions) : StorageBackend(name, options) {
 
-    private var absFileName:String
+    private var absFileName: String
 
     init {
 
@@ -61,10 +61,11 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
 
     override fun save(payload: MemoryCardPayload) {
         log.info("StorageFile, save() to %s", this.absFileName)
+
         val text = JsonUtils.write(payload)
         val file = File(absFileName)
-        FileUtils.write(file,text,"UTF-8")
 
+        FileUtils.write(file,text,"UTF-8")
     }
 
     override fun destory() {
@@ -72,7 +73,13 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
 
         val file = File(absFileName)
         if (file.exists()) {
-            FileUtils.deleteQuietly(file)
+            val deleteQuietly = FileUtils.deleteQuietly(file)
+            if (deleteQuietly) {
+                log.info("destory() ${this.absFileName} success")
+            }
+            else {
+                log.warn("destory() ${this.absFileName} failed")
+            }
         }
     }
 

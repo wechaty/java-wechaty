@@ -1,9 +1,11 @@
 package io.github.wechaty.io.github.wechaty.memorycard.backend
 
-import io.github.wechaty.memorycard.MemoryCardPayload
-import io.github.wechaty.memorycard.StorageBackend
-import io.github.wechaty.memorycard.StorageBackendOptions
-import io.github.wechaty.memorycard.StorageFileOptions
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import io.github.wechaty.memorycard.*
 import io.github.wechaty.utils.JsonUtils
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
@@ -13,44 +15,50 @@ import java.io.File
 
 class StorageS3(val name: String, var options: StorageBackendOptions) : StorageBackend(name,options) {
 
-    private var absFileName:String
+    private lateinit var s3: AmazonS3
 
     init {
-        options.type = "file"
-        options = options as StorageFileOptions
-        val file = File(name)
-        if(file.isAbsolute){
-            this.absFileName = name
-        }else{
-            this.absFileName = FilenameUtils.concat(System.getProperty("user.dir"),name)
-        }
 
-        if(!StringUtils.endsWith(this.absFileName,".memory-card.json")){
-            this.absFileName += ".memory-card.json"
-        }
+        log.info("StorageS3, constructor()")
+        options.type = "s3"
+        options = options as StorageS3Options
+        val basicAWSCredentials = BasicAWSCredentials((options as StorageS3Options).accessKeyId, (options as StorageS3Options).secretAccessKey)
+        this.s3 = AmazonS3ClientBuilder.standard().withCredentials(AWSStaticCredentialsProvider(basicAWSCredentials))
+            .withRegion((options as StorageS3Options).region).build()
 
     }
 
     override fun save(payload: MemoryCardPayload) {
-        val text = JsonUtils.write(payload)
-        val file = File(absFileName)
-        FileUtils.write(file,text,"UTF-8")
+        log.info("StorageS3, save()")
+        val options = this.options as StorageS3Options
+
+        this.s3.putObject(JsonUtils.write(payload), options.bucket, this.name)
 
     }
 
     override fun load(): MemoryCardPayload {
-        val file = File(absFileName)
-        if(!file.exists()){
+        log.info("StorageS3, load()")
+
+        val options = this.options as StorageS3Options
+        val result = this.s3.getObject(options.bucket, this.name)
+        if (result==null || result.objectContent == null) {
             return MemoryCardPayload()
         }
-        val text = FileUtils.readFileToString(file, "UTF-8")
-        return JsonUtils.readValue(text);
-
+        // 这里还有问题
+        return MemoryCardPayload()
     }
 
     override fun destory() {
-        TODO("Not yet implemented")
+        log.info("StorageS3, destory()")
+
+        val options = this.options as StorageS3Options
+        this.s3.deleteObject(options.bucket, this.name)
     }
+
+    override fun toString(): String {
+        return "${this.name}<${this.name}>"
+    }
+
 
     companion object {
         private val log = LoggerFactory.getLogger(StorageS3::class.java)

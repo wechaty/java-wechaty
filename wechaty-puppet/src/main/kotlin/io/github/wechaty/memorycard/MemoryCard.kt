@@ -241,16 +241,48 @@ class MemoryCard {
 
     fun has(key: String): Future<Boolean> {
         log.info("MemoryCard, <%s> has (%s)", this.multiplexPath(), key)
+
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }
+
         val absoluteKey = this.resolveKey(key)
         return CompletableFuture.supplyAsync {
             this.payload!!.map.containsKey(absoluteKey)
         }
     }
 
+    fun keys(): MutableSet<String> {
+        log.info("MemoryCard, <%s> keys()", this.multiplexPath())
 
+        if (this.payload == null) {
+            throw Exception("no payload, please call load() first.")
+        }
+        var result = mutableSetOf<String>()
+        for (key in this.payload!!.map.keys) {
+            if (this.isMultiplex()) {
+                if (this.isMultiplexKey(key)) {
+                    val namespace = this.multiplexNamespace()
+                    val mpKey = key.substring(namespace.length + 1)
+                    result.add(mpKey)
+                }
+                continue
+            }
+            result.add(key)
+        }
+        return result
+    }
+
+
+    fun values(): MutableCollection<Any> {
+        log.info("MemoryCard, <%s> values()", this.multiplexPath())
+
+        if (this.payload == null) {
+            throw Exception("no payload, please call load() first.")
+        }
+
+        return this.payload!!.map.values
+    }
     override fun toString(): String {
         var mpString = ""
         if (this.multiplexNameList.size > 0) {
