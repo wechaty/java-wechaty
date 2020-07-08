@@ -326,7 +326,7 @@ class MemoryCard {
 }
 
 class MemoryCardPayload{
-    val map = mutableMapOf<String, Any>()
+    var map = mutableMapOf<String, Any>()
 }
 
 data class Multiplex(

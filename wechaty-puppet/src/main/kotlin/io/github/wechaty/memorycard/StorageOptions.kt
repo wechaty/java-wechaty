@@ -9,6 +9,12 @@ sealed class StorageBackendOptions {
     var type: String? = null
 }
 
+class StorageNopOptions: StorageBackendOptions() {
+    var placeholder: String? = null
+}
+
+typealias StorageFileOptions = StorageNopOptions
+
 data class StorageS3Options(
     val accessKeyId:String,
     val secretAccessKey:String,
@@ -23,12 +29,6 @@ data class StorageObsOptions(
     val server:String,
     val bucket:String
 ):StorageBackendOptions()
-
-class StorageNopOptions: StorageBackendOptions() {
-    var placeholder: String? = null
-}
-
-typealias StorageFileOptions = StorageNopOptions
 
 val BACKEND_DICT = mapOf(
     "file" to StorageFile::class,

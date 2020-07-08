@@ -14,6 +14,8 @@ import java.io.File
 import java.lang.Exception
 import kotlin.math.abs
 
+// 本身是不存储数据的
+// 存储了持久化的文件名和选项
 class StorageFile(val name: String, var options: StorageBackendOptions) : StorageBackend(name, options) {
 
     private var absFileName: String
@@ -50,21 +52,19 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
         val text = FileUtils.readFileToString(file, "UTF-8")
         var payload = MemoryCardPayload()
         try {
-            payload = JsonUtils.readValue(text);
+            payload.map = JsonUtils.readValue(text);
         }
         catch (e: Exception) {
             log.error("MemoryCard, load() exception: %s", e)
         }
         return payload
-
     }
 
     override fun save(payload: MemoryCardPayload) {
         log.info("StorageFile, save() to %s", this.absFileName)
 
-        val text = JsonUtils.write(payload)
+        val text = JsonUtils.write(payload.map)
         val file = File(absFileName)
-
         FileUtils.write(file,text,"UTF-8")
     }
 
