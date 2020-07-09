@@ -36,11 +36,11 @@ class StorageNop(val name: String, var options: StorageBackendOptions) : Storage
     companion object {
         private val log = LoggerFactory.getLogger(StorageNop::class.java)
     }
-
 }
 
 
 
 fun main() {
-    StorageFile("test", StorageNopOptions())
+    var storageNop = StorageNop("test", StorageNopOptions())
+    println(storageNop)
 }

@@ -2,29 +2,25 @@ package io.github.wechaty.io.github.wechaty.memorycard.backend
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.github.wechaty.memorycard.*
 import io.github.wechaty.utils.JsonUtils
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
-import java.io.File
 
 class StorageS3(val name: String, var options: StorageBackendOptions) : StorageBackend(name,options) {
 
     private lateinit var s3: AmazonS3
 
     init {
-
         log.info("StorageS3, constructor()")
         options.type = "s3"
         options = options as StorageS3Options
-        val basicAWSCredentials = BasicAWSCredentials((options as StorageS3Options).accessKeyId, (options as StorageS3Options).secretAccessKey)
+        var _options = options as StorageS3Options
+
+        val basicAWSCredentials = BasicAWSCredentials(_options.accessKeyId, _options.secretAccessKey)
         this.s3 = AmazonS3ClientBuilder.standard().withCredentials(AWSStaticCredentialsProvider(basicAWSCredentials))
-            .withRegion((options as StorageS3Options).region).build()
+            .withRegion(_options.region).build()
 
     }
 
@@ -32,7 +28,7 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
         log.info("StorageS3, save()")
         val options = this.options as StorageS3Options
 
-        this.s3.putObject(JsonUtils.write(payload), options.bucket, this.name)
+        this.s3.putObject(JsonUtils.write(payload.map), options.bucket, this.name)
 
     }
 
@@ -45,12 +41,27 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
             return MemoryCardPayload()
         }
         // 这里还有问题
-        return MemoryCardPayload()
+        val objectContent = result.objectContent
+        var payloadMap = StringBuffer()
+        var readBuf = ByteArray(1024)
+        var readLen = 0
+        while (true) {
+            readLen = objectContent.read(readBuf)
+            if (readLen > 0) {
+                payloadMap.append(String(readBuf, 0, readLen))
+            }
+            else {
+                break
+            }
+        }
+
+        var payload = MemoryCardPayload()
+        payload.map = JsonUtils.readValue(payloadMap.toString())
+        return payload
     }
 
     override fun destory() {
         log.info("StorageS3, destory()")
-
         val options = this.options as StorageS3Options
         this.s3.deleteObject(options.bucket, this.name)
     }
@@ -66,10 +77,9 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
 
 }
 
-
-
 fun main(){
 
-    StorageFile("test", StorageFileOptions())
+    val storageS3 = StorageS3("test", StorageS3Options("1", "1", "2", "3"))
+    val load = storageS3.load()
 
 }

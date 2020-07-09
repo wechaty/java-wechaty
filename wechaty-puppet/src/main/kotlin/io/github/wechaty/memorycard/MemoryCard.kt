@@ -13,6 +13,7 @@ const val NAMESPACE_KEY_SEPRATOR       = "\n"
 val NAMESPACE_MULTIPLEX_SEPRATOR_REGEX = Regex(NAMESPACE_MULTIPLEX_SEPRATOR)
 val NAMESPACE_KEY_SEPRATOR_REGEX       = Regex(NAMESPACE_KEY_SEPRATOR)
 
+// 名字可以由options传入也可以直接传入
 class MemoryCard {
 
     private var name:String? = null
@@ -21,39 +22,45 @@ class MemoryCard {
     protected var storage:StorageBackend? = null
     protected val multiplexNameList = mutableListOf<String>()
 
+    // 是否是multiplex,用哪个存储后端,memorycard名字是什么
     private var options:MemoryCardOptions
 
-    constructor(name: String? = null,options:MemoryCardOptions? = null){
+    // name和options里面的name有可能同时为空
+    constructor(name: String? = null, options: MemoryCardOptions? = null) {
         log.info("MemoryCard, constructor(%s)", options?.let { JsonUtils.write(it) })
-
-        val _optiones:MemoryCardOptions = options ?: MemoryCardOptions()
-
-        if(name != null){
-            if(options != null) {
-                _optiones.name = name
-            }
+        val _options: MemoryCardOptions = options ?: MemoryCardOptions()
+        if(name != null) {
+            _options.name = name
         }
-        this.options = _optiones
-        this.name = _optiones.name
-
-        (_optiones.multiplex != null).let {
-            this.parent = _optiones.multiplex!!.parent
+        else if (_options.name != null) {
+            this.name = _options.name
+        }
+        else {
+            this.name = "default"
+            _options.name = "default"
+        }
+        this.options = _options
+        // let不能这么用
+//        false.let {
+//            println(1)
+//        }
+        if (_options.multiplex != null) {
+            this.parent = _options.multiplex!!.parent
             this.payload = this.parent!!.payload
 
             this.multiplexNameList.addAll(parent!!.multiplexNameList)
-            this.multiplexNameList.add(_optiones.multiplex!!.name)
+            this.multiplexNameList.add(_options.multiplex!!.name)
 
             this.storage = null
         }
-
-        (_optiones.multiplex == null).let {
+        else {
             this.payload = null
             this.multiplexNameList.clear()
             this.storage = getStore()
         }
     }
 
-    private fun getStore(): StorageBackend?{
+    private fun getStore(): StorageBackend? {
 
         log.debug("getStorage() for storage type: %s",
             if (this.options != null && this.options.storageOptions != null && this.options.storageOptions!!.type != null)
@@ -65,6 +72,8 @@ class MemoryCard {
         if (this.options == null) {
             return null
         }
+
+        // 默认得到一个file的后端
         return StorageBackend.getStorage(
             this.options.name!!,
             this.options.storageOptions
@@ -77,7 +86,7 @@ class MemoryCard {
             log.info("MemoryCard, load() should not be called on a multiplex MemoryCard. NOOP")
             return CompletableFuture.completedFuture(null)
         }
-        if (this.payload == null) {
+        if (this.payload != null) {
             throw Exception("memory had already loaded before.")
         }
 
@@ -96,8 +105,9 @@ class MemoryCard {
             if (this.parent == null) {
                 throw Exception("multiplex memory no parent")
             }
+            this.parent!!.save()
         }
-        this.parent!!.save()
+
 
         log.info("MemoryCard, <%s>%s save() to %s",this.name ?: "", this.multiplexPath(), this.storage ?: "N/A")
         if (this.payload == null) {
@@ -106,6 +116,7 @@ class MemoryCard {
 
         if (this.storage == null) {
             log.info("MemoryCard, save() no storage, NOOP")
+            return CompletableFuture.completedFuture(null)
         }
 
         this.storage!!.save(this.payload!!)
@@ -118,8 +129,10 @@ class MemoryCard {
             throw Exception("can not destroy on a multiplexed memory")
         }
 
-        if (this.payload != null) {
-            this.destory()
+//        this.clear()
+
+        if (this.storage != null) {
+            this.storage!!.destory()
             this.storage = null
         }
         this.payload = null
@@ -212,6 +225,7 @@ class MemoryCard {
 
     fun clear(): Future<Void> {
         log.info("MemoryCard, <%s> clear()", this.multiplexPath())
+
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }
@@ -228,7 +242,6 @@ class MemoryCard {
     }
 
     fun delete(name: String): Future<Void> {
-
         log.info("MemoryCard, <%s> delete(%s)", this.multiplexPath(), name)
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -237,6 +250,16 @@ class MemoryCard {
         val key = this.resolveKey(name)
         this.payload!!.map.remove(key)
         return CompletableFuture.completedFuture(null)
+    }
+
+    fun entries(): MutableSet<MutableMap.MutableEntry<String, Any>> {
+        log.info("MemoryCard, <%s> *entries()", this.multiplexPath())
+
+        if (this.payload == null) {
+            throw Exception("no payload, please call load() first.")
+        }
+
+        return this.payload!!.map.entries
     }
 
     fun has(key: String): Future<Boolean> {
@@ -283,6 +306,14 @@ class MemoryCard {
 
         return this.payload!!.map.values
     }
+
+    fun multiplex (name: String): MemoryCard {
+        log.info("MemoryCard, multiplex(%s)", name)
+
+        // FIXME: as any ?
+        return multiplex(this, name)
+    }
+
     override fun toString(): String {
         var mpString = ""
         if (this.multiplexNameList.size > 0) {
@@ -300,8 +331,12 @@ class MemoryCard {
     companion object{
         private val log = LoggerFactory.getLogger(MemoryCard::class.java)
         val VERSION = "0.0.0"
-        fun multiplex(memory:MemoryCard,name:String):MemoryCard{
-            return MemoryCard()
+
+        fun multiplex(memory: MemoryCard, name: String): MemoryCard{
+            log.info("MemoryCard, static multiplex(%s, %s)", memory, name)
+            memory.options.multiplex = Multiplex(name = name, parent = memory)
+            val mpMemory = MemoryCard(options = memory.options)
+            return mpMemory
         }
 
         fun fromJSON(text: String): MemoryCard {
@@ -334,17 +369,17 @@ data class Multiplex(
     val name: String
 )
 
-class MemoryCardOptions{
-
-    var name:String? = null
-    var storageOptions:StorageBackendOptions? = null
+data class MemoryCardOptions(
+    var name: String? = null,
+    var storageOptions:StorageBackendOptions? = null,
     var multiplex:Multiplex? = null
-}
+)
 
 data class MemoryCardJsonObject(
     val payload: MemoryCardPayload,
     val options: MemoryCardOptions
 )
+
 
 
 
