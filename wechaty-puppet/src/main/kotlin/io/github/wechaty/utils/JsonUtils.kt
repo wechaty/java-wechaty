@@ -15,10 +15,9 @@ object JsonUtils {
         return mapper.readValue(json)
     }
 
-    fun write(input:Any):String{
+    fun write(input:Any):String {
         return mapper.writeValueAsString(input)
     }
-
 
 }
 

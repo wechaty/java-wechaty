@@ -40,6 +40,11 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.11.636</version>
+        </dependency>
 <!--        &lt;!&ndash;log4j2核心包&ndash;&gt;-->
 <!--        <dependency>-->
 <!--            <groupId>org.apache.logging.log4j</groupId>-->
@@ -105,7 +110,18 @@
             <artifactId>okhttp</artifactId>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.huaweicloud/esdk-obs-java -->
+        <dependency>
+            <groupId>com.huaweicloud</groupId>
+            <artifactId>esdk-obs-java</artifactId>
+            <version>3.19.7</version>
+        </dependency>
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <scm>
