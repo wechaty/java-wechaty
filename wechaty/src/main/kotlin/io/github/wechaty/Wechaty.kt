@@ -86,6 +86,9 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     fun onScan(listener: ScanListener):Wechaty{
         return on(EventEnum.SCAN,listener);
     }
+    fun onFriendship(listener: FriendshipListener): Wechaty {
+        return on(EventEnum.FRIENDSHIP, listener)
+    }
 
     fun onRoomJoin(listener: RoomJoinListener):Wechaty {
         return on(EventEnum.ROOM_JOIN,listener)
@@ -99,10 +102,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return on(EventEnum.ROOM_TOPIC,listener)
     }
 
+    fun onRoomInvite(listener: RoomInviteListener): Wechaty {
+        return on(EventEnum.ROOM_INVITE, listener)
+    }
     fun onMessage(listener: MessageListener):Wechaty{
         return on(EventEnum.MESSAGE,listener)
     }
 
+    fun onError(listener: ErrorListener): Wechaty {
+        return on(EventEnum.ERROR, listener)
+    }
     fun use(vararg plugins: WechatyPlugin):Wechaty{
         plugins.forEach {
             it(this)
@@ -133,10 +142,19 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         })
         return this
     }
+
     private fun on(event: Event, listener: DongListener):Wechaty {
         return this
     }
 
+    private fun on(event: Event, listener: ErrorListener): Wechaty {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as String)
+            }
+        })
+        return this
+    }
     private fun on(event: Event, listener: ScanListener):Wechaty{
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
@@ -154,7 +172,24 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         })
         return this
     }
+    private fun on(event: Event, listener: FriendshipListener): Wechaty {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as String)
+            }
+        })
+        return this
+    }
 
+    private fun on(eventName: Event, listener: RoomInviteListener): Wechaty {
+        super.on(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                // roomInvitationId
+                listener.handler(any[0] as String)
+            }
+        })
+        return this
+    }
     private fun on(eventName: Event, listener: RoomJoinListener):Wechaty {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
@@ -240,7 +275,8 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                         override fun handler(payload: EventFriendshipPayload) {
                             val friendship = friendship().load(payload.friendshipId)
                             friendship.ready()
-                            emit(EventEnum.FRIENDSHIP, friendship)
+//                            emit(EventEnum.FRIENDSHIP, friendship)
+                            emit(EventEnum.FRIENDSHIP, payload.friendshipId)
                         }
                     })
                 }
@@ -349,7 +385,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                             val changer = contactManager.loadSelf(payload.changerId)
                             changer.ready()
                             val date = Date(payload.timestamp * 1000)
-
                             emit(EventEnum.ROOM_TOPIC, room, payload.newTopic, payload.oldTopic, changer, date)
                             room.emit(EventEnum.TOPIC, payload.newTopic, payload.oldTopic, changer, date)
                         }
