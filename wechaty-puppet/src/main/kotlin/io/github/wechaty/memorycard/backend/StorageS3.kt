@@ -37,11 +37,12 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
 
         val options = this.options as StorageS3Options
         val result = this.s3.getObject(options.bucket, this.name)
-        if (result==null || result.objectContent == null) {
+        if (result == null || result.objectContent == null) {
             return MemoryCardPayload()
         }
         // 这里还有问题
         val objectContent = result.objectContent
+
         var payloadMap = StringBuffer()
         var readBuf = ByteArray(1024)
         var readLen = 0
@@ -79,7 +80,8 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
 
 fun main(){
 
-    val storageS3 = StorageS3("test", StorageS3Options("1", "1", "2", "3"))
-    val load = storageS3.load()
+//    val storageS3 = StorageS3("test", StorageS3Options("1", "1", "2", "3"))
+//    val load = storageS3.load()
+    var function: () -> Unit = {}
 
 }

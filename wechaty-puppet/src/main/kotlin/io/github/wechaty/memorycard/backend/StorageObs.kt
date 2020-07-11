@@ -66,6 +66,7 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
     private fun getObject(): MemoryCardPayload {
         val options = this.options as StorageObsOptions
         val obsObject = this.obs.getObject(options.bucket, this.name)
+        println(obsObject)
         val input = obsObject.objectContent
         var byte = ByteArray(1024)
         val bos = ByteArrayOutputStream()
@@ -79,6 +80,7 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
                 break
             }
         }
+        input.close()
         var card = MemoryCardPayload()
         card.map = JsonUtils.readValue(String(bos.toByteArray()))
         return card
@@ -104,10 +106,16 @@ fun main(){
         "obs.cn-north-4.myhuaweicloud.com", "cybersa")
 
     val storageObs = StorageObs("objectname", storageObsOptions)
-    val load = storageObs.load()
-    println(load.map)
-    load.map.forEach { t, u -> print(t + ":" + u) }
-    storageObs.destory()
+    var memory = MemoryCardPayload()
+    var address = Address("福州", "付件")
+    var person = Person("sda", 13, address)
+    memory.map.put("person", person)
+    storageObs.save(memory)
+
+//    val load = storageObs.load()
+//    println(load.map)
+//    load.map.forEach { t, u -> print(t + ":" + u) }
+//    storageObs.destory()
 
 //    var obsClient = ObsClient("D5RKYDQRCRYICGP65H2R", "K0Va8jn8kWBK8jzdmC4QC2vvqsgF5Epz1iWhZOOp",
 //        "obs.cn-north-4.myhuaweicloud.com")

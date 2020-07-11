@@ -1,10 +1,15 @@
 package io.github.wechaty.memorycard
 
 import io.github.wechaty.utils.JsonUtils
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
 import java.lang.Exception
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
+import javax.xml.bind.JAXBElement
 import kotlin.math.abs
 
 const val NAMESPACE_MULTIPLEX_SEPRATOR = "\r"
@@ -32,6 +37,7 @@ class MemoryCard {
         if(name != null) {
             _options.name = name
         }
+
         else if (_options.name != null) {
             this.name = _options.name
         }
@@ -79,7 +85,6 @@ class MemoryCard {
             this.options.storageOptions
         )
     }
-
     fun load(): Future<Void> {
         log.info("MemoryCard, load() from storage: %s", this.storage ?: "N/A")
         if (this.isMultiplex()) {
@@ -107,7 +112,6 @@ class MemoryCard {
             }
             this.parent!!.save()
         }
-
 
         log.info("MemoryCard, <%s>%s save() to %s",this.name ?: "", this.multiplexPath(), this.storage ?: "N/A")
         if (this.payload == null) {
@@ -199,7 +203,7 @@ class MemoryCard {
         }
     }
 
-    fun <T : Any> get(name: String): CompletableFuture<Any?>? {
+    fun  get(name: String): CompletableFuture<Any?>? {
         log.info("MemoryCard, <%s> get(%s)", this.multiplexPath(), name)
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
