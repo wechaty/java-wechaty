@@ -38,7 +38,6 @@ class MiniProgram(var payload: MiniProgramPayload) {
         fun create():MiniProgram{
             val payload = MiniProgramPayload()
             return MiniProgram(payload);
-
         }
 
     }

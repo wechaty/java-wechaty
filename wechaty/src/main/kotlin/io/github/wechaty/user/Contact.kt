@@ -115,7 +115,9 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
     }
 
     open fun avatar(): Future<FileBox> {
-        TODO()
+        log.info("Contact, avatar()")
+        val contactAvatar = this.puppet.getContactAvatar(this.id)
+        return contactAvatar
     }
 
 
