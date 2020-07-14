@@ -11,11 +11,12 @@ import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.IOException
 import java.lang.Exception
 import kotlin.math.abs
 
 // 本身是不存储数据的
-// 存储了持久化的文件名和选项
+// 存储了持久化的文件名和以及用什么方式存储
 class StorageFile(val name: String, var options: StorageBackendOptions) : StorageBackend(name, options) {
 
     private var absFileName: String
@@ -49,7 +50,14 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
         if(!file.exists()){
             return MemoryCardPayload()
         }
-        val text = FileUtils.readFileToString(file, "UTF-8")
+        var text = ""
+        try {
+            text = FileUtils.readFileToString(file, "UTF-8")
+        }
+        catch (e: IOException) {
+            log.error("load() from file %s error %s", this.absFileName, e.toString())
+        }
+
         var payload = MemoryCardPayload()
         try {
             payload.map = JsonUtils.readValue(text);
@@ -65,7 +73,12 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
 
         val text = JsonUtils.write(payload.map)
         val file = File(absFileName)
-        FileUtils.write(file,text,"UTF-8")
+        try {
+            FileUtils.write(file,text,"UTF-8")
+        }
+        catch (e: IOException) {
+            log.error("MemoryCard, save() exception: %s", e)
+        }
     }
 
     override fun destory() {
@@ -93,8 +106,6 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
 
 
 
-fun main(){
-
-    StorageFile("test", StorageFileOptions())
-
+fun main() {
+    val storageFile = StorageFile("test", StorageFileOptions())
 }

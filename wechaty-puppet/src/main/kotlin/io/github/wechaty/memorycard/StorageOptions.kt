@@ -20,7 +20,7 @@ data class StorageS3Options(
     val secretAccessKey:String,
     val region:String,
     val bucket:String
-):StorageBackendOptions()
+): StorageBackendOptions()
 
 
 data class StorageObsOptions(
@@ -28,7 +28,7 @@ data class StorageObsOptions(
     val secretAccessKey:String,
     val server:String,
     val bucket:String
-):StorageBackendOptions()
+): StorageBackendOptions()
 
 val BACKEND_DICT = mapOf(
     "file" to StorageFile::class,

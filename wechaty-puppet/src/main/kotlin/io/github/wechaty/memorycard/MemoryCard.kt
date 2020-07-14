@@ -1,9 +1,7 @@
 package io.github.wechaty.memorycard
 
 import io.github.wechaty.utils.JsonUtils
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 import java.util.concurrent.ArrayBlockingQueue
@@ -32,8 +30,9 @@ class MemoryCard {
 
     // name和options里面的name有可能同时为空
     constructor(name: String? = null, options: MemoryCardOptions? = null) {
-        log.info("MemoryCard, constructor(%s)", options?.let { JsonUtils.write(it) })
         val _options: MemoryCardOptions = options ?: MemoryCardOptions()
+        log.info("MemoryCard, constructor({})", JsonUtils.write(_options))
+
         if(name != null) {
             _options.name = name
         }
@@ -42,14 +41,12 @@ class MemoryCard {
             this.name = _options.name
         }
         else {
+            // 如果没有给名字就用一个default作为名字
             this.name = "default"
             _options.name = "default"
         }
         this.options = _options
-        // let不能这么用
-//        false.let {
-//            println(1)
-//        }
+
         if (_options.multiplex != null) {
             this.parent = _options.multiplex!!.parent
             this.payload = this.parent!!.payload
@@ -68,7 +65,7 @@ class MemoryCard {
 
     private fun getStore(): StorageBackend? {
 
-        log.debug("getStorage() for storage type: %s",
+        log.debug("getStorage() for storage type: {}",
             if (this.options != null && this.options.storageOptions != null && this.options.storageOptions!!.type != null)
                 this.options
             else
@@ -85,8 +82,10 @@ class MemoryCard {
             this.options.storageOptions
         )
     }
+
+
     fun load(): Future<Void> {
-        log.info("MemoryCard, load() from storage: %s", this.storage ?: "N/A")
+        log.info("MemoryCard, load() from storage: {}", this.storage ?: "N/A")
         if (this.isMultiplex()) {
             log.info("MemoryCard, load() should not be called on a multiplex MemoryCard. NOOP")
             return CompletableFuture.completedFuture(null)
@@ -99,7 +98,7 @@ class MemoryCard {
             this.payload = this.storage!!.load()
         }
         else {
-            log.info("MemoryCard, load() no storage")
+            log.info("MemoryCard, load() no storagebackend")
             this.payload = MemoryCardPayload()
         }
         return CompletableFuture.completedFuture(null)
@@ -113,7 +112,7 @@ class MemoryCard {
             this.parent!!.save()
         }
 
-        log.info("MemoryCard, <%s>%s save() to %s",this.name ?: "", this.multiplexPath(), this.storage ?: "N/A")
+        log.info("MemoryCard, <{}>{} save() to {}",this.name ?: "", this.multiplexPath(), this.storage ?: "N/A")
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }
@@ -128,12 +127,12 @@ class MemoryCard {
     }
 
     fun destory(): Future<Void> {
-        log.info("MemoryCard, destroy() storage: %s", this.storage ?: "N/A")
+        log.info("MemoryCard, destroy() storage: {}", this.storage ?: "N/A")
         if (this.isMultiplex()) {
             throw Exception("can not destroy on a multiplexed memory")
         }
 
-//        this.clear()
+        // this.clear()
 
         if (this.storage != null) {
             this.storage!!.destory()
@@ -145,7 +144,7 @@ class MemoryCard {
 
 
     fun size(): Future<Int> {
-        log.info("MemoryCard, <%s> size", this.multiplexPath())
+        log.info("MemoryCard, <{}> size", this.multiplexPath())
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }
@@ -177,11 +176,12 @@ class MemoryCard {
             throw Exception("not a multiplex memory")
         }
 
+        // \r + \n
         val namespace = NAMESPACE_MULTIPLEX_SEPRATOR +
                         this.multiplexNameList.joinToString(NAMESPACE_MULTIPLEX_SEPRATOR)
         return namespace
     }
-    protected fun isMultiplexKey (key: String): Boolean {
+    protected fun isMultiplexKey(key: String): Boolean {
 
         if (NAMESPACE_MULTIPLEX_SEPRATOR_REGEX.matches(key)
             && NAMESPACE_KEY_SEPRATOR_REGEX.matches(key)) {
@@ -204,7 +204,7 @@ class MemoryCard {
     }
 
     fun  get(name: String): CompletableFuture<Any?>? {
-        log.info("MemoryCard, <%s> get(%s)", this.multiplexPath(), name)
+        log.info("MemoryCard, <{}> get({})", this.multiplexPath(), name)
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }
@@ -216,7 +216,7 @@ class MemoryCard {
     }
 
     fun <T : Any> set(name: String, data: T): Future<Void> {
-        log.info("MemoryCard, <%s> set(%s, %s)", this.multiplexPath(), name, data)
+        log.info("MemoryCard, <{}> set({}, {})", this.multiplexPath(), name, data)
 
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -228,7 +228,7 @@ class MemoryCard {
     }
 
     fun clear(): Future<Void> {
-        log.info("MemoryCard, <%s> clear()", this.multiplexPath())
+        log.info("MemoryCard, <{}> clear()", this.multiplexPath())
 
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -246,7 +246,7 @@ class MemoryCard {
     }
 
     fun delete(name: String): Future<Void> {
-        log.info("MemoryCard, <%s> delete(%s)", this.multiplexPath(), name)
+        log.info("MemoryCard, <{}> delete({})", this.multiplexPath(), name)
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }
@@ -257,7 +257,7 @@ class MemoryCard {
     }
 
     fun entries(): MutableSet<MutableMap.MutableEntry<String, Any>> {
-        log.info("MemoryCard, <%s> *entries()", this.multiplexPath())
+        log.info("MemoryCard, <{}> *entries()", this.multiplexPath())
 
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -267,7 +267,7 @@ class MemoryCard {
     }
 
     fun has(key: String): Future<Boolean> {
-        log.info("MemoryCard, <%s> has (%s)", this.multiplexPath(), key)
+        log.info("MemoryCard, <{}> has ({})", this.multiplexPath(), key)
 
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -280,7 +280,7 @@ class MemoryCard {
     }
 
     fun keys(): MutableSet<String> {
-        log.info("MemoryCard, <%s> keys()", this.multiplexPath())
+        log.info("MemoryCard, <{}> keys()", this.multiplexPath())
 
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -302,7 +302,7 @@ class MemoryCard {
 
 
     fun values(): MutableCollection<Any> {
-        log.info("MemoryCard, <%s> values()", this.multiplexPath())
+        log.info("MemoryCard, <{}> values()", this.multiplexPath())
 
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -312,7 +312,7 @@ class MemoryCard {
     }
 
     fun multiplex (name: String): MemoryCard {
-        log.info("MemoryCard, multiplex(%s)", name)
+        log.info("MemoryCard, multiplex({})", name)
 
         // FIXME: as any ?
         return multiplex(this, name)
@@ -337,7 +337,7 @@ class MemoryCard {
         val VERSION = "0.0.0"
 
         fun multiplex(memory: MemoryCard, name: String): MemoryCard{
-            log.info("MemoryCard, static multiplex(%s, %s)", memory, name)
+            log.info("MemoryCard, static multiplex({}, {})", memory, name)
             memory.options.multiplex = Multiplex(name = name, parent = memory)
             val mpMemory = MemoryCard(options = memory.options)
             return mpMemory
@@ -360,8 +360,6 @@ class MemoryCard {
             return card
         }
     }
-
-
 }
 
 class MemoryCardPayload{
