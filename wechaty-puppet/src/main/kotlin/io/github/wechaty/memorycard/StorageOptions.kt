@@ -1,9 +1,10 @@
 package io.github.wechaty.memorycard
 
-import io.github.wechaty.io.github.wechaty.memorycard.backend.StorageFile
-import io.github.wechaty.io.github.wechaty.memorycard.backend.StorageNop
-import io.github.wechaty.io.github.wechaty.memorycard.backend.StorageObs
-import io.github.wechaty.io.github.wechaty.memorycard.backend.StorageS3
+import io.github.wechaty.memorycard.backend.StorageFile
+import io.github.wechaty.memorycard.backend.StorageNop
+import io.github.wechaty.memorycard.backend.StorageObs
+import io.github.wechaty.memorycard.backend.StorageS3
+
 
 sealed class StorageBackendOptions {
     var type: String? = null
@@ -28,6 +29,13 @@ data class StorageObsOptions(
     val secretAccessKey:String,
     val server:String,
     val bucket:String
+): StorageBackendOptions()
+
+data class StorageOSSOptions(
+    val accessKeyId: String,
+    val secretAccessKey: String,
+    val endPoint: String,
+    val bucket: String
 ): StorageBackendOptions()
 
 val BACKEND_DICT = mapOf(

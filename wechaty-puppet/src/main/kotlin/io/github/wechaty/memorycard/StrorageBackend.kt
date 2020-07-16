@@ -1,6 +1,6 @@
 package io.github.wechaty.memorycard
 
-import io.github.wechaty.io.github.wechaty.memorycard.backend.StorageFile
+import io.github.wechaty.memorycard.backend.StorageFile
 import io.github.wechaty.utils.JsonUtils
 import org.slf4j.LoggerFactory
 

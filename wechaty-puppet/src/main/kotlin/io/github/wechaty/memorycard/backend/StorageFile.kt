@@ -1,4 +1,4 @@
-package io.github.wechaty.io.github.wechaty.memorycard.backend
+package io.github.wechaty.memorycard.backend
 
 import io.github.wechaty.io.github.wechaty.status.StateSwitch
 import io.github.wechaty.memorycard.MemoryCardPayload

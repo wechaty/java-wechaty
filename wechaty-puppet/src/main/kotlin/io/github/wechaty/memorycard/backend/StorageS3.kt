@@ -1,4 +1,4 @@
-package io.github.wechaty.io.github.wechaty.memorycard.backend
+package io.github.wechaty.memorycard.backend
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
@@ -83,6 +83,5 @@ fun main(){
 
 //    val storageS3 = StorageS3("test", StorageS3Options("1", "1", "2", "3"))
 //    val load = storageS3.load()
-    var function: () -> Unit = {}
 
 }

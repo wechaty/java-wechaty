@@ -1,4 +1,4 @@
-package io.github.wechaty.io.github.wechaty.memorycard.backend
+package io.github.wechaty.memorycard.backend
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
