@@ -65,6 +65,7 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
         log.info("StorageS3, destory()")
         val options = this.options as StorageS3Options
         this.s3.deleteObject(options.bucket, this.name)
+        this.s3.shutdown()
     }
 
     override fun toString(): String {

@@ -83,7 +83,6 @@ class MemoryCard {
         )
     }
 
-
     fun load(): Future<Void> {
         log.info("MemoryCard, load() from storage: {}", this.storage ?: "N/A")
         if (this.isMultiplex()) {
@@ -145,6 +144,7 @@ class MemoryCard {
 
     fun size(): Future<Int> {
         log.info("MemoryCard, <{}> size", this.multiplexPath())
+
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }

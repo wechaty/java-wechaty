@@ -49,15 +49,6 @@
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.11.636</version>
         </dependency>
-<!--        &lt;!&ndash;log4j2核心包&ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.logging.log4j</groupId>-->
-<!--            <artifactId>log4j-api</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.logging.log4j</groupId>-->
-<!--            <artifactId>log4j-core</artifactId>-->
-<!--        </dependency>-->
 
 <!--        &lt;!&ndash;用于与slf4j保持桥接&ndash;&gt;-->
 <!--        <dependency>-->
