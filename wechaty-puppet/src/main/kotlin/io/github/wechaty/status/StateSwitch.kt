@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 var COUNTER = AtomicInteger()
 val nop: () -> Unit = {}
-val resolver: suspend () -> Unit = {}
+val resolver: () -> Unit = {}
 class StateSwitch: EventEmitter(){
 
     @Volatile
@@ -40,24 +40,18 @@ class StateSwitch: EventEmitter(){
         this.pending = false
         onQueue = ArrayBlockingQueue(1)
         offQueue = ArrayBlockingQueue(1)
-        this.offQueue.put(nop)
-        // 赋值但是不执行
+        this.offQueue.put(resolver)
+
 //        runBlocking {
 //            onPromise = {
 //                onResolver = nop
 //            }
 //            onPromise()
 //        }
-
-//        this.offPromise = resolver
-//        this.offResolver = nop
-
-//        this.onResolver = nop
-//        this.offResolver = nop
     }
 
     // 传入on的状态只能是on或者说pending
-    fun on(state: StateEnum): StateEnum  {
+    fun on(state: StateEnum): String  {
 
         log.debug("statusSwitch $name on ${state.name} <- ${this.on()}")
 
@@ -68,6 +62,7 @@ class StateSwitch: EventEmitter(){
         pending = (state == StateEnum.PENDING)
 
         emit(EventEnum.ON, state.name)
+
 //        if (this.offResolver === nop) {
 //            runBlocking {
 //                offPromise = {
@@ -75,38 +70,33 @@ class StateSwitch: EventEmitter(){
 //                }
 //                offPromise()
 //            }
-//
 //        }
-//
-//        if (state == StateEnum.ON && this.onResolver !== nop) {
-//            this.onResolver()
-////            this.onResolver = nop
-//        }
+
         if (this.offQueue.isEmpty()) {
-            this.offQueue.put(nop)
+            this.offQueue.put(resolver)
         }
 
         if (state == StateEnum.ON && this.onQueue.isEmpty()) {
-            this.onQueue.put(nop)
+            this.onQueue.put(resolver)
         }
         return this.on()
 
     }
     // get the current on state
-    fun on(): StateEnum {
+    fun on(): String {
         val on =
             if (this.onoff == true)
                 if (this.pending == true)
-                    StateEnum.PENDING
+                    "pending"
                 else
-                    StateEnum.ON
+                    "true"
             else
-                StateEnum.OFF
+                "false"
         log.info("StateSwitch, <%s> on() is %s", this.name, on)
         return on
     }
 
-    fun off(state: StateEnum): StateEnum {
+    fun off(state: StateEnum): String {
         log.info("StateSwitch, <%s> off(%s) <- (%s)", this.name, state, this.off())
         if (state == StateEnum.ON) {
             throw Exception("the parameter state shouldn't be on")
@@ -124,28 +114,24 @@ class StateSwitch: EventEmitter(){
 //                onPromise()
 //            }
 //        }
-//        if (state == StateEnum.OFF && this.offResolver !== nop) {
-//            this.offResolver()
-//            this.offResolver = nop
-//        }
         if (this.onQueue.isEmpty()) {
-            this.onQueue.put(nop)
+            this.onQueue.put(resolver)
         }
         if (state == StateEnum.OFF && this.offQueue.isEmpty()) {
-            this.offQueue.put(nop)
+            this.offQueue.put(resolver)
         }
         return this.off()
     }
     // get the current off state
-    fun off(): StateEnum {
+    fun off(): String {
         val off =
             if (!this.onoff)
                 if (this.pending)
-                    StateEnum.PENDING
+                    "pending"
                 else
-                    StateEnum.ON
+                    "true"
             else
-                StateEnum.OFF
+                "false"
         log.info("StateSwitch, <%s> off() is %s", this.name, off)
         return off
     }
@@ -153,8 +139,9 @@ class StateSwitch: EventEmitter(){
     /**
      * @param state: 准备变为的状态
      * @param cross: 是否变换状态,默认可以
+     * 好像可以去掉runblocking
      */
-    fun ready(state: StateEnum = StateEnum.ON, cross: Boolean = true) = runBlocking {
+    fun ready(state: StateEnum = StateEnum.ON, cross: Boolean = true) {
         log.info("StateSwitch, <%s> ready(%s, %s)", name, state, cross)
 
         // 如果准备变换的状态为on
@@ -172,6 +159,7 @@ class StateSwitch: EventEmitter(){
 //            }
             CoroutineScope(Dispatchers.Default).launch {
                 onQueue.take()
+                println("on")
             }
         }
         // 如果准备变为off
@@ -213,44 +201,24 @@ class StateSwitch: EventEmitter(){
 
 
 fun main() {
-//    val function: () -> Unit = { println(1) }
-//    var queue: ArrayBlockingQueue<() -> Unit> = ArrayBlockingQueue(2)
-//    queue.offer {
-//        println(1)
-//    }
-//
-//    queue.offer {
-//        println(2)
-//    }
-//
-//    val poll = queue.poll()
-//    poll()
-//    queue.poll()()
-//    val poll1 = queue.poll()
-//    println(poll1)
-//
-//    var function2: ()->Unit = {}
-////    var function3: ()->Unit = {}
-//    var function3: ()->Unit = function2
-//    function3 = { println(1)}
-//    println(function2 === function3)
+
     val stateSwitch = StateSwitch()
-    println(stateSwitch.on())
+    println("刚开始创建时:" + stateSwitch.on())
 
     stateSwitch.on(StateEnum.PENDING)
-    println(stateSwitch.on())
+    println("调用on(pending):" + stateSwitch.on())
     stateSwitch.ready(StateEnum.ON)
-    println(stateSwitch.on())
+    println("调用ready(on)之后:" + stateSwitch.on())
     stateSwitch.on(StateEnum.ON)
-    println(stateSwitch.on())
+    println("调用on(on):" + stateSwitch.on())
     // ======================================
-    stateSwitch.off(StateEnum.PENDING)
-    println(stateSwitch.off())
-
-    stateSwitch.ready(StateEnum.OFF)
-    println(stateSwitch.on())
-
-    stateSwitch.off(StateEnum.OFF)
-    println(stateSwitch.on())
+//    stateSwitch.off(StateEnum.PENDING)
+//    println(stateSwitch.off())
+//
+//    stateSwitch.ready(StateEnum.OFF)
+//    println(stateSwitch.on())
+//
+//    stateSwitch.off(StateEnum.OFF)
+//    println(stateSwitch.on())
 
 }
