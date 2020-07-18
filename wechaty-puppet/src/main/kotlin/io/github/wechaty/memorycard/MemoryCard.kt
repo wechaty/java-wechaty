@@ -83,6 +83,25 @@ class MemoryCard {
         )
     }
 
+    suspend fun loadAsync() {
+        log.info("MemoryCard, load() from storage: {}", this.storage ?: "N/A")
+        if (this.isMultiplex()) {
+            log.info("MemoryCard, load() should not be called on a multiplex MemoryCard. NOOP")
+            return
+        }
+        if (this.payload != null) {
+            throw Exception("memory had already loaded before.")
+        }
+
+        if (this.storage != null) {
+            this.payload = this.storage!!.load()
+        }
+        else {
+            log.info("MemoryCard, load() no storagebackend")
+            this.payload = MemoryCardPayload()
+        }
+    }
+
     fun load(): Future<Void> {
         log.info("MemoryCard, load() from storage: {}", this.storage ?: "N/A")
         if (this.isMultiplex()) {
@@ -176,15 +195,14 @@ class MemoryCard {
             throw Exception("not a multiplex memory")
         }
 
-        // \r + \n
         val namespace = NAMESPACE_MULTIPLEX_SEPRATOR +
                         this.multiplexNameList.joinToString(NAMESPACE_MULTIPLEX_SEPRATOR)
         return namespace
     }
     protected fun isMultiplexKey(key: String): Boolean {
 
-        if (NAMESPACE_MULTIPLEX_SEPRATOR_REGEX.matches(key)
-            && NAMESPACE_KEY_SEPRATOR_REGEX.matches(key)) {
+        if (NAMESPACE_MULTIPLEX_SEPRATOR_REGEX.containsMatchIn(key)
+            && NAMESPACE_KEY_SEPRATOR_REGEX.containsMatchIn(key)) {
 
             val namespace = this.multiplexNamespace()
             return key.startsWith(namespace)
@@ -311,12 +329,7 @@ class MemoryCard {
         return this.payload!!.map.values
     }
 
-    fun multiplex (name: String): MemoryCard {
-        log.info("MemoryCard, multiplex({})", name)
 
-        // FIXME: as any ?
-        return multiplex(this, name)
-    }
 
     override fun toString(): String {
         var mpString = ""
@@ -332,16 +345,28 @@ class MemoryCard {
 
         return "MemoryCard<${name}>${mpString}"
     }
-    companion object{
+
+    fun getVersion(): String {
+        return VERSION
+    }
+
+    // 会将当前的类作为parent, 后面那个为namespace
+    fun multiplex(nameSpace: String): MemoryCard {
+        log.info("MemoryCard, multiplex({})", nameSpace)
+        return multiplex(this, nameSpace)
+    }
+
+    protected fun multiplex(parent: MemoryCard, nameSpace: String): MemoryCard {
+        log.info("MemoryCard, multiplex({}, {})", parent, nameSpace)
+        parent.options.name = parent.name
+        parent.options.multiplex = Multiplex(name = nameSpace, parent = parent)
+        val mpMemory = MemoryCard(options = parent.options)
+        return mpMemory
+    }
+
+    companion object {
         private val log = LoggerFactory.getLogger(MemoryCard::class.java)
         val VERSION = "0.0.0"
-
-        fun multiplex(memory: MemoryCard, name: String): MemoryCard{
-            log.info("MemoryCard, static multiplex({}, {})", memory, name)
-            memory.options.multiplex = Multiplex(name = name, parent = memory)
-            val mpMemory = MemoryCard(options = memory.options)
-            return mpMemory
-        }
 
         fun fromJSON(text: String): MemoryCard {
             log.info("MemoryCard, fromJSON(...)")
