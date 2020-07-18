@@ -19,7 +19,7 @@ import java.io.File
 // 使用华为的云存储服务
 class StorageObs(val name: String, var options: StorageBackendOptions) : StorageBackend(name,options) {
 
-    private lateinit var obs: ObsClient
+    private var obs: ObsClient
 
     init {
         log.info("StorageObs, constructor()")
@@ -37,10 +37,6 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
     override fun load(): MemoryCardPayload {
         log.info("StorageObs, load()")
         val card = this.getObject()
-        if (card == null) {
-            return MemoryCardPayload()
-        }
-
         log.info("press", card)
         return card
     }
@@ -48,17 +44,11 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
     override fun destory() {
         log.info("StorageObs, destroy()")
         this.deleteObject()
-//        obs.close()
-    }
-
-    override fun toString(): String {
-        return "${this.name}<${this.name}>"
     }
 
     private fun putObject(payload: MemoryCardPayload) {
         val options = this.options as StorageObsOptions
         val putObject = this.obs.putObject(options.bucket, this.name, ByteArrayInputStream(JsonUtils.write(payload.map).toByteArray()))
-        // 还需要处理异常
         if (putObject.statusCode >= 300) {
             throw Exception("obs putObject error")
         }
@@ -66,8 +56,18 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
 
     private fun getObject(): MemoryCardPayload {
         val options = this.options as StorageObsOptions
-        val obsObject = this.obs.getObject(options.bucket, this.name)
 
+        val obsObject = try {
+            this.obs.getObject(options.bucket, this.name)
+        }
+        catch (e: Exception) {
+            log.error("获取${name}错误")
+            null
+        }
+
+        if (obsObject == null) {
+            return MemoryCardPayload()
+        }
         val input = obsObject.objectContent
         var byte = ByteArray(1024)
         val bos = ByteArrayOutputStream()
@@ -83,6 +83,7 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
         }
 
         input.close()
+        obs.close()
         var card = MemoryCardPayload()
         card.map = JsonUtils.readValue(String(bos.toByteArray()))
         return card
@@ -90,10 +91,27 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
 
     private fun deleteObject() {
         val options = this.options as StorageObsOptions
-        val deleteObject = this.obs.deleteObject(options.bucket, this.name)
+        val deleteObject = try {
+            this.obs.deleteObject(options.bucket, this.name)
+        }
+        catch (e: Exception) {
+            log.error("删除${name}错误")
+            null
+        }
+        if (deleteObject == null) {
+            throw Exception("obs deleteObject error")
+        }
         if (deleteObject.statusCode >= 300) {
             throw Exception("obs deleteObject error")
         }
+    }
+    override fun toString(): String {
+        return "${this.name}<${this.name}>"
+    }
+
+    fun shutdown() {
+        log.info("StorageObs, shutdown()")
+        this.obs.close()
     }
 
     companion object {

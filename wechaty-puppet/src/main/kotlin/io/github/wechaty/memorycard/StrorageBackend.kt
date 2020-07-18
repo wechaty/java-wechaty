@@ -17,17 +17,18 @@ abstract class StorageBackend(name: String, option: StorageBackendOptions) {
     companion object{
         private val log = LoggerFactory.getLogger(StorageBackend::class.java)
 
-        fun getStorage(name: String,options: StorageBackendOptions?): StorageBackend {
-            log.info("getStorage', name: %s, options: %s", name, options?.let { JsonUtils.write(it) })
+        fun getStorage(name: String, options: StorageBackendOptions?): StorageBackend {
+            log.info("getStorage', name: {}, options: {}", name, options?.let { JsonUtils.write(it) })
 
             var _options = options
 
+            // 如果没有传option参数,默认用file后端
             if(options == null) {
                 _options = StorageFileOptions()
                 _options.type = "file"
             }
 
-            if(_options?.type == null || _options.type!! !in BACKEND_DICT.keys){
+            if(_options?.type == null || _options.type!! !in BACKEND_DICT.keys) {
                 throw Exception("backed unknown : ${_options?.type}")
             }
             return StorageFile(name, _options)

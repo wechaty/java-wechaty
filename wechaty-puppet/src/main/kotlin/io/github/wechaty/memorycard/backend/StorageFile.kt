@@ -1,6 +1,5 @@
 package io.github.wechaty.memorycard.backend
 
-import io.github.wechaty.io.github.wechaty.status.StateSwitch
 import io.github.wechaty.memorycard.MemoryCardPayload
 import io.github.wechaty.memorycard.StorageBackend
 import io.github.wechaty.memorycard.StorageBackendOptions
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.lang.Exception
-import kotlin.math.abs
 
 // 本身是不存储数据的
 // 存储了持久化的文件名和以及用什么方式存储
@@ -58,9 +56,9 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
             log.error("load() from file %s error %s", this.absFileName, e.toString())
         }
 
-        var payload = MemoryCardPayload()
+        val payload = MemoryCardPayload()
         try {
-            payload.map = JsonUtils.readValue(text);
+            payload.map = JsonUtils.readValue(text)
         }
         catch (e: Exception) {
             log.error("MemoryCard, load() exception: %s", e)

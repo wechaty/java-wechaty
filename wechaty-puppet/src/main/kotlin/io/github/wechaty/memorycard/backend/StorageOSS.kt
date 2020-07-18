@@ -9,16 +9,16 @@ import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-// 使用华为的云存储服务
+// 使用阿里的云存储服务
 class StorageOSS(val name: String, var options: StorageBackendOptions) : StorageBackend(name,options) {
 
-    private lateinit var oss: OSSClient
+    private var oss: OSSClient
 
     init {
         log.info("StorageOSS, constructor()")
         options.type = "oss"
         options = options as StorageOSSOptions
-        var _options = options as StorageOSSOptions
+        val _options = options as StorageOSSOptions
         this.oss = OSSClientBuilder().build(_options.endPoint,_options.accessKeyId, _options.secretAccessKey) as OSSClient
     }
 
@@ -53,10 +53,18 @@ class StorageOSS(val name: String, var options: StorageBackendOptions) : Storage
 
     private fun getObject(): MemoryCardPayload {
         val options = this.options as StorageOSSOptions
-        val ossObject = this.oss.getObject(options.bucket, this.name)
-
+        val ossObject = try {
+            this.oss.getObject(options.bucket, this.name)
+        }
+        catch (e: Exception) {
+            log.error("获取文件${this.name}失败")
+            null
+        }
+        if (ossObject == null) {
+            return MemoryCardPayload()
+        }
         val input = ossObject.objectContent
-        var byte = ByteArray(1024)
+        val byte = ByteArray(1024)
         val bos = ByteArrayOutputStream()
         var len = 0;
         while (true) {
@@ -70,7 +78,7 @@ class StorageOSS(val name: String, var options: StorageBackendOptions) : Storage
         }
         input.close()
         ossObject.close()
-        var card = MemoryCardPayload()
+        val card = MemoryCardPayload()
         card.map = JsonUtils.readValue(String(bos.toByteArray()))
         return card
     }
@@ -102,8 +110,15 @@ class StorageOSS(val name: String, var options: StorageBackendOptions) : Storage
 fun main() {
     val storageOSSOptions = StorageOSSOptions("LTAI4G2iSKd5m8aTZprdj133", "UT9ns4KvNdZkdMIIPEU87upQv2fsBp",
         "oss-cn-beijing.aliyuncs.com", "cybersa")
-    val storageOSS = StorageOSS("objectkey", storageOSSOptions)
-    val load = storageOSS.load()
+    // 如果有后缀要带上完整的后缀
+    val storageOSS = StorageOSS("PAT.jpg", storageOSSOptions)
+//    val load = storageOSS.load()
+    storageOSS.destory()
+//    load.map.forEach { t, u ->
+//        println("key:" + t + " value:" + u)
+//    }
+    // ok
 //    load.map.put("a", "b")
 //    storageOSS.save(load)
+    storageOSS.shutdown()
 }

@@ -10,13 +10,13 @@ import org.slf4j.LoggerFactory
 
 class StorageS3(val name: String, var options: StorageBackendOptions) : StorageBackend(name,options) {
 
-    private lateinit var s3: AmazonS3
+    private var s3: AmazonS3
 
     init {
         log.info("StorageS3, constructor()")
         options.type = "s3"
         options = options as StorageS3Options
-        var _options = options as StorageS3Options
+        val _options = options as StorageS3Options
 
         val basicAWSCredentials = BasicAWSCredentials(_options.accessKeyId, _options.secretAccessKey)
         this.s3 = AmazonS3ClientBuilder.standard().withCredentials(AWSStaticCredentialsProvider(basicAWSCredentials))
@@ -65,13 +65,16 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
         log.info("StorageS3, destory()")
         val options = this.options as StorageS3Options
         this.s3.deleteObject(options.bucket, this.name)
-        this.s3.shutdown()
     }
 
     override fun toString(): String {
         return "${this.name}<${this.name}>"
     }
 
+    fun shutdown() {
+        log.info("StorageS3, shutdown()")
+        this.s3.shutdown()
+    }
 
     companion object {
         private val log = LoggerFactory.getLogger(StorageS3::class.java)

@@ -1,12 +1,7 @@
 package io.github.wechaty.memorycard.backend
 
 import io.github.wechaty.memorycard.*
-import io.github.wechaty.utils.JsonUtils
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
-import java.io.File
 
 class StorageNop(val name: String, var options: StorageBackendOptions) : StorageBackend(name,options) {
 
@@ -41,6 +36,6 @@ class StorageNop(val name: String, var options: StorageBackendOptions) : Storage
 
 
 fun main() {
-    var storageNop = StorageNop("test", StorageNopOptions())
+    val storageNop = StorageNop("test", StorageNopOptions())
     println(storageNop)
 }

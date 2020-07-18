@@ -1,18 +1,13 @@
 package io.github.wechaty.memorycard
 
-import io.github.wechaty.memorycard.backend.StorageFile
-import io.github.wechaty.memorycard.backend.StorageNop
-import io.github.wechaty.memorycard.backend.StorageObs
-import io.github.wechaty.memorycard.backend.StorageS3
+import io.github.wechaty.memorycard.backend.*
 
 
 sealed class StorageBackendOptions {
     var type: String? = null
 }
 
-class StorageNopOptions: StorageBackendOptions() {
-    var placeholder: String? = null
-}
+class StorageNopOptions: StorageBackendOptions()
 
 typealias StorageFileOptions = StorageNopOptions
 
@@ -42,5 +37,6 @@ val BACKEND_DICT = mapOf(
     "file" to StorageFile::class,
     "s3" to StorageS3::class,
     "nop" to StorageNop::class,
-    "obs" to StorageObs::class
+    "obs" to StorageObs::class,
+    "oss" to StorageOSS::class
 )

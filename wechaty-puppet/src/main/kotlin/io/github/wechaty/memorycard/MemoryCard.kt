@@ -149,7 +149,7 @@ class MemoryCard {
             throw Exception("no payload, please call load() first.")
         }
 
-        var count: Int
+        val count: Int
         if (this.isMultiplex()) {
             count = this.payload!!.map.keys
                 .filter { key -> this.isMultiplexKey(key) }
