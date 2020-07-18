@@ -108,17 +108,5 @@ class StorageOSS(val name: String, var options: StorageBackendOptions) : Storage
 }
 
 fun main() {
-    val storageOSSOptions = StorageOSSOptions("LTAI4G2iSKd5m8aTZprdj133", "UT9ns4KvNdZkdMIIPEU87upQv2fsBp",
-        "oss-cn-beijing.aliyuncs.com", "cybersa")
-    // 如果有后缀要带上完整的后缀
-    val storageOSS = StorageOSS("PAT.jpg", storageOSSOptions)
-//    val load = storageOSS.load()
-    storageOSS.destory()
-//    load.map.forEach { t, u ->
-//        println("key:" + t + " value:" + u)
-//    }
-    // ok
-//    load.map.put("a", "b")
-//    storageOSS.save(load)
-    storageOSS.shutdown()
+
 }

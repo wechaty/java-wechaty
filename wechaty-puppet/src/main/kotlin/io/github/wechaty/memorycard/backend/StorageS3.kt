@@ -27,20 +27,29 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
     override fun save(payload: MemoryCardPayload) {
         log.info("StorageS3, save()")
         val options = this.options as StorageS3Options
-
-        this.s3.putObject(JsonUtils.write(payload.map), options.bucket, this.name)
-
+        try {
+            this.s3.putObject(JsonUtils.write(payload.map), options.bucket, this.name)
+        }
+        catch (e: Exception) {
+            log.error("上传文件:${this.name}错误")
+        }
     }
 
     override fun load(): MemoryCardPayload {
         log.info("StorageS3, load()")
 
         val options = this.options as StorageS3Options
-        val result = this.s3.getObject(options.bucket, this.name)
+        val result = try {
+            this.s3.getObject(options.bucket, this.name)
+        }
+        catch (e: Exception) {
+            log.error("获取文件:${this.name}错误")
+            null
+        }
+
         if (result == null || result.objectContent == null) {
             return MemoryCardPayload()
         }
-        // 这里还有问题
         val objectContent = result.objectContent
 
         var payloadMap = StringBuffer()
@@ -64,7 +73,12 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
     override fun destory() {
         log.info("StorageS3, destory()")
         val options = this.options as StorageS3Options
-        this.s3.deleteObject(options.bucket, this.name)
+        try {
+            this.s3.deleteObject(options.bucket, this.name)
+        }
+        catch (e: Exception) {
+            log.error("删除${this.name}错误")
+        }
     }
 
     override fun toString(): String {

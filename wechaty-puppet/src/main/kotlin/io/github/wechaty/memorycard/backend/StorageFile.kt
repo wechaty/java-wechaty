@@ -48,6 +48,7 @@ class StorageFile(val name: String, var options: StorageBackendOptions) : Storag
         if(!file.exists()){
             return MemoryCardPayload()
         }
+
         var text = ""
         try {
             text = FileUtils.readFileToString(file, "UTF-8")
