@@ -135,7 +135,8 @@ data class EventResetPayload(
 }
 
 data class EventHeartbeatPayload(
-        var data:String
+        var data:String,
+        var timeout:Long
 ) {
     override fun toString(): String {
         return "EventHeartbeatPayload(data='$data')"
