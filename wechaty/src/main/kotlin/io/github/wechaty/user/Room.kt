@@ -93,7 +93,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                             return@map "@$concatText"
                         }
                         val mentionText = mentionAlias.joinToString(separator = FOUR_PER_EM_SPACE)
-                        text = mentionText
+                        text = "$mentionText $something"
                     } else {
                         text = something
                     }
