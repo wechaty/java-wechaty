@@ -34,7 +34,7 @@ class StateSwitch: EventEmitter(){
     private lateinit var offQueue: ArrayBlockingQueue<() -> Unit>
 
     init {
-        log.info("StateSwitch, constructor(%s)", this.name)
+        log.info("StateSwitch, constructor({})", this.name)
 
         this.onoff = false
         this.pending = false
@@ -92,12 +92,12 @@ class StateSwitch: EventEmitter(){
                     "true"
             else
                 "false"
-        log.info("StateSwitch, <%s> on() is %s", this.name, on)
+        log.info("StateSwitch, <{}> on() is {}", this.name, on)
         return on
     }
 
     fun off(state: StateEnum): String {
-        log.info("StateSwitch, <%s> off(%s) <- (%s)", this.name, state, this.off())
+        log.info("StateSwitch, <{}> off({}) <- ({})", this.name, state, this.off())
         if (state == StateEnum.ON) {
             throw Exception("the parameter state shouldn't be on")
         }
@@ -122,7 +122,11 @@ class StateSwitch: EventEmitter(){
         }
         return this.off()
     }
-    // get the current off state
+
+    /**
+     *
+     * @return 返回当前off的状态
+     */
     fun off(): String {
         val off =
             if (!this.onoff)
@@ -132,7 +136,7 @@ class StateSwitch: EventEmitter(){
                     "true"
             else
                 "false"
-        log.info("StateSwitch, <%s> off() is %s", this.name, off)
+        log.info("StateSwitch, <{}> off() is {}", this.name, off)
         return off
     }
 
@@ -142,7 +146,7 @@ class StateSwitch: EventEmitter(){
      * 好像可以去掉runblocking
      */
     fun ready(state: StateEnum = StateEnum.ON, cross: Boolean = true) {
-        log.info("StateSwitch, <%s> ready(%s, %s)", name, state, cross)
+        log.info("StateSwitch, <{}> ready({}, {})", name, state, cross)
 
         // 如果准备变换的状态为on
         if (state == StateEnum.ON) {
@@ -159,7 +163,6 @@ class StateSwitch: EventEmitter(){
 //            }
             CoroutineScope(Dispatchers.Default).launch {
                 onQueue.take()
-                println("on")
             }
         }
         // 如果准备变为off
@@ -183,7 +186,7 @@ class StateSwitch: EventEmitter(){
         else {
             throw Exception("should not go here. ${state} should be of type 'never'")
         }
-        log.info("StateSwitch, <%s> ready(%s, %s) resolved.", name, state, cross)
+        log.info("StateSwitch, <{}> ready({}, {}) resolved.", name, state, cross)
     }
 
     fun addEventListener(type: StateEnum, listener: Listener) {

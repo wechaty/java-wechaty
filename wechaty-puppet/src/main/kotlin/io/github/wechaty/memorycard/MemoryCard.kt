@@ -102,11 +102,11 @@ class MemoryCard {
         }
     }
 
-    fun load(): Future<Void> {
+    fun load() {
         log.info("MemoryCard, load() from storage: {}", this.storage ?: "N/A")
         if (this.isMultiplex()) {
             log.info("MemoryCard, load() should not be called on a multiplex MemoryCard. NOOP")
-            return CompletableFuture.completedFuture(null)
+            return
         }
         if (this.payload != null) {
             throw Exception("memory had already loaded before.")
@@ -119,10 +119,9 @@ class MemoryCard {
             log.info("MemoryCard, load() no storagebackend")
             this.payload = MemoryCardPayload()
         }
-        return CompletableFuture.completedFuture(null)
     }
 
-    fun save(): Future<Void> {
+    fun save() {
         if (this.isMultiplex()) {
             if (this.parent == null) {
                 throw Exception("multiplex memory no parent")
@@ -137,14 +136,13 @@ class MemoryCard {
 
         if (this.storage == null) {
             log.info("MemoryCard, save() no storage, NOOP")
-            return CompletableFuture.completedFuture(null)
+            return
         }
 
         this.storage!!.save(this.payload!!)
-        return CompletableFuture.completedFuture(null)
     }
 
-    fun destory(): Future<Void> {
+    fun destory() {
         log.info("MemoryCard, destroy() storage: {}", this.storage ?: "N/A")
         if (this.isMultiplex()) {
             throw Exception("can not destroy on a multiplexed memory")
@@ -157,11 +155,10 @@ class MemoryCard {
             this.storage = null
         }
         this.payload = null
-        return CompletableFuture.completedFuture(null)
     }
 
 
-    fun size(): Future<Int> {
+    fun size(): Int {
         log.info("MemoryCard, <{}> size", this.multiplexPath())
 
         if (this.payload == null) {
@@ -178,7 +175,7 @@ class MemoryCard {
             count = this.payload!!.map.size
         }
 
-        return CompletableFuture.completedFuture(count)
+        return count
     }
 
 
@@ -199,6 +196,7 @@ class MemoryCard {
                         this.multiplexNameList.joinToString(NAMESPACE_MULTIPLEX_SEPRATOR)
         return namespace
     }
+
     protected fun isMultiplexKey(key: String): Boolean {
 
         if (NAMESPACE_MULTIPLEX_SEPRATOR_REGEX.containsMatchIn(key)
@@ -221,19 +219,24 @@ class MemoryCard {
         }
     }
 
-    fun  get(name: String): CompletableFuture<Any?>? {
+    fun get(name: String): Any? {
         log.info("MemoryCard, <{}> get({})", this.multiplexPath(), name)
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
         }
 
         val key = this.resolveKey(name)
-        return CompletableFuture.supplyAsync {
-            this.payload!!.map.get(key)
-        }
+        return this.payload!!.map.get(key)
     }
-
-    fun <T : Any> set(name: String, data: T): Future<Void> {
+    /**
+     * 功能描述:
+     *
+     * @Param:
+     * @Return:
+     * @Author: a1725
+     * @Date: 2020/7/18 23:54
+     */
+    fun <T : Any> set(name: String, data: T) {
         log.info("MemoryCard, <{}> set({}, {})", this.multiplexPath(), name, data)
 
         if (this.payload == null) {
@@ -242,10 +245,9 @@ class MemoryCard {
 
         val key = this.resolveKey(name)
         this.payload!!.map[key] = data as Any
-        return CompletableFuture.completedFuture(null)
     }
 
-    fun clear(): Future<Void> {
+    fun clear() {
         log.info("MemoryCard, <{}> clear()", this.multiplexPath())
 
         if (this.payload == null) {
@@ -260,10 +262,9 @@ class MemoryCard {
         else {
             this.payload = MemoryCardPayload()
         }
-        return CompletableFuture.completedFuture(null)
     }
 
-    fun delete(name: String): Future<Void> {
+    fun delete(name: String) {
         log.info("MemoryCard, <{}> delete({})", this.multiplexPath(), name)
         if (this.payload == null) {
             throw Exception("no payload, please call load() first.")
@@ -271,7 +272,6 @@ class MemoryCard {
 
         val key = this.resolveKey(name)
         this.payload!!.map.remove(key)
-        return CompletableFuture.completedFuture(null)
     }
 
     fun entries(): MutableSet<MutableMap.MutableEntry<String, Any>> {
@@ -284,7 +284,7 @@ class MemoryCard {
         return this.payload!!.map.entries
     }
 
-    fun has(key: String): Future<Boolean> {
+    fun has(key: String): Boolean {
         log.info("MemoryCard, <{}> has ({})", this.multiplexPath(), key)
 
         if (this.payload == null) {
@@ -292,9 +292,7 @@ class MemoryCard {
         }
 
         val absoluteKey = this.resolveKey(key)
-        return CompletableFuture.supplyAsync {
-            this.payload!!.map.containsKey(absoluteKey)
-        }
+        return this.payload!!.map.containsKey(absoluteKey)
     }
 
     fun keys(): MutableSet<String> {
