@@ -1,15 +1,15 @@
-package io.github.wechaty.io.github.wechaty.status
+package io.github.wechaty.status
 
 import io.github.wechaty.StateEnum
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.io.github.wechaty.schemas.EventEnum
+import io.github.wechaty.io.github.wechaty.status.StateSwitchListener
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
+import javax.swing.plaf.nimbus.State
 
 var COUNTER = AtomicInteger()
 val nop: () -> Unit = {}
@@ -28,7 +28,7 @@ class StateSwitch: EventEmitter(){
     private lateinit var onResolver : () -> Unit
     private lateinit var offResolver : () -> Unit
 
-    private val name :String = "#${COUNTER.addAndGet(1)}"
+    private var name :String = "#${COUNTER.addAndGet(1)}"
 
     private lateinit var onQueue: ArrayBlockingQueue<() -> Unit>
     private lateinit var offQueue: ArrayBlockingQueue<() -> Unit>
@@ -189,12 +189,22 @@ class StateSwitch: EventEmitter(){
         log.info("StateSwitch, <{}> ready({}, {}) resolved.", name, state, cross)
     }
 
-    fun addEventListener(type: StateEnum, listener: Listener) {
-        super.addListener(type, listener)
+    fun addEventListener(type: StateEnum, listener: StateSwitchListener) {
+        super.addListener(type, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as StateEnum)
+            }
+
+        })
     }
 
-    fun removeEventListener(type: StateEnum, listener: Listener) {
-        super.removeListener(type, listener)
+    fun removeEventListener(type: StateEnum, listener: StateSwitchListener) {
+        super.removeListener(type, object : Listener {
+            override fun handler(vararg any: Any) {
+                // 有问题
+                listener.handler(any[0] as StateEnum)
+            }
+        })
     }
 
     companion object {
