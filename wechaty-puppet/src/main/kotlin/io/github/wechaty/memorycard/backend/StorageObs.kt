@@ -122,30 +122,10 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
 
 
 fun main(){
-    val storageObsOptions = StorageObsOptions("D5RKYDQRCRYICGP65H2R", "K0Va8jn8kWBK8jzdmC4QC2vvqsgF5Epz1iWhZOOp",
-        "obs.cn-north-4.myhuaweicloud.com", "cybersa")
+    val storageObsOptions = StorageObsOptions("aaa", "aaa",
+        "aaa", "aaa")
 
     val storageObs = StorageObs("notexist", storageObsOptions)
     val load = storageObs.load()
-//    var memory = MemoryCardPayload()
-//    var address = Address("福州", "付件")
-//    var person = Person("sda", 13, address)
-//    memory.map.put("person", person)
-//    storageObs.save(memory)
 
-//    val load = storageObs.load()
-//    println(load.map)
-//    load.map.forEach { t, u -> print(t + ":" + u) }
-//    storageObs.destory()
-
-//    var obsClient = ObsClient("D5RKYDQRCRYICGP65H2R", "K0Va8jn8kWBK8jzdmC4QC2vvqsgF5Epz1iWhZOOp",
-//        "obs.cn-north-4.myhuaweicloud.com")
-//    var map = mutableMapOf<String, String>()
-//    map.put("a", "nihsdasd")
-//    obsClient.putObject("cybersa", "objectname", ByteArrayInputStream(JsonUtils.write(map).toByteArray()))
-//    val obsObject = obsClient.getObject("cybersa", "objectname")
-//    var byte = ByteArray(1024)
-//    var len = obsObject.objectContent.read(byte)
-//    println(String(byte, 0 , len))
-//    obsClient.close()
 }
