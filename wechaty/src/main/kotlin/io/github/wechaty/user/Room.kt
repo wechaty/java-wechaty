@@ -285,6 +285,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
         return CompletableFuture.supplyAsync {
             try {
+                val newTop = puppet.roomTopic(id, newTopic).get()
                 return@supplyAsync puppet.roomTopic(id, newTopic).get()
             } catch (e: Exception) {
                 log.warn("Room topic(newTopic=$newTopic) exception:$e")

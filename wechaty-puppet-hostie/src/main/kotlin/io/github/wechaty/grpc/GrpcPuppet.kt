@@ -946,7 +946,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             log.debug("PuppetHostie $type payload $payload")
 
             if (type != Event.EventType.EVENT_TYPE_HEARTBEAT) {
-                emit(EventEnum.HEART_BEAT, EventHeartbeatPayload("heartbeat"))
+                emit(EventEnum.HEART_BEAT, EventHeartbeatPayload("heartbeat",6000))
             }
 
             when (type) {
