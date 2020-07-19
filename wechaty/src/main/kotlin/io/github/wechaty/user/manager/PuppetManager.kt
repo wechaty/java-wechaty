@@ -29,10 +29,15 @@ class PuppetManager {
                 throw java.lang.RuntimeException("expect one puppet,but can not found any one.")
             }
 
-            if (subTypes.size > 1) {
+            val filterPuppet = subTypes.filter {
+                val clazz = it as Class<*>
+                clazz.name == wechatyOptions.puppet
+            }
+
+            if (filterPuppet.size > 1) {
                 throw RuntimeException("expect one puppet,but found ${subTypes.size}")
             }
-            val clazz = subTypes.first() as Class<*>
+            val clazz = filterPuppet.first() as Class<*>
             val declaredConstructor = clazz.getDeclaredConstructor(PuppetOptions::class.java)
             return CompletableFuture.completedFuture(declaredConstructor.newInstance(wechatyOptions.puppetOptions!!) as Puppet)
         }

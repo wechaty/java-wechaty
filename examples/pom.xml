@@ -1,14 +1,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
+
     <parent>
         <groupId>io.github.wechaty</groupId>
         <artifactId>wechaty-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.1.5-SNAPSHOT</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wechaty-example</artifactId>
+
+    <name>wechaty/example</name>
+
     <packaging>jar</packaging>
+    <version>1.0.0-SNAPSHOT</version>
 
     <properties>
         <kotlin.version>1.3.72</kotlin.version>
@@ -17,7 +23,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <dokka.version>0.10.1</dokka.version>
-        <wechaty.version>0.1.4-SNAPSHOT</wechaty.version>
+        <wechaty.version>0.1.5-SNAPSHOT</wechaty.version>
     </properties>
 
     <dependencies>
@@ -69,7 +75,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.10</version>
         </dependency>
 
         <dependency>

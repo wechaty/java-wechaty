@@ -5,7 +5,7 @@
     <groupId>io.github.wechaty</groupId>
     <artifactId>wechaty-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.4-SNAPSHOT</version>
+    <version>0.1.5-SNAPSHOT</version>
     <name>kotlin-wechaty</name>
 
     <description>
@@ -31,6 +31,7 @@
         <module>wechaty-puppet</module>
         <module>wechaty-puppet-hostie</module>
         <module>wechaty-puppet-mock</module>
+<!--        <module>examples</module>-->
     </modules>
 
     <dependencyManagement>

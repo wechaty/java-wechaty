@@ -5,18 +5,27 @@ import io.github.wechaty.filebox.FileBox
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
-class ContactSelf(wechaty: Wechaty,id: String) : Contact(wechaty,id){
+class ContactSelf(wechaty: Wechaty, id: String) : Contact(wechaty, id) {
 
-    override fun avatar(): Future<FileBox> {
-        return super.avatar()
+    fun avatar(fileBox: FileBox) {
+        puppet.setContactAvatar(super.id, fileBox)
     }
 
-    fun avatar(fileBox:FileBox):Future<Void>{
-        return CompletableFuture.supplyAsync {
-            puppet.setContactAvatar(super.id, fileBox)
-            null
+    fun setName(name:String){
+        puppet.contactSelfName(name).get()
+        sync()
+    }
+
+    fun signature(signature:String){
+
+        var puppetId:String? = puppet.selfId()
+
+        let{
+            puppetId != null
+        }.run {
+            puppet.contactSelfSignature(signature).get()
+            sync()
         }
 
     }
-
 }

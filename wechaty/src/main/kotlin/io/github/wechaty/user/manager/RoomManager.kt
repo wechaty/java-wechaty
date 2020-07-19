@@ -9,11 +9,10 @@ import io.github.wechaty.user.Contact
 import io.github.wechaty.user.Room
 import org.apache.commons.collections4.CollectionUtils
 import org.slf4j.LoggerFactory
-import java.util.*
 
 class RoomManager(wechaty: Wechaty) : Accessory(wechaty) {
 
-    private val roomaCache: Cache<String, Room> = Caffeine.newBuilder().build()
+    private val roomCache: Cache<String, Room> = Caffeine.newBuilder().build()
 
     fun create(contactList: List<Contact>, topic: String?): Room {
         if (contactList.size < 2) {
@@ -83,7 +82,7 @@ class RoomManager(wechaty: Wechaty) : Accessory(wechaty) {
     }
 
     fun load(id: String): Room {
-        return roomaCache.get(id) {
+        return roomCache.get(id) {
             Room(wechaty, id)
         }!!
     }
