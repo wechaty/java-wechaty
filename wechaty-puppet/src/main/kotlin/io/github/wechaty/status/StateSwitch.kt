@@ -145,7 +145,7 @@ class StateSwitch: EventEmitter(){
      * @param cross: 是否变换状态,默认可以
      * 好像可以去掉runblocking
      */
-    fun ready(state: StateEnum = StateEnum.ON, cross: Boolean = true) {
+    fun ready(state: StateEnum = StateEnum.ON, cross: Boolean = true) = runBlocking {
         log.info("StateSwitch, <{}> ready({}, {})", name, state, cross)
 
         // 如果准备变换的状态为on
