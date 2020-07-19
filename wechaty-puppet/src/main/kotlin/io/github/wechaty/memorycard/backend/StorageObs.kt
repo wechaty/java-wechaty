@@ -48,6 +48,7 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
 
     private fun putObject(payload: MemoryCardPayload) {
         val options = this.options as StorageObsOptions
+
         val putObject = this.obs.putObject(options.bucket, this.name, ByteArrayInputStream(JsonUtils.write(payload.map).toByteArray()))
         if (putObject.statusCode >= 300) {
             throw Exception("obs putObject error")
@@ -83,7 +84,6 @@ class StorageObs(val name: String, var options: StorageBackendOptions) : Storage
         }
 
         input.close()
-        obs.close()
         var card = MemoryCardPayload()
         card.map = JsonUtils.readValue(String(bos.toByteArray()))
         return card
