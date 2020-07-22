@@ -21,7 +21,6 @@ class StorageS3(val name: String, var options: StorageBackendOptions) : StorageB
         val basicAWSCredentials = BasicAWSCredentials(_options.accessKeyId, _options.secretAccessKey)
         this.s3 = AmazonS3ClientBuilder.standard().withCredentials(AWSStaticCredentialsProvider(basicAWSCredentials))
             .withRegion(_options.region).build()
-
     }
 
     override fun save(payload: MemoryCardPayload) {

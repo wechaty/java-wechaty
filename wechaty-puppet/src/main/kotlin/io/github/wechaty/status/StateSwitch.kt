@@ -12,9 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.plaf.nimbus.State
 
 var COUNTER = AtomicInteger()
-val nop: () -> Unit = {}
 val resolver: () -> Unit = {}
-class StateSwitch: EventEmitter(){
+class StateSwitch(var name :String = "#${COUNTER.addAndGet(1)}"): EventEmitter(){
 
     @Volatile
     private var onoff:Boolean = false
@@ -28,8 +27,8 @@ class StateSwitch: EventEmitter(){
     private lateinit var onResolver : () -> Unit
     private lateinit var offResolver : () -> Unit
 
-    private var name :String = "#${COUNTER.addAndGet(1)}"
-
+//    private var name :String = "#${COUNTER.addAndGet(1)}"
+    private val VERSION: String = "0.0.0"
     private lateinit var onQueue: ArrayBlockingQueue<() -> Unit>
     private lateinit var offQueue: ArrayBlockingQueue<() -> Unit>
 
@@ -42,35 +41,20 @@ class StateSwitch: EventEmitter(){
         offQueue = ArrayBlockingQueue(1)
         this.offQueue.put(resolver)
 
-//        runBlocking {
-//            onPromise = {
-//                onResolver = nop
-//            }
-//            onPromise()
-//        }
     }
 
     // 传入on的状态只能是on或者说pending
-    fun on(state: StateEnum): String  {
+    fun on(state: StateEnum): StateEnum {
 
         log.debug("statusSwitch $name on ${state.name} <- ${this.on()}")
 
         if (state == StateEnum.OFF) {
-            throw Exception("the parameter state shouldn't be off")
+            throw Exception("the parameter state shouldn't be OFF")
         }
         onoff = true
         pending = (state == StateEnum.PENDING)
 
         emit(EventEnum.ON, state.name)
-
-//        if (this.offResolver === nop) {
-//            runBlocking {
-//                offPromise = {
-//                    offResolver = nop
-//                }
-//                offPromise()
-//            }
-//        }
 
         if (this.offQueue.isEmpty()) {
             this.offQueue.put(resolver)
@@ -83,37 +67,29 @@ class StateSwitch: EventEmitter(){
 
     }
     // get the current on state
-    fun on(): String {
+    fun on(): StateEnum {
         val on =
             if (this.onoff == true)
                 if (this.pending == true)
-                    "pending"
+                    StateEnum.PENDING
                 else
-                    "true"
+                    StateEnum.ON
             else
-                "false"
+                StateEnum.OFF
         log.info("StateSwitch, <{}> on() is {}", this.name, on)
         return on
     }
 
-    fun off(state: StateEnum): String {
+    fun off(state: StateEnum): StateEnum {
         log.info("StateSwitch, <{}> off({}) <- ({})", this.name, state, this.off())
         if (state == StateEnum.ON) {
-            throw Exception("the parameter state shouldn't be on")
+            throw Exception("the parameter state shouldn't be ON")
         }
 
         this.onoff = false
         this.pending = (state == StateEnum.PENDING)
         this.emit(StateEnum.OFF, state)
 
-//        if (this.onResolver === nop) {
-//            runBlocking {
-//                onPromise = {
-//                    onResolver = nop
-//                }
-//                onPromise()
-//            }
-//        }
         if (this.onQueue.isEmpty()) {
             this.onQueue.put(resolver)
         }
@@ -127,15 +103,15 @@ class StateSwitch: EventEmitter(){
      *
      * @return 返回当前off的状态
      */
-    fun off(): String {
+    fun off(): StateEnum {
         val off =
             if (!this.onoff)
                 if (this.pending)
-                    "pending"
+                    StateEnum.PENDING
                 else
-                    "true"
+                    StateEnum.OFF
             else
-                "false"
+                StateEnum.ON
         log.info("StateSwitch, <{}> off() is {}", this.name, off)
         return off
     }
@@ -157,10 +133,6 @@ class StateSwitch: EventEmitter(){
             // 当前状态为on
             // 或者说当前状态为off, 但是允许变换状态
             // his.onPromise
-//            coroutineScope {
-//                val job = launch { onPromise }
-//                job.join()
-//            }
             CoroutineScope(Dispatchers.Default).launch {
                 onQueue.take()
             }
@@ -173,11 +145,6 @@ class StateSwitch: EventEmitter(){
             }
             // 当前状态为off,或者说当前状态为on, 但是允许变换状态
             // 执行状态改变时执行的函数
-//            this.offPromise
-//            coroutineScope {
-//                val job = launch { offPromise }
-//                job.join()
-//            }
             CoroutineScope(Dispatchers.Default).launch {
                 offQueue.take()
             }
@@ -207,6 +174,9 @@ class StateSwitch: EventEmitter(){
         })
     }
 
+    fun version(): String {
+        return this.VERSION
+    }
     companion object {
         private val log = LoggerFactory.getLogger(StateSwitch::class.java)
     }

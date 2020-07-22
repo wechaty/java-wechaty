@@ -61,7 +61,6 @@ abstract class Puppet : EventEmitter {
     /**
      *
      */
-
     constructor(puppetOptions: PuppetOptions) {
 
         count.addAndGet(1)

@@ -13,8 +13,6 @@ import java.io.File
 import java.io.IOException
 import java.lang.Exception
 
-// 本身是不存储数据的
-// 存储了持久化的文件名和以及用什么方式存储
 class StorageFile(val name: String, var options: StorageBackendOptions) : StorageBackend(name, options) {
 
     private var absFileName: String

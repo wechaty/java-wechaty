@@ -84,7 +84,6 @@ open class EventEmitter : EventEmitterInterface {
         }
 
         map.put(event, wrapListener)
-
     }
 
     override fun removeAllListeners(event:Event): Boolean {
