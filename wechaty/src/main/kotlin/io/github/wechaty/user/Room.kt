@@ -16,6 +16,7 @@ import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
 import io.github.wechaty.type.Sayable
 import io.github.wechaty.utils.QrcodeUtils
+import io.grpc.netty.shaded.io.netty.util.concurrent.CompleteFuture
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -340,8 +341,23 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         val roomMemberPayload = wechaty.getPuppet().roomMemberPayload(this.id, contact.id).get()
 
         return roomMemberPayload?.roomAlias
+    }
 
 
+    fun owner(): Contact? {
+        log.debug("Room, owner()")
+        val ownerId = if (this.payload != null && this.payload!!.ownerId != null) {
+            this.payload?.ownerId
+        }
+        else {
+            return null
+        }
+        return ownerId?.let { wechaty.contactManager.load(it) }
+    }
+
+    fun avatar(): Future<FileBox> {
+        log.debug("Room, acatar()")
+        return this.puppet.roomAvatar(this.id)
     }
 
     fun has(contact: Contact): Boolean {
