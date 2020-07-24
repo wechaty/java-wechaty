@@ -14,6 +14,7 @@ import io.github.wechaty.io.github.wechaty.watchdag.WatchDog
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogListener
 import io.github.wechaty.listener.*
+import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.FutureUtils
 import io.github.wechaty.utils.JsonUtils
@@ -42,7 +43,7 @@ abstract class Puppet : EventEmitter {
     private val HEARTBEAT_COUNTER = AtomicLong()
     private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
     private val DEFAULT_WATCHDOG_TIMEOUT = 60L
-//    private var memory: MemoryCard
+    private var memory: MemoryCard
 
     private val executorService = Executors.newSingleThreadScheduledExecutor()
 
@@ -66,9 +67,15 @@ abstract class Puppet : EventEmitter {
         count.addAndGet(1)
         this.puppetOptions = puppetOptions
 
-//        this.memory = MemoryCard()
-//        this.memory.load()
-
+        // for test
+        this.memory = MemoryCard()
+        try {
+            this.memory.load()
+            log.debug("Puppet, constructor() memory.load() done")
+        }
+        catch (e: Exception) {
+            log.warn("Puppet, constructor() memory.load() rejection: {}", e)
+        }
 
         val timeOut = puppetOptions.timeout ?: DEFAULT_WATCHDOG_TIMEOUT
         watchDog = WatchDog(1000 * timeOut, "puppet")
@@ -911,13 +918,14 @@ abstract class Puppet : EventEmitter {
         }
     }
 
-//    fun setMemory(memoryCard: MemoryCard){
-//        this.memory = memoryCard
-//    }
+    fun setMemory(memoryCard: MemoryCard) {
+        log.debug("Puppet, setMemory()")
+        this.memory = memoryCard
+    }
 
-//    fun getEventBus(): EventBus {
-//        return eb
-//    }
+    override fun toString(): String {
+        return "Puppet#${count}<${this.puppetOptions?.name}>(${this.memory.getName()})"
+    }
 
     companion object {
         private val log = LoggerFactory.getLogger(Puppet::class.java)

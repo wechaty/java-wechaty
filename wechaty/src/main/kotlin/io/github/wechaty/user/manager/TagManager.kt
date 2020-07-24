@@ -18,7 +18,7 @@ class TagManager(wechaty: Wechaty):Accessory(wechaty){
         }!!
     }
 
-    fun get(id:String):Tag{
+    fun get(id:String): Tag{
         return load(id)
     }
 

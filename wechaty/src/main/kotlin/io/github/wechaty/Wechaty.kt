@@ -6,15 +6,16 @@ import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
 import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.listener.*
-//import io.github.wechaty.memorycard.MemoryCard
+import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
+import io.github.wechaty.status.StateSwitch
 import io.github.wechaty.user.*
 import io.github.wechaty.user.manager.*
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
-
+val PUPPET_MEMORY_NAME = "puppet"
 class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : EventEmitter() {
 
     private val LOCK = ReentrantLock()
@@ -26,12 +27,12 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     private val globalPluginList: MutableList<WechatyPlugin> = mutableListOf()
 
     @Volatile
-    private var readyState = StateEnum.OFF
+    private var readyState = StateSwitch("Wechaty")
 
     @Volatile
-    private var status = StateEnum.OFF
+    private var status = StateSwitch("WechatyReady")
 
-//    private var memory:MemoryCard? = null
+    private var memory: MemoryCard? = null
 
     val tagManager: TagManager = TagManager(this)
     val contactManager = ContactManager(this)
@@ -41,16 +42,21 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val imageManager = ImageManager(this)
 
     init {
-//        this.memory = wechatyOptions.memory
+        if (wechatyOptions.memory == null) {
+            this.memory = MemoryCard(wechatyOptions.name)
+        }
+        else {
+            this.memory = wechatyOptions.memory
+        }
         installGlobalPlugin()
     }
 
 
     fun start(await: Boolean = false):Wechaty {
-
         initPuppet()
         puppet.start().get()
-        status = StateEnum.ON
+//        status = StateEnum.ON
+        status.on(StateEnum.ON)
         emit(EventEnum.START, "")
 
         if (await) {
@@ -220,6 +226,11 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     private fun initPuppet() {
 //        this.puppet = GrpcPuppet(puppetOptions)
         this.puppet = PuppetManager.resolveInstance(wechatyOptions).get()
+        if (this.memory == null) {
+            throw Exception("no memory")
+        }
+        val puppetMemory = this.memory!!.multiplex(PUPPET_MEMORY_NAME)
+        this.puppet.setMemory(puppetMemory)
         initPuppetEventBridge(puppet)
     }
 
@@ -317,7 +328,8 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                     puppet.on(it, object : PuppetReadyListener {
                         override fun handler(payload: EventReadyPayload) {
                             emit(EventEnum.READY);
-                            readyState = StateEnum.ON
+//                            readyState = StateEnum.ON
+                            readyState.on(StateEnum.ON)
                         }
                     })
                 }
@@ -437,6 +449,26 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 LOCK.unlock()
             }
         }, "StartMain-shutdown-hook"))
+    }
+
+    override fun toString(): String {
+        if (this.wechatyOptions == null) {
+            return "default"
+        }
+        val first = if (this.wechatyOptions != null && this.puppet != null) {
+            this.wechatyOptions.puppet
+        }
+        else {
+            "puppet"
+        }
+
+        val second = if (this.memory != null) {
+            this.memory!!.getName()
+        }
+        else {
+            "default"
+        }
+        return "Wechaty#<${first}><${second}>"
     }
 }
 

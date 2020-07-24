@@ -77,6 +77,5 @@ interface ReadyListener {
 @FunctionalInterface
 interface MessageListener {
     fun handler(message: Message)
-
 }
 
