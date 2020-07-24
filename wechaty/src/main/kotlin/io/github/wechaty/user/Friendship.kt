@@ -33,7 +33,13 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         return contact
     }
 
+    fun hello(): String {
+        if (this.payload == null) {
+            throw Exception("no payload")
+        }
 
+        return this.payload!!.hello ?: ""
+    }
     fun add(contact: Contact, hello:String){
         log.debug("add contact: {} hello: {}",contact,hello)
         wechaty.getPuppet().friendshipAdd(contact.id!!,hello).get()
@@ -78,7 +84,15 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
 
     }
 
-
+    fun type(): FriendshipType? {
+        val result = if (this.payload != null) {
+            this.payload!!.type
+        }
+        else {
+            FriendshipType.Unknown
+        }
+        return result
+    }
     companion object{
         private val log = LoggerFactory.getLogger(Friendship::class.java)
     }
