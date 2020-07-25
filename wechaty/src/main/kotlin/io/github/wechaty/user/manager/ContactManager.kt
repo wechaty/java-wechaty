@@ -30,9 +30,6 @@ class ContactManager(wechaty: Wechaty):Accessory(wechaty) {
 
     }
 
-
-
-
     fun find(queryFilter: ContactQueryFilter):Contact?{
 
         val findAll = findAll(queryFilter)

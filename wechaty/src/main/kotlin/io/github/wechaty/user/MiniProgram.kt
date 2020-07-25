@@ -35,7 +35,7 @@ class MiniProgram(var payload: MiniProgramPayload) {
 
     companion object{
 
-        fun create():MiniProgram{
+        fun create(): MiniProgram {
             val payload = MiniProgramPayload()
             return MiniProgram(payload);
         }

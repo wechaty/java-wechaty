@@ -4,8 +4,10 @@ import io.github.wechaty.Accessory
 import io.github.wechaty.Puppet
 import io.github.wechaty.Wechaty
 import io.github.wechaty.filebox.FileBox
+import io.github.wechaty.schemas.ContactGender
 import io.github.wechaty.schemas.ContactPayload
 import io.github.wechaty.schemas.ContactQueryFilter
+import io.github.wechaty.schemas.ContactType
 import io.github.wechaty.type.Sayable
 import io.github.wechaty.utils.FutureUtils
 import org.apache.commons.lang3.StringUtils
@@ -93,6 +95,29 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
 
     fun name():String{
         return payload?.name ?: ""
+    }
+    fun type(): ContactType {
+        return payload?.type ?: ContactType.Unknown
+    }
+    fun gender(): ContactGender {
+        return payload?.gender ?: ContactGender.Unknown
+    }
+
+    fun province(): String? {
+        return payload?.province
+    }
+
+    fun city(): String? {
+        return payload?.city
+    }
+
+    fun self(): Boolean {
+        val userId = this.puppet.selfId()
+
+        if (userId == null) {
+            return false
+        }
+        return this.id === userId
     }
 
     fun setAlias(newAlias:String){

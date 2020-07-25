@@ -4,6 +4,7 @@ package io.github.wechaty;
 import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
+import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.listener.*
 import io.github.wechaty.memorycard.MemoryCard
@@ -13,6 +14,8 @@ import io.github.wechaty.user.*
 import io.github.wechaty.user.manager.*
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 import java.util.concurrent.locks.ReentrantLock
 
 val PUPPET_MEMORY_NAME = "puppet"
@@ -82,6 +85,34 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return wechatyOptions.name
     }
 
+    fun say(something: Any): Future<Void> {
+
+        val msgId: String?
+        this.puppet.selfId()?.let {
+            when (something) {
+                is String -> {
+                    msgId = puppet.messageSendText(it, something).get()
+                }
+                is Contact -> {
+                    msgId = puppet.messageSendContact(it, something.id).get()
+                }
+                is FileBox -> {
+                    msgId = puppet.messageSendFile(it, something).get()
+                }
+                is UrlLink -> {
+                    msgId = puppet.messageSendUrl(it, something.payload).get()
+                }
+                is MiniProgram -> {
+                    msgId = puppet.messageSendMiniProgram(it, something.payload).get()
+                }
+                else -> {
+                    throw Exception("unsupported arg:$something")
+                }
+            }
+            return@let
+        }
+        return CompletableFuture.completedFuture(null)
+    }
     fun onLogin(listener: LoginListener):Wechaty{
         return on(EventEnum.LOGIN,listener)
     }

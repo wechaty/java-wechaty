@@ -7,9 +7,11 @@ import io.github.wechaty.schemas.MessagePayload
 import io.github.wechaty.schemas.MessageType
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.type.Sayable
+import io.grpc.netty.shaded.io.netty.util.concurrent.CompleteFuture
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.regex.Pattern
@@ -123,6 +125,28 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
 
         return StringUtils.equals(selfId,from?.id)
     }
+
+    fun date(): Date {
+        val payload = wechaty.getPuppet().messagePayload(this.id).get()
+        return Date(payload.timestamp!! * 1000)
+    }
+
+    fun forward(to: Any): Future<Void> {
+        log.debug("Message, forward({})", to)
+        when(to) {
+            is Room -> {
+                this.puppet.messageForward(to.id, this.id).get()
+            }
+            is Contact -> {
+                this.puppet.messageForward(to.id, this.id).get()
+            }
+            else -> {
+                throw Exception("unkown forward type")
+            }
+        }
+        return CompletableFuture.completedFuture(null)
+    }
+
 
     fun mentionList():List<Contact>{
         val room = this.room()

@@ -18,7 +18,6 @@ class ContactSelf(wechaty: Wechaty,id: String) : Contact(wechaty,id){
             puppet.setContactAvatar(super.id, fileBox)
             null
         }
-
     }
 
     fun qrcode(): Future<String> {
