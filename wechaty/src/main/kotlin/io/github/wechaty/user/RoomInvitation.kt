@@ -71,6 +71,4 @@ class RoomInvitation(wechaty: Wechaty,val id:String) : Accessory(wechaty){
         private val log = LoggerFactory.getLogger(RoomInvitation::class.java)
     }
 
-
-
 }

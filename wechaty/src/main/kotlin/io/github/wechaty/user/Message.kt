@@ -131,6 +131,11 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
         return Date(payload.timestamp!! * 1000)
     }
 
+    fun age(): Long {
+        val ageMilliseconds = Date().time - this.date().time
+        val ageSeconds = Math.floor(ageMilliseconds / 1000.0).toLong()
+        return ageSeconds
+    }
     fun forward(to: Any): Future<Void> {
         log.debug("Message, forward({})", to)
         when(to) {

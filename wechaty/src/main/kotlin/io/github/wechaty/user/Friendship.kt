@@ -40,6 +40,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
 
         return this.payload!!.hello ?: ""
     }
+
     fun add(contact: Contact, hello:String){
         log.debug("add contact: {} hello: {}",contact,hello)
         wechaty.getPuppet().friendshipAdd(contact.id!!,hello).get()
@@ -77,11 +78,8 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         wechaty.getPuppet().friendshipAccept(this.id!!).get()
 
         val contact = contact()
-
         contact.ready()
-
         contact.sync()
-
     }
 
     fun type(): FriendshipType? {

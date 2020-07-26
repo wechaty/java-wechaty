@@ -70,7 +70,7 @@ class ContactSelf(wechaty: Wechaty,id: String) : Contact(wechaty,id){
         if (this.id !== puppetId) {
             throw Exception("only can get qrcode for the login userself")
         }
-
+        // maybe
         return this.puppet.contactSelfSignature(signature)
     }
 

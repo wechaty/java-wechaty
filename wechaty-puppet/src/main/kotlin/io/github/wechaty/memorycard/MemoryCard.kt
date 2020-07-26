@@ -1,14 +1,7 @@
 package io.github.wechaty.memorycard
 
 import io.github.wechaty.utils.JsonUtils
-import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
-import java.lang.Exception
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Future
-import javax.xml.bind.JAXBElement
-import kotlin.math.abs
 
 const val NAMESPACE_MULTIPLEX_SEPRATOR = "\r"
 const val NAMESPACE_KEY_SEPRATOR       = "\n"
@@ -348,6 +341,9 @@ class MemoryCard {
         return VERSION
     }
 
+    fun getName(): String? {
+        return this.name
+    }
     // 会将当前的类作为parent, 后面那个为namespace
     fun multiplex(nameSpace: String): MemoryCard {
         log.info("MemoryCard, multiplex({})", nameSpace)

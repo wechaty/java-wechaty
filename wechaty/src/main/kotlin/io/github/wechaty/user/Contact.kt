@@ -93,6 +93,10 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
         return (payload != null && StringUtils.isNotEmpty(payload!!.name))
     }
 
+    fun friend(): Boolean? {
+        return payload?.friend
+    }
+
     fun name():String{
         return payload?.name ?: ""
     }

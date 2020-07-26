@@ -58,9 +58,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                 message.ready().get()
                 return@supplyAsync message
             }
-
             return@supplyAsync null
-
         }
     }
 
