@@ -347,7 +347,7 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [@redmaple1](https://github.com/redmaple1) Xiaoya Ren
 - [@huan](https://github.com/huan) - Huan LI (李卓桓)
 
-## Author
+## Creator
 
 - [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
   - Website: [犀利豆的博客](https://xilidou.com/)
