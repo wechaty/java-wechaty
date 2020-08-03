@@ -18,6 +18,7 @@ import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.FutureUtils
 import io.github.wechaty.utils.JsonUtils
+import okhttp3.internal.toImmutableList
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -447,13 +448,13 @@ abstract class Puppet : EventEmitter {
 
             if (StringUtils.isNotBlank(query.id)) {
                 stream = stream?.filter {
-                    StringUtils.equals(query.alias, it.alias)
+                    StringUtils.equals(query.id, it.id)
                 }
             }
 
             if (StringUtils.isNotBlank(query.weixin)) {
                 stream = stream?.filter {
-                    StringUtils.equals(query.alias, it.alias)
+                    StringUtils.equals(query.weixin, it.weixin)
                 }
             }
 
@@ -825,36 +826,34 @@ abstract class Puppet : EventEmitter {
     abstract fun roomMemberList(roomId: String): Future<List<String>>
 
     fun roomMemberSearch(roomId: String, query: RoomMemberQueryFilter): Future<List<String>> {
-        TODO()
-    }
-
-    fun roomReach(query: RoomQueryFilter?): Future<List<String>> {
-        TODO()
-    }
-
-    fun roomValidate(roomId: String): Future<Boolean> {
-        return CompletableFuture.completedFuture(true)
-    }
-
-    fun roomPayloadCache(roomId: String): RoomPayload? {
-        return cacheRoomPayload.getIfPresent(roomId)
-    }
-
-
-    fun roomPayload(roomId: String): Future<RoomPayload> {
         return CompletableFuture.supplyAsync {
-            return@supplyAsync cacheRoomPayload.get(roomId) { t: String ->
-                val get = roomRawPayload(t).get()
-                return@get roomRawPayloadParser(get).get()
+            val roomMemberIdList = roomMemberList(roomId).get()
+
+            val contactQuery = if (query.name != null || query.contactAlias != null) {
+                val contactQueryFilter = ContactQueryFilter()
+                contactQueryFilter.name = query.name
+                contactQueryFilter
             }
+            else {
+                val contactQueryFilter = ContactQueryFilter()
+                contactQueryFilter.alias = query.contactAlias
+                contactQueryFilter
+            }
+
+            var idList = ArrayList(contactSearch(contactQuery, roomMemberIdList).get())
+            val memberPayloadList = roomMemberIdList.mapNotNull { x -> roomMemberPayload(roomId, x).get() }
+
+            if (query.roomAlias != null) {
+                val result = memberPayloadList.filter { payload ->
+                    payload.roomAlias === query.roomAlias
+                }.map { payload ->
+                    payload.id
+                }
+                idList.addAll(result)
+            }
+            return@supplyAsync idList;
         }
     }
-
-    fun roomPayloadDirty(roomId: String): Future<Void> {
-        cacheRoomPayload.invalidate(roomId)
-        return CompletableFuture.completedFuture(null)
-    }
-
 
     fun roomSearch(query: RoomQueryFilter): Future<List<String>> {
         return CompletableFuture.supplyAsync {
@@ -884,6 +883,30 @@ abstract class Puppet : EventEmitter {
             return@supplyAsync (ArrayList<String>());
         }
     }
+
+    fun roomValidate(roomId: String): Future<Boolean> {
+        return CompletableFuture.completedFuture(true)
+    }
+
+    fun roomPayloadCache(roomId: String): RoomPayload? {
+        return cacheRoomPayload.getIfPresent(roomId)
+    }
+
+
+    fun roomPayload(roomId: String): Future<RoomPayload> {
+        return CompletableFuture.supplyAsync {
+            return@supplyAsync cacheRoomPayload.get(roomId) { t: String ->
+                val get = roomRawPayload(t).get()
+                return@get roomRawPayloadParser(get).get()
+            }
+        }
+    }
+
+    fun roomPayloadDirty(roomId: String): Future<Void> {
+        cacheRoomPayload.invalidate(roomId)
+        return CompletableFuture.completedFuture(null)
+    }
+
 
     /**
      * Concat roomId & contactId to one string
