@@ -14,11 +14,6 @@ class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
 
     private var payload:FriendshipPayload? = null
 
-    fun load(id:String):Friendship {
-        this.id = id
-        return this
-    }
-
     fun search(queryFilter: FriendshipSearchCondition):Contact?{
         val contactId = wechaty.getPuppet().friendshipSearch(queryFilter).get();
         if(StringUtils.isEmpty(contactId)){
@@ -29,20 +24,12 @@ class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
         return contact
     }
 
-    fun hello(): String {
-        if (this.payload == null) {
-            throw Exception("no payload")
-        }
-
-        return this.payload!!.hello ?: ""
-    }
-
     // 这个应该是静态方法吧
     fun add(contact: Contact, hello:String){
         log.debug("add contact: {} hello: {}",contact,hello)
         wechaty.getPuppet().friendshipAdd(contact.id!!,hello).get()
     }
-  
+
     fun isReady():Boolean{
         return  payload != null
     }

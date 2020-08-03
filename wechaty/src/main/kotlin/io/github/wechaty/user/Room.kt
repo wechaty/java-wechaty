@@ -404,23 +404,6 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return roomMemberPayload?.roomAlias
     }
 
-
-    fun owner(): Contact? {
-        log.debug("Room, owner()")
-        val ownerId = if (this.payload != null && this.payload!!.ownerId != null) {
-            this.payload?.ownerId
-        }
-        else {
-            return null
-        }
-        return ownerId?.let { wechaty.contactManager.load(it) }
-    }
-
-    fun avatar(): Future<FileBox> {
-        log.debug("Room, acatar()")
-        return this.puppet.roomAvatar(this.id)
-    }
-
     fun has(contact: Contact): Boolean {
         val memberIdList = puppet.roomMemberList(id).get()
         if (memberIdList.isEmpty()) {

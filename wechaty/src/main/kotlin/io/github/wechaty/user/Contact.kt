@@ -94,36 +94,16 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
         return (payload != null && StringUtils.isNotEmpty(payload!!.name))
     }
 
-    fun friend(): Boolean {
-        return payload?.friend ?: false
-    }
-
     fun name():String {
         return payload?.name ?: ""
-    }
-
-    fun type(): ContactType {
-        return payload?.type ?: ContactType.Unknown
-    }
-
-    fun gender(): ContactGender {
-        return payload?.gender ?: ContactGender.Unknown
     }
 
     fun address(): String {
         return this.payload?.address ?: ""
     }
 
-    fun province(): String {
-        return this.payload?.province ?: ""
-    }
-
     fun signature(): String {
         return this.payload?.signature ?: ""
-    }
-
-    fun city(): String {
-        return this.payload?.city ?: ""
     }
 
     fun star(): Boolean {
@@ -132,12 +112,6 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
 
     fun weixin(): String {
         return this.payload?.weixin ?: ""
-    }
-
-    fun self(): Boolean {
-        val userId = this.puppet.selfId() ?: return false
-
-        return this.id === userId
     }
 
     fun setAlias(newAlias:String){
@@ -208,7 +182,7 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
         }
     }
 
-    fun self():Boolean{
+    fun self():Boolean {
         val userId = puppet.selfId()
         if(StringUtils.isEmpty(userId)){
             return false

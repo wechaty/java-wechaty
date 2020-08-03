@@ -44,7 +44,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val roomInvitationManager = RoomInvitationManager(this)
     val imageManager = ImageManager(this)
 
-    val friendShipManager = FriendShipManager(this)
+    val friendShipManager = FriendshipManager(this)
     init {
         if (wechatyOptions.memory == null) {
             this.memory = MemoryCard(wechatyOptions.name)
@@ -121,11 +121,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return wechatyOptions.name
     }
 
-    fun say(something: Any): Future<Void> {
-        val msgId: String?
-        this.userSelf().say(something)
-        return CompletableFuture.completedFuture(null)
-    }
     fun onLogin(listener: LoginListener):Wechaty{
         return on(EventEnum.LOGIN,listener)
     }
@@ -512,25 +507,25 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         }, "StartMain-shutdown-hook"))
     }
 
-    override fun toString(): String {
-        if (this.wechatyOptions == null) {
-            return "default"
-        }
-        val first = if (this.wechatyOptions != null && this.puppet != null) {
-            this.wechatyOptions.puppet
-        }
-        else {
-            "puppet"
-        }
-
-        val second = if (this.memory != null) {
-            this.memory!!.getName()
-        }
-        else {
-            "default"
-        }
-        return "Wechaty#<${first}><${second}>"
-    }
+//    override fun toString(): String {
+//        if (this.wechatyOptions == null) {
+//            return "default"
+//        }
+//        val first = if (this.wechatyOptions != null && this.puppet != null) {
+//            this.wechatyOptions.puppet
+//        }
+//        else {
+//            "puppet"
+//        }
+//
+//        val second = if (this.memory != null) {
+//            this.memory!!.getName()
+//        }
+//        else {
+//            "default"
+//        }
+//        return "Wechaty#<${first}><${second}>"
+//    }
 }
 
 

@@ -67,22 +67,22 @@ class ContactSelf(wechaty: Wechaty, id: String) : Contact(wechaty, id) {
         return null
     }
 
-    fun signature (signature: String): Future<Void> {
-        log.debug("ContactSelf, signature()")
-
-        val puppetId = try {
-            this.puppet.selfId()
-        }
-        catch (e: Exception) {
-            throw Exception("Can not get qrcode, user might be either not logged in or already logged out")
-        }
-
-        if (this.id !== puppetId) {
-            throw Exception("only can get qrcode for the login userself")
-        }
-        // maybe
-        return this.puppet.contactSelfSignature(signature)
-    }
+//    fun signature (signature: String): Future<Void> {
+//        log.debug("ContactSelf, signature()")
+//
+//        val puppetId = try {
+//            this.puppet.selfId()
+//        }
+//        catch (e: Exception) {
+//            throw Exception("Can not get qrcode, user might be either not logged in or already logged out")
+//        }
+//
+//        if (this.id !== puppetId) {
+//            throw Exception("only can get qrcode for the login userself")
+//        }
+//        // maybe
+//        return this.puppet.contactSelfSignature(signature)
+//    }
 
     companion object {
         private val log = LoggerFactory.getLogger(ContactSelf::class.java)
