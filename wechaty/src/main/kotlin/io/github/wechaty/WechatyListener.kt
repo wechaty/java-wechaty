@@ -1,10 +1,7 @@
 package io.github.wechaty
 
 import io.github.wechaty.schemas.ScanStatus
-import io.github.wechaty.user.Contact
-import io.github.wechaty.user.ContactSelf
-import io.github.wechaty.user.Message
-import io.github.wechaty.user.Room
+import io.github.wechaty.user.*
 import java.util.*
 
 @FunctionalInterface
@@ -19,7 +16,7 @@ interface ErrorListener {
 
 @FunctionalInterface
 interface FriendshipListener {
-    fun handler(friendshipId: String)
+    fun handler(friendship: Friendship)
 }
 
 @FunctionalInterface
@@ -66,7 +63,7 @@ interface RoomTopicListener {
 
 @FunctionalInterface
 interface RoomInviteListener {
-    fun handler(roomInvitationId: String)
+    fun handler(roomInvitation : RoomInvitation)
 }
 
 @FunctionalInterface

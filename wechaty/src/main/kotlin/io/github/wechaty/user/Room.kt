@@ -15,6 +15,8 @@ import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
 import io.github.wechaty.type.Sayable
+import io.github.wechaty.user.manager.RoomManager
+import io.github.wechaty.utils.JsonUtils
 import io.github.wechaty.utils.QrcodeUtils
 import io.grpc.netty.shaded.io.netty.util.concurrent.CompleteFuture
 import org.apache.commons.collections4.CollectionUtils
@@ -303,7 +305,18 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
             return@supplyAsync QrcodeUtils.guardQrCodeValue(qrCodeValue)
         }
     }
+    fun member(query: RoomMemberQueryFilter?): Contact? {
+        val memberList = memberAll(query)
 
+        if (memberList == null || memberList.size == 0) {
+            return null
+        }
+        if (memberList.size > 1) {
+            log.warn("Room, member({}) get {} contacts, use the first one by default", query?.let { JsonUtils.write(it) }, memberList.size)
+        }
+
+        return memberList[0];
+    }
     fun memberAll(query: RoomMemberQueryFilter?): List<Contact> {
 
         if (query == null) {

@@ -18,7 +18,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
 
     private var payload:FriendshipPayload? = null
 
-    fun load(id:String):Friendship{
+    fun load(id:String):Friendship {
         this.id = id
         return this
     }
@@ -41,6 +41,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         return this.payload!!.hello ?: ""
     }
 
+    // 这个应该是静态方法吧
     fun add(contact: Contact, hello:String){
         log.debug("add contact: {} hello: {}",contact,hello)
         wechaty.getPuppet().friendshipAdd(contact.id!!,hello).get()
@@ -56,7 +57,6 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         }
         this.payload = wechaty.getPuppet().friendshipPayload(id!!).get()
         contact().ready()
-
     }
 
     fun contact():Contact{

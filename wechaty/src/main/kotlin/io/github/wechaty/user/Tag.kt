@@ -14,7 +14,6 @@ class Tag(wechaty:Wechaty,val id:String):Accessory(wechaty){
         wechaty.getPuppet().tagContactRemove(this.id!!,from.id!!).get()
     }
 
-
     companion object{
         private val log = LoggerFactory.getLogger(Tag::class.java)
     }

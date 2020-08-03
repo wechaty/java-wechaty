@@ -93,26 +93,43 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
         return (payload != null && StringUtils.isNotEmpty(payload!!.name))
     }
 
-    fun friend(): Boolean? {
-        return payload?.friend
+    fun friend(): Boolean {
+        return payload?.friend ?: false
     }
 
-    fun name():String{
+    fun name():String {
         return payload?.name ?: ""
     }
+
     fun type(): ContactType {
         return payload?.type ?: ContactType.Unknown
     }
+
     fun gender(): ContactGender {
         return payload?.gender ?: ContactGender.Unknown
     }
 
-    fun province(): String? {
-        return payload?.province
+    fun address(): String {
+        return this.payload?.address ?: ""
+    }
+    fun province(): String {
+        return this.payload?.province ?: ""
     }
 
-    fun city(): String? {
-        return payload?.city
+    fun signature(): String {
+        return this.payload?.signature ?: ""
+    }
+
+    fun city(): String {
+        return this.payload?.city ?: ""
+    }
+
+    fun star(): Boolean {
+        return this.payload?.star ?: false
+    }
+
+    fun weixin(): String {
+        return this.payload?.weixin ?: ""
     }
 
     fun self(): Boolean {
@@ -139,8 +156,8 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
 
     }
 
-    fun getAlias():String?{
-        return payload?.alias ?:null
+    fun getAlias():String? {
+        return payload?.alias
     }
 
     open fun avatar(): Future<FileBox> {

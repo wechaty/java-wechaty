@@ -43,7 +43,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val roomManager = RoomManager(this)
     val roomInvitationManager = RoomInvitationManager(this)
     val imageManager = ImageManager(this)
-
+    val friendShipManager = FriendShipManager(this)
     init {
         if (wechatyOptions.memory == null) {
             this.memory = MemoryCard(wechatyOptions.name)
@@ -88,29 +88,30 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     fun say(something: Any): Future<Void> {
 
         val msgId: String?
-        this.puppet.selfId()?.let {
-            when (something) {
-                is String -> {
-                    msgId = puppet.messageSendText(it, something).get()
-                }
-                is Contact -> {
-                    msgId = puppet.messageSendContact(it, something.id).get()
-                }
-                is FileBox -> {
-                    msgId = puppet.messageSendFile(it, something).get()
-                }
-                is UrlLink -> {
-                    msgId = puppet.messageSendUrl(it, something.payload).get()
-                }
-                is MiniProgram -> {
-                    msgId = puppet.messageSendMiniProgram(it, something.payload).get()
-                }
-                else -> {
-                    throw Exception("unsupported arg:$something")
-                }
-            }
-            return@let
-        }
+        this.userSelf().say(something)
+//        this.puppet.selfId()?.let {
+//            when (something) {
+//                is String -> {
+//                    msgId = puppet.messageSendText(it, something).get()
+//                }
+//                is Contact -> {
+//                    msgId = puppet.messageSendContact(it, something.id).get()
+//                }
+//                is FileBox -> {
+//                    msgId = puppet.messageSendFile(it, something).get()
+//                }
+//                is UrlLink -> {
+//                    msgId = puppet.messageSendUrl(it, something.payload).get()
+//                }
+//                is MiniProgram -> {
+//                    msgId = puppet.messageSendMiniProgram(it, something.payload).get()
+//                }
+//                else -> {
+//                    throw Exception("unsupported arg:$something")
+//                }
+//            }
+//            return@let
+//        }
         return CompletableFuture.completedFuture(null)
     }
     fun onLogin(listener: LoginListener):Wechaty{
@@ -123,12 +124,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     fun onScan(listener: ScanListener):Wechaty{
         return on(EventEnum.SCAN,listener);
     }
+
+    fun onReady(listener: ReadyListener): Wechaty {
+        return on(EventEnum.READY, listener)
+    }
     fun onFriendship(listener: FriendshipListener): Wechaty {
         return on(EventEnum.FRIENDSHIP, listener)
     }
 
     fun onRoomJoin(listener: RoomJoinListener):Wechaty {
-        return on(EventEnum.ROOM_JOIN,listener)
+        return on(EventEnum.ROOM_JOIN, listener)
     }
 
     fun onRoomLeave(listener: RoomLeaveListener):Wechaty {
@@ -166,6 +171,14 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as ContactSelf)
+            }
+        })
+        return this
+    }
+    private fun on(event: Event,listener: ReadyListener):Wechaty{
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler()
             }
         })
         return this
@@ -212,7 +225,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     private fun on(event: Event, listener: FriendshipListener): Wechaty {
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
-                listener.handler(any[0] as String)
+                listener.handler(any[0] as Friendship)
             }
         })
         return this
@@ -222,7 +235,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 // roomInvitationId
-                listener.handler(any[0] as String)
+                listener.handler(any[0] as RoomInvitation)
             }
         })
         return this
@@ -315,10 +328,10 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 EventEnum.FRIENDSHIP -> {
                     puppet.on(it, object : PuppetFriendshipListener {
                         override fun handler(payload: EventFriendshipPayload) {
-                            val friendship = friendship().load(payload.friendshipId)
+//                            val friendship = friendship().load(payload.friendshipId)
+                            val friendship = friendShipManager.load(payload.friendshipId)
                             friendship.ready()
-//                            emit(EventEnum.FRIENDSHIP, friendship)
-                            emit(EventEnum.FRIENDSHIP, payload.friendshipId)
+                            emit(EventEnum.FRIENDSHIP, friendship)
                         }
                     })
                 }
@@ -401,7 +414,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                     puppet.on(it, object : PuppetRoomLeaveListener {
                         override fun handler(payload: EventRoomLeavePayload) {
                             val room = roomManager.load(payload.roomId)
-                            room.sync()
+                            room.sync().get()
 
                             val leaverList = payload.removeeIdList.map { id ->
                                 val contact = contactManager.loadSelf(id)
@@ -423,7 +436,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                     puppet.on(it, object : PuppetRoomTopicListener {
                         override fun handler(payload: EventRoomTopicPayload) {
                             val room = roomManager.load(payload.roomId)
-                            room.sync()
+                            room.sync().get()
 
                             val changer = contactManager.loadSelf(payload.changerId)
                             changer.ready()

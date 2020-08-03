@@ -26,6 +26,13 @@ class TagManager(wechaty: Wechaty):Accessory(wechaty){
         wechaty.getPuppet().tagContactDelete(tag.id)
     }
 
+    fun tags():List<Tag>{
+        val tagIdList = wechaty.getPuppet().tagContactList().get()
+        return tagIdList.map {
+            wechaty.tagManager.load(it)
+        }
+    }
+
     companion object{
         private val log = LoggerFactory.getLogger(TagManager::class.java)
     }

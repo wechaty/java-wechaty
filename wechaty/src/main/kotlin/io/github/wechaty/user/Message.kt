@@ -132,10 +132,12 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
     }
 
     fun age(): Long {
+        // 这里会是负数,payload里面的时间提前了
         val ageMilliseconds = Date().time - this.date().time
         val ageSeconds = Math.floor(ageMilliseconds / 1000.0).toLong()
         return ageSeconds
     }
+
     fun forward(to: Any): Future<Void> {
         log.debug("Message, forward({})", to)
         when(to) {
