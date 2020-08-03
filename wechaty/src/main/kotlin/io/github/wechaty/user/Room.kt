@@ -94,7 +94,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                             return@map "@$concatText"
                         }
                         val mentionText = mentionAlias.joinToString(separator = FOUR_PER_EM_SPACE)
-                        text = mentionText
+                        text = "$mentionText $something"
                     } else {
                         text = something
                     }
@@ -160,27 +160,27 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
-    fun onInvite(listener: InviteListener):Room{
-        return on(EventEnum.INVITE,listener)
+    fun onInvite(listener: InviteListener): Room {
+        return on(EventEnum.INVITE, listener)
     }
 
-    fun onLeave(listener: LeaveListener):Room{
-        return on(EventEnum.LEAVE,listener)
+    fun onLeave(listener: LeaveListener): Room {
+        return on(EventEnum.LEAVE, listener)
     }
 
-    fun onInnerMessage(listener: RoomInnerMessageListener):Room{
-        return on(EventEnum.MESSAGE,listener)
+    fun onInnerMessage(listener: RoomInnerMessageListener): Room {
+        return on(EventEnum.MESSAGE, listener)
     }
 
-    fun onJoin(listener: JoinListener):Room{
-        return on(EventEnum.JOIN,listener);
+    fun onJoin(listener: JoinListener): Room {
+        return on(EventEnum.JOIN, listener);
     }
 
-    fun onTopic(listener: TopicListener):Room{
-        return on(EventEnum.TOPIC,listener)
+    fun onTopic(listener: TopicListener): Room {
+        return on(EventEnum.TOPIC, listener)
     }
 
-    private fun on(eventName: Event, listener: InviteListener):Room {
+    private fun on(eventName: Event, listener: InviteListener): Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as Contact, any[1] as RoomInvitation)
@@ -189,7 +189,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return this
     }
 
-    private fun on(eventName: Event, listener: LeaveListener):Room {
+    private fun on(eventName: Event, listener: LeaveListener): Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
@@ -198,7 +198,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return this
     }
 
-    private fun on(eventName: Event, listenerRoomInner: RoomInnerMessageListener):Room {
+    private fun on(eventName: Event, listenerRoomInner: RoomInnerMessageListener): Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listenerRoomInner.handler(any[0] as Message, any[1] as Date)
@@ -207,7 +207,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return this
     }
 
-    private fun on(eventName: Event, listener: JoinListener):Room {
+    private fun on(eventName: Event, listener: JoinListener): Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as List<Contact>, any[1] as Contact, any[2] as Date)
@@ -216,7 +216,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return this
     }
 
-    private fun on(eventName: Event, listener: TopicListener):Room {
+    private fun on(eventName: Event, listener: TopicListener): Room {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
                 listener.handler(any[0] as String, any[1] as String, any[2] as Contact, any[3] as Date)
@@ -246,6 +246,57 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
+    fun getTopic(): Future<String> {
+
+        if (!isReady()) {
+            log.warn("Room topic() room not ready")
+            throw Exception("not ready")
+        }
+
+        if (payload != null && payload!!.topic != null) {
+            return CompletableFuture.supplyAsync {
+                return@supplyAsync payload!!.topic
+            }
+        } else {
+            val memberIdList = puppet.roomMemberList(id).get()
+            val memberList = memberIdList.filter { it != puppet.selfId() }
+                .map { wechaty.contactManager.load(it) }
+
+            var defaultTopic = ""
+            if (memberList.isNotEmpty()) {
+                defaultTopic = memberList[0].name()
+            }
+
+            if (memberList.size >= 2) {
+                for (index in 1..2) {
+                    defaultTopic += ",${memberList[index].name()}"
+                }
+            }
+            return CompletableFuture.supplyAsync {
+                return@supplyAsync defaultTopic
+            }
+        }
+    }
+
+    fun setTopic(newTopic: String): Future<Void> {
+        if (!isReady()) {
+            log.warn("Room topic() room not ready")
+            throw Exception("not ready")
+        }
+
+        return CompletableFuture.supplyAsync {
+            try {
+                val newTop = puppet.roomTopic(id, newTopic).get()
+                return@supplyAsync puppet.roomTopic(id, newTopic).get()
+            } catch (e: Exception) {
+                log.warn("Room topic(newTopic=$newTopic) exception:$e")
+                throw Exception(e)
+            }
+        }
+
+    }
+
+    @Deprecated("this function is deprecated! see getTopic,setTopic")
     fun topic(newTopic: String?): Future<Any> {
         if (!isReady()) {
             log.warn("Room topic() room not ready")
@@ -382,9 +433,25 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         return payload != null
     }
 
+    fun owner(): Contact? {
+        val ownerId = payload?.ownerId
+
+        return if (ownerId.isNullOrBlank()) {
+            null
+        } else {
+            return wechaty.contactManager.load(ownerId)
+        }
+    }
+
+    fun avatar(): FileBox {
+        log.debug("avatar:{}", avatar())
+        return puppet.roomAvatar(this.id).get()
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(Room::class.java)
     }
+
 }
 
 val ROOM_EVENT_DICT = mapOf(
