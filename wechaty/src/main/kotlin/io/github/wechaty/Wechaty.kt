@@ -56,6 +56,14 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
 
     fun start(await: Boolean = false):Wechaty {
+        if (this.status.on() == StateEnum.ON) {
+            this.status.ready(StateEnum.ON)
+            return this
+        }
+
+        this.readyState.off(StateEnum.OFF)
+        this.status.on(StateEnum.PENDING)
+
         initPuppet()
         puppet.start().get()
 //        status = StateEnum.ON
@@ -78,7 +86,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     }
 
     fun stop() {
+//        if (this.status.off() == StateEnum.OFF) {
+//            this.status.ready(StateEnum.OFF)
+//            return
+//        }
+//
+//        this.readyState.off(StateEnum.OFF)
+//        this.status.off(StateEnum.PENDING)
         puppet.stop()
+
+//        this.status.off(StateEnum.OFF)
     }
 
     fun name(): String {
@@ -86,32 +103,8 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     }
 
     fun say(something: Any): Future<Void> {
-
         val msgId: String?
         this.userSelf().say(something)
-//        this.puppet.selfId()?.let {
-//            when (something) {
-//                is String -> {
-//                    msgId = puppet.messageSendText(it, something).get()
-//                }
-//                is Contact -> {
-//                    msgId = puppet.messageSendContact(it, something.id).get()
-//                }
-//                is FileBox -> {
-//                    msgId = puppet.messageSendFile(it, something).get()
-//                }
-//                is UrlLink -> {
-//                    msgId = puppet.messageSendUrl(it, something.payload).get()
-//                }
-//                is MiniProgram -> {
-//                    msgId = puppet.messageSendMiniProgram(it, something.payload).get()
-//                }
-//                else -> {
-//                    throw Exception("unsupported arg:$something")
-//                }
-//            }
-//            return@let
-//        }
         return CompletableFuture.completedFuture(null)
     }
     fun onLogin(listener: LoginListener):Wechaty{

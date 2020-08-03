@@ -325,11 +325,10 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
         val contactIdList = wechaty.getPuppet().roomMemberSearch(this.id, query).get()
         val contactList = contactIdList.map {
-            wechaty.contactManager.load(id)
+            id -> wechaty.contactManager.load(id)
         }
 
         return contactList
-
     }
 
     fun memberList(): List<Contact> {
@@ -341,7 +340,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
 
         val contactList = memberIdList.map {
-            wechaty.contactManager.load(id)
+            id -> wechaty.contactManager.load(id)
         }
         return contactList
 

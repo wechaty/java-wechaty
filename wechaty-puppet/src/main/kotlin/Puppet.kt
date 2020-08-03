@@ -841,6 +841,7 @@ abstract class Puppet : EventEmitter {
             }
 
             var idList = ArrayList(contactSearch(contactQuery, roomMemberIdList).get())
+
             val memberPayloadList = roomMemberIdList.mapNotNull { x -> roomMemberPayload(roomId, x).get() }
 
             if (query.roomAlias != null) {
@@ -943,6 +944,7 @@ abstract class Puppet : EventEmitter {
 
     fun setMemory(memoryCard: MemoryCard) {
         log.debug("Puppet, setMemory()")
+
         this.memory = memoryCard
     }
 
