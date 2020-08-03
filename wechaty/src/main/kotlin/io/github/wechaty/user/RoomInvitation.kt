@@ -64,7 +64,7 @@ class RoomInvitation(wechaty: Wechaty,val id:String) : Accessory(wechaty){
 
     fun topic():String {
         val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
-        return payload.topic ?:"";
+        return payload.topic ?:""
     }
 
     companion object{

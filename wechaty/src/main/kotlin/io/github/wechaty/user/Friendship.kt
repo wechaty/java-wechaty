@@ -5,16 +5,12 @@ import io.github.wechaty.Wechaty
 import io.github.wechaty.schemas.FriendshipPayload
 import io.github.wechaty.schemas.FriendshipSearchCondition
 import io.github.wechaty.schemas.FriendshipType
+import io.github.wechaty.utils.JsonUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class Friendship (wechaty: Wechaty):Accessory(wechaty){
+class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
 
-    constructor(wechaty: Wechaty,id: String):this(wechaty){
-        this.id = id
-    }
-
-    private var id:String? = null
 
     private var payload:FriendshipPayload? = null
 
@@ -46,7 +42,7 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         log.debug("add contact: {} hello: {}",contact,hello)
         wechaty.getPuppet().friendshipAdd(contact.id!!,hello).get()
     }
-
+  
     fun isReady():Boolean{
         return  payload != null
     }
@@ -74,22 +70,28 @@ class Friendship (wechaty: Wechaty):Accessory(wechaty){
         if(payload!!.type != FriendshipType.Receive){
             throw Exception("accept() need type to be FriendshipType.Receive, but it got a ${payload!!.type}")
         }
-
-        wechaty.getPuppet().friendshipAccept(this.id!!).get()
-
+        wechaty.getPuppet().friendshipAccept(this.id).get()
         val contact = contact()
         contact.ready()
         contact.sync()
     }
 
-    fun type(): FriendshipType? {
-        val result = if (this.payload != null) {
-            this.payload!!.type
+    fun hello():String{
+        if(payload==null){
+            throw Exception("ne payload")
         }
-        else {
-            FriendshipType.Unknown
+        return this.payload?.hello ?: "";
+    }
+
+    fun type():FriendshipType{
+        return this.payload?.type ?:FriendshipType.Unknown
+    }
+
+    fun toJson():String{
+        if(payload==null){
+            throw Exception("ne payload")
         }
-        return result
+        return JsonUtils.write(payload!!);
     }
     companion object{
         private val log = LoggerFactory.getLogger(Friendship::class.java)

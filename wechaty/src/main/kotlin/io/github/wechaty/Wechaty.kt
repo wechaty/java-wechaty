@@ -43,6 +43,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val roomManager = RoomManager(this)
     val roomInvitationManager = RoomInvitationManager(this)
     val imageManager = ImageManager(this)
+
     val friendShipManager = FriendShipManager(this)
     init {
         if (wechatyOptions.memory == null) {
@@ -53,7 +54,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         }
         installGlobalPlugin()
     }
-
 
     fun start(await: Boolean = false):Wechaty {
         if (this.status.on() == StateEnum.ON) {
@@ -97,6 +97,25 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
 //        this.status.off(StateEnum.OFF)
     }
+
+    fun logout(){
+        log.debug("Wechaty logout()")
+        try {
+            puppet.logout()
+        } catch (e: Exception) {
+            log.error("logout error",e)
+            throw e
+        }
+    }
+
+    fun logonoff():Boolean{
+        return try {
+            puppet.logonoff()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
 
     fun name(): String {
         return wechatyOptions.name
@@ -261,7 +280,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     }
 
     private fun initPuppet() {
-//        this.puppet = GrpcPuppet(puppetOptions)
         this.puppet = PuppetManager.resolveInstance(wechatyOptions).get()
         if (this.memory == null) {
             throw Exception("no memory")
@@ -270,11 +288,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         this.puppet.setMemory(puppetMemory)
         initPuppetEventBridge(puppet)
     }
-
-    fun friendship(): Friendship {
-        return Friendship(this);
-    }
-
 
     fun getPuppet(): Puppet {
         return puppet
@@ -286,6 +299,13 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return user
     }
 
+    fun say(any: Any):Message?{
+        return userSelf().say(any)
+    }
+
+    fun ding(data:String?){
+        this.puppet.ding(data)
+    }
 
     private fun initPuppetEventBridge(puppet: Puppet) {
 
@@ -321,7 +341,6 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 EventEnum.FRIENDSHIP -> {
                     puppet.on(it, object : PuppetFriendshipListener {
                         override fun handler(payload: EventFriendshipPayload) {
-//                            val friendship = friendship().load(payload.friendshipId)
                             val friendship = friendShipManager.load(payload.friendshipId)
                             friendship.ready()
                             emit(EventEnum.FRIENDSHIP, friendship)
@@ -449,6 +468,11 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 }
             }
         }
+    }
+
+
+    override fun toString():String{
+        return "wechaty"
     }
 
     companion object Factory {

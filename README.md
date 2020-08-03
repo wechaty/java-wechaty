@@ -1,9 +1,9 @@
 # java-wechaty
 
 ![Java CI with Maven](https://github.com/wechaty/java-wechaty/workflows/Java%20CI%20with%20Maven/badge.svg)
-[![Java Version](https://img.shields.io/maven-central/v/io.github.wechaty/wechaty?label=Java)](https://mvnrepository.com/artifact/io.github.wechaty/wechaty)
+[![Java Version](https://img.shields.io/maven-central/v/io.github.wechaty/wechaty?label=Maven)](https://mvnrepository.com/artifact/io.github.wechaty/wechaty)
 
-![Java Wechaty](https://wechaty.github.io/java-wechaty/images/java-wechaty.png)
+![Java Wechaty](docs/images/java-wechaty.png)
 
 [![Java Wechaty Getting Started](https://img.shields.io/badge/Java%20Wechaty-Getting%20Started-orange)](https://github.com/wechaty/java-wechaty-getting-started)
 [![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
@@ -14,12 +14,6 @@
 [![Kotlin](https://img.shields.io/badge/%3C%2F%3E-Kotlin-orange.svg)](https://kotlinlang.org)
 
 Wechaty is a RPA SDK for Wechat **Individual** Account that can help you create a chatbot in 6 lines of Java.
-
-## WORK IN PROGRESS
-
-Work in progress...
-
-Please come back after 4 weeks...
 
 ## Voice of the Developers
 
@@ -278,6 +272,14 @@ mvn install wechaty
 
 ### master
 
+### v0.4 (Jun 19, 2020)
+
+Java(Kotlin) Wechaty **BETA** Released!
+
+Read more from our Multi-language Wechaty Beta Release event from our blog:
+
+- [Multi Language Wechaty Beta Release Announcement!](https://wechaty.github.io/2020/06/19/multi-language-wechaty-beta-release/)
+
 ### v0.1.4 (June 13 2020)
 1. use `PuppetManager` to manage multi puppet implementations.
 2. add mock puppet.
@@ -343,8 +345,9 @@ We decided to use Kotlin to develop the Java Wechaty!
 ## Committers
 
 - [@redmaple1](https://github.com/redmaple1) Xiaoya Ren
+- [@huan](https://github.com/huan) - Huan LI (李卓桓)
 
-## Author
+## Creator
 
 - [@diaozxin007](https://github.com/diaozxin007) diaozxin@gmail.com
   - Website: [犀利豆的博客](https://xilidou.com/)

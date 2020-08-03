@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.github.wechaty</groupId>
         <artifactId>wechaty-parent</artifactId>
-        <version>0.1.4-SNAPSHOT</version>
+        <version>0.1.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wechaty</artifactId>
@@ -27,6 +27,12 @@
             <artifactId>wechaty-puppet-hostie</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.wechaty</groupId>
+            <artifactId>wechaty-puppet-hostie</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>io.github.wechaty</groupId>
             <artifactId>wechaty-puppet-mock</artifactId>

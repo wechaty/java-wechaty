@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
+import kotlin.math.E
 
 open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty) {
 
@@ -160,10 +161,61 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
         return payload?.alias
     }
 
-    open fun avatar(): Future<FileBox> {
-        log.info("Contact, avatar()")
-        val contactAvatar = this.puppet.getContactAvatar(this.id)
-        return contactAvatar
+    fun stranger():Boolean?{
+        return if(friend() == null){
+            null
+        }else{
+            !friend()!!
+        }
+    }
+
+    fun friend():Boolean?{
+        return payload?.friend
+    }
+
+    fun type():ContactType{
+        return payload?.type ?: throw Exception("no payload")
+    }
+
+    fun gender():ContactGender{
+        return payload?.gender ?: ContactGender.Unknown
+    }
+
+    fun province():String?{
+        return payload?.province
+    }
+
+    fun city():String?{
+        return payload?.city
+    }
+
+    open fun avatar(): FileBox {
+        try {
+            return wechaty.getPuppet().getContactAvatar(this.id).get()
+        } catch (e: Exception) {
+            log.error("error",e)
+            TODO()
+        }
+    }
+
+    fun tags():List<Tag>{
+        val tagIdList = wechaty.getPuppet().tagContactList(this.id).get()
+        return try {
+            tagIdList.map {
+                wechaty.tagManager.load(it)
+            }
+        } catch (e: Exception) {
+            log.error("error",e)
+            listOf()
+        }
+    }
+
+    fun self():Boolean{
+        val userId = puppet.selfId()
+        if(StringUtils.isEmpty(userId)){
+            return false
+        }
+        return StringUtils.equals(id,userId)
     }
 
 
