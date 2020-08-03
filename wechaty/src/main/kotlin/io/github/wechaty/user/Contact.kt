@@ -112,6 +112,7 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
     fun address(): String {
         return this.payload?.address ?: ""
     }
+
     fun province(): String {
         return this.payload?.province ?: ""
     }
@@ -133,11 +134,8 @@ open class Contact(wechaty: Wechaty,val id:String) : Sayable, Accessory(wechaty)
     }
 
     fun self(): Boolean {
-        val userId = this.puppet.selfId()
+        val userId = this.puppet.selfId() ?: return false
 
-        if (userId == null) {
-            return false
-        }
         return this.id === userId
     }
 
