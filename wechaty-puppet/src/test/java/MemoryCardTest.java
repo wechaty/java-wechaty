@@ -11,8 +11,10 @@ public class MemoryCardTest {
         MemoryCard card = new MemoryCard("default", null);
         card.load();
         Map<String, Object> map = (Map<String, Object>) card.get("person");
-        map.forEach((key, value) -> {
-            System.out.println(key + ":" + value);
-        });
+        if (map != null) {
+            map.forEach((key, value) -> {
+                System.out.println(key + ":" + value);
+            });
+        }
     }
 }
