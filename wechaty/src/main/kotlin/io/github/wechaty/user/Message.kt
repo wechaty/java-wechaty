@@ -118,6 +118,9 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
         }
         return this.payload?.type ?: MessageType.Unknown
     }
+    fun getType(): MessageType{
+        return this.payload?.type ?: throw Exception("no payload")
+    }
 
     fun self():Boolean{
         val selfId = puppet.selfId()
@@ -131,8 +134,18 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
         return Date(payload.timestamp!! * 1000)
     }
 
+    fun getDate(): Date {
+        val payload = wechaty.getPuppet().messagePayload(this.id).get()
+        return Date(payload.timestamp!! * 1000)
+    }
+
     fun age(): Long {
-        // 这里会是负数,payload里面的时间提前了
+        val ageMilliseconds = Date().time - this.date().time
+        val ageSeconds = Math.floor(ageMilliseconds / 1000.0).toLong()
+        return ageSeconds
+    }
+
+    fun getAge(): Long {
         val ageMilliseconds = Date().time - this.date().time
         val ageSeconds = Math.floor(ageMilliseconds / 1000.0).toLong()
         return ageSeconds
@@ -201,7 +214,6 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
     fun content():String{
         return text()
     }
-
 
     fun ready():Future<Void>{
 

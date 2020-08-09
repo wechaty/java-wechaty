@@ -70,8 +70,12 @@ class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
         return this.payload?.hello ?: "";
     }
 
-    fun type():FriendshipType{
+    fun type(): FriendshipType {
         return this.payload?.type ?:FriendshipType.Unknown
+    }
+
+    fun getType(): FriendshipType {
+        return this.payload?.type ?: throw Exception("ne payload")
     }
 
     fun toJson():String{

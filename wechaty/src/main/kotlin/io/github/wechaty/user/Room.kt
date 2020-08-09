@@ -350,12 +350,29 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
+    fun getAnnounce(): Future<String> {
+        return CompletableFuture.supplyAsync {
+            puppet.getRoomAnnounce(id).get()
+        }
+    }
+
+    fun setAnnounce(text: String): Future<Void> {
+        return puppet.setRoomAnnounce(id, text)
+    }
+
     fun qrCode(): Future<String> {
         return CompletableFuture.supplyAsync {
             val qrCodeValue = puppet.roomQRCode(id).get()
             return@supplyAsync QrcodeUtils.guardQrCodeValue(qrCodeValue)
         }
     }
+    fun getQrCode(): Future<String> {
+        return CompletableFuture.supplyAsync {
+            val qrCodeValue = puppet.roomQRCode(id).get()
+            return@supplyAsync QrcodeUtils.guardQrCodeValue(qrCodeValue)
+        }
+    }
+
     fun member(query: RoomMemberQueryFilter?): Contact? {
         val memberList = memberAll(query)
 
@@ -398,9 +415,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
     }
 
     fun alias(contact: Contact): String? {
-
         val roomMemberPayload = wechaty.getPuppet().roomMemberPayload(this.id, contact.id).get()
-
         return roomMemberPayload?.roomAlias
     }
 
@@ -428,6 +443,11 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     fun avatar(): FileBox {
         log.debug("avatar:{}", avatar())
+        return puppet.roomAvatar(this.id).get()
+    }
+
+    fun getAvatar(): FileBox {
+        log.debug("getAvatar:{}", getAvatar())
         return puppet.roomAvatar(this.id).get()
     }
 

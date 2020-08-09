@@ -707,8 +707,46 @@ abstract class Puppet : EventEmitter {
 
     }
 
-    protected fun messageQueryFilterFactory(query: MessageQueryFilter) {
-        TODO()
+    protected fun messageQueryFilterFactory(query: MessageQueryFilter): MessagePayloadFilterFunction {
+        val clz = query::class.java
+        val fields = clz.fields
+        val list = fields.map {
+            it.name to it.get(query)
+        }
+
+        var filterFunctionList = ArrayList<MessagePayloadFilterFunction>()
+
+        list.forEach { pair ->
+            if (StringUtils.isNotEmpty(pair.second.toString())) {
+                val filterFunction = if (StringUtils.equals(pair.first.toString(), "textReg")) {
+                    {
+                        payload: MessagePayload -> Boolean
+                        val clazz = payload::class.java
+                        val field = clazz.getField(pair.first)
+                        val realValue = field.get(payload).toString()
+                        Regex(pair.second.toString()).matches(realValue)
+                    }
+                }
+                else {
+                    {
+                        payload: MessagePayload -> Boolean
+                        val clazz = payload::class.java
+                        val field = clazz.getField(pair.first)
+                        val realValue = field.get(payload).toString()
+                        StringUtils.equals(realValue, pair.second.toString())
+                    }
+                }
+                filterFunctionList.add(filterFunction)
+            }
+        }
+        val allFilterFunction: MessagePayloadFilterFunction = {
+            payload: MessagePayload ->
+            filterFunctionList.all {
+                func -> func(payload)
+            }
+        }
+        return allFilterFunction
+
     }
 
     fun messageForward(conversationId: String, messageId: String): Future<String?> {
