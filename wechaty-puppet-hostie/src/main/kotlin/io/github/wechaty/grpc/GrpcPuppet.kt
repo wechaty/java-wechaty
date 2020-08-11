@@ -389,7 +389,6 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
     }
 
     override fun contactRawPayload(contractId: String): Future<ContactPayload> {
-
         val request = Contact.ContactPayloadRequest.newBuilder()
             .setId(contractId)
             .build()

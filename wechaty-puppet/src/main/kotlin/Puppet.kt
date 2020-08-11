@@ -14,9 +14,11 @@ import io.github.wechaty.io.github.wechaty.watchdag.WatchDog
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogFood
 import io.github.wechaty.io.github.wechaty.watchdag.WatchdogListener
 import io.github.wechaty.listener.*
+import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
 import io.github.wechaty.utils.FutureUtils
 import io.github.wechaty.utils.JsonUtils
+import okhttp3.internal.toImmutableList
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -42,7 +44,7 @@ abstract class Puppet : EventEmitter {
     private val HEARTBEAT_COUNTER = AtomicLong()
     private val HOSTIE_KEEPALIVE_TIMEOUT = 15 * 1000L
     private val DEFAULT_WATCHDOG_TIMEOUT = 60L
-//    private var memory: MemoryCard
+    private var memory: MemoryCard
 
     private val executorService = Executors.newSingleThreadScheduledExecutor()
 
@@ -61,15 +63,20 @@ abstract class Puppet : EventEmitter {
     /**
      *
      */
-
     constructor(puppetOptions: PuppetOptions) {
 
         count.addAndGet(1)
         this.puppetOptions = puppetOptions
 
-//        this.memory = MemoryCard()
-//        this.memory.load()
-
+        // for test
+        this.memory = MemoryCard()
+        try {
+            this.memory.load()
+            log.debug("Puppet, constructor() memory.load() done")
+        }
+        catch (e: Exception) {
+            log.warn("Puppet, constructor() memory.load() rejection: {}", e)
+        }
 
         val timeOut = puppetOptions.timeout ?: DEFAULT_WATCHDOG_TIMEOUT
         watchDog = WatchDog(1000 * timeOut, "puppet")
@@ -441,13 +448,13 @@ abstract class Puppet : EventEmitter {
 
             if (StringUtils.isNotBlank(query.id)) {
                 stream = stream?.filter {
-                    StringUtils.equals(query.alias, it.alias)
+                    StringUtils.equals(query.id, it.id)
                 }
             }
 
             if (StringUtils.isNotBlank(query.weixin)) {
                 stream = stream?.filter {
-                    StringUtils.equals(query.alias, it.alias)
+                    StringUtils.equals(query.weixin, it.weixin)
                 }
             }
 
@@ -700,8 +707,46 @@ abstract class Puppet : EventEmitter {
 
     }
 
-    protected fun messageQueryFilterFactory(query: MessageQueryFilter) {
-        TODO()
+    protected fun messageQueryFilterFactory(query: MessageQueryFilter): MessagePayloadFilterFunction {
+        val clz = query::class.java
+        val fields = clz.fields
+        val list = fields.map {
+            it.name to it.get(query)
+        }
+
+        var filterFunctionList = ArrayList<MessagePayloadFilterFunction>()
+
+        list.forEach { pair ->
+            if (StringUtils.isNotEmpty(pair.second.toString())) {
+                val filterFunction = if (StringUtils.equals(pair.first.toString(), "textReg")) {
+                    {
+                        payload: MessagePayload -> Boolean
+                        val clazz = payload::class.java
+                        val field = clazz.getField(pair.first)
+                        val realValue = field.get(payload).toString()
+                        Regex(pair.second.toString()).matches(realValue)
+                    }
+                }
+                else {
+                    {
+                        payload: MessagePayload -> Boolean
+                        val clazz = payload::class.java
+                        val field = clazz.getField(pair.first)
+                        val realValue = field.get(payload).toString()
+                        StringUtils.equals(realValue, pair.second.toString())
+                    }
+                }
+                filterFunctionList.add(filterFunction)
+            }
+        }
+        val allFilterFunction: MessagePayloadFilterFunction = {
+            payload: MessagePayload ->
+            filterFunctionList.all {
+                func -> func(payload)
+            }
+        }
+        return allFilterFunction
+
     }
 
     fun messageForward(conversationId: String, messageId: String): Future<String?> {
@@ -819,36 +864,35 @@ abstract class Puppet : EventEmitter {
     abstract fun roomMemberList(roomId: String): Future<List<String>>
 
     fun roomMemberSearch(roomId: String, query: RoomMemberQueryFilter): Future<List<String>> {
-        TODO()
-    }
-
-    fun roomReach(query: RoomQueryFilter?): Future<List<String>> {
-        TODO()
-    }
-
-    fun roomValidate(roomId: String): Future<Boolean> {
-        return CompletableFuture.completedFuture(true)
-    }
-
-    fun roomPayloadCache(roomId: String): RoomPayload? {
-        return cacheRoomPayload.getIfPresent(roomId)
-    }
-
-
-    fun roomPayload(roomId: String): Future<RoomPayload> {
         return CompletableFuture.supplyAsync {
-            return@supplyAsync cacheRoomPayload.get(roomId) { t: String ->
-                val get = roomRawPayload(t).get()
-                return@get roomRawPayloadParser(get).get()
+            val roomMemberIdList = roomMemberList(roomId).get()
+
+            val contactQuery = if (query.name != null || query.contactAlias != null) {
+                val contactQueryFilter = ContactQueryFilter()
+                contactQueryFilter.name = query.name
+                contactQueryFilter
             }
+            else {
+                val contactQueryFilter = ContactQueryFilter()
+                contactQueryFilter.alias = query.contactAlias
+                contactQueryFilter
+            }
+
+            var idList = ArrayList(contactSearch(contactQuery, roomMemberIdList).get())
+
+            val memberPayloadList = roomMemberIdList.mapNotNull { x -> roomMemberPayload(roomId, x).get() }
+
+            if (query.roomAlias != null) {
+                val result = memberPayloadList.filter { payload ->
+                    payload.roomAlias === query.roomAlias
+                }.map { payload ->
+                    payload.id
+                }
+                idList.addAll(result)
+            }
+            return@supplyAsync idList;
         }
     }
-
-    fun roomPayloadDirty(roomId: String): Future<Void> {
-        cacheRoomPayload.invalidate(roomId)
-        return CompletableFuture.completedFuture(null)
-    }
-
 
     fun roomSearch(query: RoomQueryFilter): Future<List<String>> {
         return CompletableFuture.supplyAsync {
@@ -878,6 +922,30 @@ abstract class Puppet : EventEmitter {
             return@supplyAsync (ArrayList<String>());
         }
     }
+
+    fun roomValidate(roomId: String): Future<Boolean> {
+        return CompletableFuture.completedFuture(true)
+    }
+
+    fun roomPayloadCache(roomId: String): RoomPayload? {
+        return cacheRoomPayload.getIfPresent(roomId)
+    }
+
+
+    fun roomPayload(roomId: String): Future<RoomPayload> {
+        return CompletableFuture.supplyAsync {
+            return@supplyAsync cacheRoomPayload.get(roomId) { t: String ->
+                val get = roomRawPayload(t).get()
+                return@get roomRawPayloadParser(get).get()
+            }
+        }
+    }
+
+    fun roomPayloadDirty(roomId: String): Future<Void> {
+        cacheRoomPayload.invalidate(roomId)
+        return CompletableFuture.completedFuture(null)
+    }
+
 
     /**
      * Concat roomId & contactId to one string
@@ -912,13 +980,15 @@ abstract class Puppet : EventEmitter {
         }
     }
 
-//    fun setMemory(memoryCard: MemoryCard){
-//        this.memory = memoryCard
-//    }
+    fun setMemory(memoryCard: MemoryCard) {
+        log.debug("Puppet, setMemory()")
 
-//    fun getEventBus(): EventBus {
-//        return eb
-//    }
+        this.memory = memoryCard
+    }
+
+    override fun toString(): String {
+        return "Puppet#${count}<${this.puppetOptions?.name}>(${this.memory.getName()})"
+    }
 
     companion object {
         private val log = LoggerFactory.getLogger(Puppet::class.java)

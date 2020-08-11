@@ -4,17 +4,21 @@ package io.github.wechaty;
 import io.github.wechaty.eventEmitter.Event
 import io.github.wechaty.eventEmitter.EventEmitter
 import io.github.wechaty.eventEmitter.Listener
+import io.github.wechaty.filebox.FileBox
 import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.listener.*
-//import io.github.wechaty.memorycard.MemoryCard
+import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.*
+import io.github.wechaty.status.StateSwitch
 import io.github.wechaty.user.*
 import io.github.wechaty.user.manager.*
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 import java.util.concurrent.locks.ReentrantLock
 
-
+val PUPPET_MEMORY_NAME = "puppet"
 class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : EventEmitter() {
 
     private val LOCK = ReentrantLock()
@@ -26,12 +30,12 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     private val globalPluginList: MutableList<WechatyPlugin> = mutableListOf()
 
     @Volatile
-    private var readyState = StateEnum.OFF
+    private var readyState = StateSwitch("Wechaty")
 
     @Volatile
-    private var status = StateEnum.OFF
+    private var status = StateSwitch("WechatyReady")
 
-//    private var memory:MemoryCard? = null
+    private var memory: MemoryCard? = null
 
     val tagManager: TagManager = TagManager(this)
     val contactManager = ContactManager(this)
@@ -39,18 +43,31 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     val roomManager = RoomManager(this)
     val roomInvitationManager = RoomInvitationManager(this)
     val imageManager = ImageManager(this)
-    val friendshipManager = FriendshipManager(this)
 
+    val friendShipManager = FriendshipManager(this)
     init {
-//        this.memory = wechatyOptions.memory
+        if (wechatyOptions.memory == null) {
+            this.memory = MemoryCard(wechatyOptions.name)
+        }
+        else {
+            this.memory = wechatyOptions.memory
+        }
         installGlobalPlugin()
     }
 
     fun start(await: Boolean = false):Wechaty {
+        if (this.status.on() == StateEnum.ON) {
+            this.status.ready(StateEnum.ON)
+            return this
+        }
+
+        this.readyState.off(StateEnum.OFF)
+        this.status.on(StateEnum.PENDING)
 
         initPuppet()
         puppet.start().get()
-        status = StateEnum.ON
+//        status = StateEnum.ON
+        status.on(StateEnum.ON)
         emit(EventEnum.START, "")
 
         if (await) {
@@ -69,7 +86,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
     }
 
     fun stop() {
+//        if (this.status.off() == StateEnum.OFF) {
+//            this.status.ready(StateEnum.OFF)
+//            return
+//        }
+//
+//        this.readyState.off(StateEnum.OFF)
+//        this.status.off(StateEnum.PENDING)
         puppet.stop()
+
+//        this.status.off(StateEnum.OFF)
     }
 
     fun logout(){
@@ -99,12 +125,22 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return on(EventEnum.LOGIN,listener)
     }
 
+    fun onLogout(listener: LogoutListener): Wechaty {
+        return on(EventEnum.LOGOUT, listener)
+    }
     fun onScan(listener: ScanListener):Wechaty{
         return on(EventEnum.SCAN,listener);
     }
 
+    fun onReady(listener: ReadyListener): Wechaty {
+        return on(EventEnum.READY, listener)
+    }
+    fun onFriendship(listener: FriendshipListener): Wechaty {
+        return on(EventEnum.FRIENDSHIP, listener)
+    }
+
     fun onRoomJoin(listener: RoomJoinListener):Wechaty {
-        return on(EventEnum.ROOM_JOIN,listener)
+        return on(EventEnum.ROOM_JOIN, listener)
     }
 
     fun onRoomLeave(listener: RoomLeaveListener):Wechaty {
@@ -115,10 +151,16 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         return on(EventEnum.ROOM_TOPIC,listener)
     }
 
+    fun onRoomInvite(listener: RoomInviteListener): Wechaty {
+        return on(EventEnum.ROOM_INVITE, listener)
+    }
     fun onMessage(listener: MessageListener):Wechaty{
         return on(EventEnum.MESSAGE,listener)
     }
 
+    fun onError(listener: ErrorListener): Wechaty {
+        return on(EventEnum.ERROR, listener)
+    }
     fun use(vararg plugins: WechatyPlugin):Wechaty{
         plugins.forEach {
             it(this)
@@ -140,11 +182,36 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         })
         return this
     }
+    private fun on(event: Event,listener: ReadyListener):Wechaty{
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler()
+            }
+        })
+        return this
+    }
+
+    private fun on(event: Event, listener: LogoutListener): Wechaty {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as String, any[1] as String)
+            }
+        })
+        return this
+    }
 
     private fun on(event: Event, listener: DongListener):Wechaty {
         return this
     }
 
+    private fun on(event: Event, listener: ErrorListener): Wechaty {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as String)
+            }
+        })
+        return this
+    }
     private fun on(event: Event, listener: ScanListener):Wechaty{
         super.on(event, object : Listener {
             override fun handler(vararg any: Any) {
@@ -162,7 +229,24 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
         })
         return this
     }
+    private fun on(event: Event, listener: FriendshipListener): Wechaty {
+        super.on(event, object : Listener {
+            override fun handler(vararg any: Any) {
+                listener.handler(any[0] as Friendship)
+            }
+        })
+        return this
+    }
 
+    private fun on(eventName: Event, listener: RoomInviteListener): Wechaty {
+        super.on(eventName, object : Listener {
+            override fun handler(vararg any: Any) {
+                // roomInvitationId
+                listener.handler(any[0] as RoomInvitation)
+            }
+        })
+        return this
+    }
     private fun on(eventName: Event, listener: RoomJoinListener):Wechaty {
         super.on(eventName, object : Listener {
             override fun handler(vararg any: Any) {
@@ -192,6 +276,11 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
 
     private fun initPuppet() {
         this.puppet = PuppetManager.resolveInstance(wechatyOptions).get()
+        if (this.memory == null) {
+            throw Exception("no memory")
+        }
+        val puppetMemory = this.memory!!.multiplex(PUPPET_MEMORY_NAME)
+        this.puppet.setMemory(puppetMemory)
         initPuppetEventBridge(puppet)
     }
 
@@ -247,7 +336,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                 EventEnum.FRIENDSHIP -> {
                     puppet.on(it, object : PuppetFriendshipListener {
                         override fun handler(payload: EventFriendshipPayload) {
-                            val friendship = friendshipManager.load(payload.friendshipId)
+                            val friendship = friendShipManager.load(payload.friendshipId)
                             friendship.ready()
                             emit(EventEnum.FRIENDSHIP, friendship)
                         }
@@ -268,7 +357,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                         override fun handler(payload: EventLogoutPayload) {
                             val contact = contactManager.loadSelf(payload.contactId)
                             contact.ready()
-                            emit(EventEnum.LOGOUT, contact, payload.data)
+                            emit(EventEnum.LOGOUT, contact.id, payload.data)
                         }
                     })
                 }
@@ -290,7 +379,8 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                     puppet.on(it, object : PuppetReadyListener {
                         override fun handler(payload: EventReadyPayload) {
                             emit(EventEnum.READY);
-                            readyState = StateEnum.ON
+//                            readyState = StateEnum.ON
+                            readyState.on(StateEnum.ON)
                         }
                     })
                 }
@@ -331,7 +421,7 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                     puppet.on(it, object : PuppetRoomLeaveListener {
                         override fun handler(payload: EventRoomLeavePayload) {
                             val room = roomManager.load(payload.roomId)
-                            room.sync()
+                            room.sync().get()
 
                             val leaverList = payload.removeeIdList.map { id ->
                                 val contact = contactManager.loadSelf(id)
@@ -353,12 +443,11 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
                     puppet.on(it, object : PuppetRoomTopicListener {
                         override fun handler(payload: EventRoomTopicPayload) {
                             val room = roomManager.load(payload.roomId)
-                            room.sync()
+                            room.sync().get()
 
                             val changer = contactManager.loadSelf(payload.changerId)
                             changer.ready()
                             val date = Date(payload.timestamp * 1000)
-
                             emit(EventEnum.ROOM_TOPIC, room, payload.newTopic, payload.oldTopic, changer, date)
                             room.emit(EventEnum.TOPIC, payload.newTopic, payload.oldTopic, changer, date)
                         }
@@ -417,6 +506,26 @@ class Wechaty private constructor(private var wechatyOptions: WechatyOptions) : 
             }
         }, "StartMain-shutdown-hook"))
     }
+
+//    override fun toString(): String {
+//        if (this.wechatyOptions == null) {
+//            return "default"
+//        }
+//        val first = if (this.wechatyOptions != null && this.puppet != null) {
+//            this.wechatyOptions.puppet
+//        }
+//        else {
+//            "puppet"
+//        }
+//
+//        val second = if (this.memory != null) {
+//            this.memory!!.getName()
+//        }
+//        else {
+//            "default"
+//        }
+//        return "Wechaty#<${first}><${second}>"
+//    }
 }
 
 

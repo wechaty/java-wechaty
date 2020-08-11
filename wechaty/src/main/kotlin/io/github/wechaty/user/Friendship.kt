@@ -14,6 +14,22 @@ class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
 
     private var payload:FriendshipPayload? = null
 
+    fun search(queryFilter: FriendshipSearchCondition):Contact?{
+        val contactId = wechaty.getPuppet().friendshipSearch(queryFilter).get();
+        if(StringUtils.isEmpty(contactId)){
+            return null
+        }
+        val contact = wechaty.contactManager.load(contactId!!)
+        contact.ready()
+        return contact
+    }
+
+    // 这个应该是静态方法吧
+    fun add(contact: Contact, hello:String){
+        log.debug("add contact: {} hello: {}",contact,hello)
+        wechaty.getPuppet().friendshipAdd(contact.id!!,hello).get()
+    }
+
     fun isReady():Boolean{
         return  payload != null
     }
@@ -24,7 +40,6 @@ class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
         }
         this.payload = wechaty.getPuppet().friendshipPayload(id!!).get()
         contact().ready()
-
     }
 
     fun contact():Contact{
@@ -55,8 +70,12 @@ class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
         return this.payload?.hello ?: "";
     }
 
-    fun type():FriendshipType{
+    fun type(): FriendshipType {
         return this.payload?.type ?:FriendshipType.Unknown
+    }
+
+    fun getType(): FriendshipType {
+        return this.payload?.type ?: throw Exception("ne payload")
     }
 
     fun toJson():String{
@@ -65,7 +84,6 @@ class Friendship (wechaty: Wechaty,val id:String):Accessory(wechaty){
         }
         return JsonUtils.write(payload!!);
     }
-
     companion object{
         private val log = LoggerFactory.getLogger(Friendship::class.java)
     }

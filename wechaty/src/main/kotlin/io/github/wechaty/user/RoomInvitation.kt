@@ -52,7 +52,15 @@ class RoomInvitation(wechaty: Wechaty,val id:String) : Accessory(wechaty){
         return Date(payload.timestamp!! * 1000)
     }
 
+    fun getDate(): Date {
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
+        return Date(payload.timestamp!! * 1000)
+    }
     fun age():Long{
+        val recvDate = this.date()
+        return System.currentTimeMillis() - recvDate.time;
+    }
+    fun getAge():Long{
         val recvDate = this.date()
         return System.currentTimeMillis() - recvDate.time;
     }
@@ -62,7 +70,17 @@ class RoomInvitation(wechaty: Wechaty,val id:String) : Accessory(wechaty){
         return wechaty.contactManager.load(payload.inviterId!!)
     }
 
+    fun getInviter():Contact{
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
+        return wechaty.contactManager.load(payload.inviterId!!)
+    }
+
     fun topic():String {
+        val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
+        return payload.topic ?:""
+    }
+
+    fun getTopic():String {
         val payload = wechaty.getPuppet().roomInvitationPayload(this.id).get()
         return payload.topic ?:""
     }
@@ -70,7 +88,5 @@ class RoomInvitation(wechaty: Wechaty,val id:String) : Accessory(wechaty){
     companion object{
         private val log = LoggerFactory.getLogger(RoomInvitation::class.java)
     }
-
-
 
 }

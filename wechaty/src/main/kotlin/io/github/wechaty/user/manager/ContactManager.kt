@@ -30,9 +30,6 @@ class ContactManager(wechaty: Wechaty):Accessory(wechaty) {
 
     }
 
-
-
-
     fun find(queryFilter: ContactQueryFilter):Contact?{
 
         val findAll = findAll(queryFilter)
@@ -72,7 +69,7 @@ class ContactManager(wechaty: Wechaty):Accessory(wechaty) {
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(Contact::class.java)
+        private val log = LoggerFactory.getLogger(ContactManager::class.java)
     }
 
 

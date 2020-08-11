@@ -2,6 +2,7 @@ package io.github.wechaty.example;
 
 
 import io.github.wechaty.Wechaty;
+import io.github.wechaty.user.Contact;
 import io.github.wechaty.user.Room;
 import io.github.wechaty.utils.QrcodeUtils;
 import okhttp3.OkHttpClient;
@@ -16,37 +17,24 @@ public class Main {
     public static void main(String[] args){
 
         Wechaty bot = Wechaty.instance("your_token")
-            .onScan((qrcode, statusScanStatus, data) -> System.out.println(QrcodeUtils.getQr(qrcode)))
-            .onLogin(user -> System.out.println(user))
+            .onScan((qrcode, statusScanStatus, data) -> {
+                System.out.println(QrcodeUtils.getQr(qrcode));
+                System.out.println("Online Image: https://wechaty.github.io/qrcode/" + qrcode);
+            })
+            .onLogin(user -> System.out.println(user.name() + "login"))
             .onMessage(message -> {
                 Room room = message.room();
                 String text = message.text();
-                if (StringUtils.equals(text, "#ding")) {
+                Contact from = message.from();
+                if (StringUtils.equals(text, "ding")) {
                     if (room != null) {
                         room.say("dong");
                     }
+                    else {
+                        // say something to from contact
+                        from.say("hello:" + from.name());
+                    }
                 }
             }).start(true);
-
-//    }
-
-//        Room room = bot.room();
-//
-//        RoomQueryFilter roomQueryFilter = new RoomQueryFilter();
-//
-//        roomQueryFilter.setTopic("ChatOps - Donut");
-//
-//        Future<List<Room>> all = room.findAll(roomQueryFilter);
-//
-//        List<Room> rooms = all.get();
-//
-//        Room room1 = rooms.get(0);
-//
-//        FileBox fileBox = FileBox.fromFile("dong.jpg", "dong.jpg");
-//
-//        room1.say(fileBox).get();
-
     }
-
-
 }

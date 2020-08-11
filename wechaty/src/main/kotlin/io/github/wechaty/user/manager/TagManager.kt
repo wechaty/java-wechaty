@@ -18,12 +18,19 @@ class TagManager(wechaty: Wechaty):Accessory(wechaty){
         }!!
     }
 
-    fun get(id:String):Tag{
+    fun get(id:String): Tag{
         return load(id)
     }
 
     fun delete(tag:Tag,target: Contact){
         wechaty.getPuppet().tagContactDelete(tag.id)
+    }
+
+    fun tags():List<Tag>{
+        val tagIdList = wechaty.getPuppet().tagContactList().get()
+        return tagIdList.map {
+            wechaty.tagManager.load(it)
+        }
     }
 
     companion object{

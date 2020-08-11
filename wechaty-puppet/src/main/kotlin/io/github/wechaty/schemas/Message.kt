@@ -61,6 +61,7 @@ class MessageQueryFilter {
     override fun toString(): String {
         return "MessageQueryFilter(fromId=$fromId, id=$id, roomId=$roomId, text=$text, toId=$toId, type=$type, textReg=$textReg)"
     }
-
-
 }
+
+typealias MessagePayloadFilterFunction = (payload: MessagePayload) -> Boolean
+typealias MessagePayloadFilterFactory  = (query: MessageQueryFilter) -> MessagePayloadFilterFunction

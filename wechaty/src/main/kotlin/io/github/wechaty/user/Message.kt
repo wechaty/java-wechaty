@@ -7,9 +7,11 @@ import io.github.wechaty.schemas.MessagePayload
 import io.github.wechaty.schemas.MessageType
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.type.Sayable
+import io.grpc.netty.shaded.io.netty.util.concurrent.CompleteFuture
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.regex.Pattern
@@ -116,6 +118,9 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
         }
         return this.payload?.type ?: MessageType.Unknown
     }
+    fun getType(): MessageType{
+        return this.payload?.type ?: throw Exception("no payload")
+    }
 
     fun self():Boolean{
         val selfId = puppet.selfId()
@@ -123,6 +128,45 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
 
         return StringUtils.equals(selfId,from?.id)
     }
+
+    fun date(): Date {
+        val payload = wechaty.getPuppet().messagePayload(this.id).get()
+        return Date(payload.timestamp!! * 1000)
+    }
+
+    fun getDate(): Date {
+        val payload = wechaty.getPuppet().messagePayload(this.id).get()
+        return Date(payload.timestamp!! * 1000)
+    }
+
+    fun age(): Long {
+        val ageMilliseconds = Date().time - this.date().time
+        val ageSeconds = Math.floor(ageMilliseconds / 1000.0).toLong()
+        return ageSeconds
+    }
+
+    fun getAge(): Long {
+        val ageMilliseconds = Date().time - this.date().time
+        val ageSeconds = Math.floor(ageMilliseconds / 1000.0).toLong()
+        return ageSeconds
+    }
+
+    fun forward(to: Any): Future<Void> {
+        log.debug("Message, forward({})", to)
+        when(to) {
+            is Room -> {
+                this.puppet.messageForward(to.id, this.id).get()
+            }
+            is Contact -> {
+                this.puppet.messageForward(to.id, this.id).get()
+            }
+            else -> {
+                throw Exception("unkown forward type")
+            }
+        }
+        return CompletableFuture.completedFuture(null)
+    }
+
 
     fun mentionList():List<Contact>{
         val room = this.room()
@@ -170,7 +214,6 @@ open class Message(wechaty: Wechaty,val id: String) : Sayable, Accessory(wechaty
     fun content():String{
         return text()
     }
-
 
     fun ready():Future<Void>{
 

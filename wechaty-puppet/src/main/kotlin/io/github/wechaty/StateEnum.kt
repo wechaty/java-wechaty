@@ -1,7 +1,7 @@
 package io.github.wechaty
 
-enum class StateEnum {
+import io.github.wechaty.eventEmitter.Event
 
+enum class StateEnum: Event {
     PENDING,ON,OFF;
-
 }

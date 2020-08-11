@@ -1,11 +1,11 @@
 package io.github.wechaty
 
-//import io.github.wechaty.memorycard.MemoryCard
+import io.github.wechaty.memorycard.MemoryCard
 import io.github.wechaty.schemas.PuppetOptions
 
 class WechatyOptions {
 
-//    var memory:MemoryCard? = null
+    var memory: MemoryCard? = null
 
     var name:String = "Wechaty"
 
@@ -17,5 +17,5 @@ class WechatyOptions {
     var ioToken:String? = null
 
 }
- typealias WechatyPlugin = (Wechaty) -> Unit
+typealias WechatyPlugin = (Wechaty) -> Unit
 

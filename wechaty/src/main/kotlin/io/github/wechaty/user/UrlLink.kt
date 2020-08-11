@@ -69,7 +69,6 @@ class UrlLink(val payload:UrlLinkPayload) {
 
             return UrlLink(payload)
 
-//
         }
 
     }
@@ -79,7 +78,13 @@ class UrlLink(val payload:UrlLinkPayload) {
 fun main(){
 
     val create = UrlLink.create("https://xilidou.com")
-
+//    val bilibili = UrlLink.create("https://www.bilibili.com/")
+//    val image = UrlLink.create("https://img.xilidou.com/img/java-wechaty.png")
     println(create)
-
+//    println(bilibili)
+//    print(image)
+    val urlLink = UrlLinkPayload("Nihao", "https://www.bilibili.com/")
+    urlLink.thumbnailUrl = "https://xilidou.com/images/avatar.jpg"
+    urlLink.description = "犀利豆的博客"
+    print(urlLink)
 }

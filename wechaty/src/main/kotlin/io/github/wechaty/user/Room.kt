@@ -15,7 +15,10 @@ import io.github.wechaty.io.github.wechaty.schemas.EventEnum
 import io.github.wechaty.schemas.RoomMemberQueryFilter
 import io.github.wechaty.schemas.RoomPayload
 import io.github.wechaty.type.Sayable
+import io.github.wechaty.user.manager.RoomManager
+import io.github.wechaty.utils.JsonUtils
 import io.github.wechaty.utils.QrcodeUtils
+import io.grpc.netty.shaded.io.netty.util.concurrent.CompleteFuture
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -57,9 +60,7 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
                 message.ready().get()
                 return@supplyAsync message
             }
-
             return@supplyAsync null
-
         }
     }
 
@@ -349,13 +350,41 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
     }
 
+    fun getAnnounce(): Future<String> {
+        return CompletableFuture.supplyAsync {
+            puppet.getRoomAnnounce(id).get()
+        }
+    }
+
+    fun setAnnounce(text: String): Future<Void> {
+        return puppet.setRoomAnnounce(id, text)
+    }
+
     fun qrCode(): Future<String> {
         return CompletableFuture.supplyAsync {
             val qrCodeValue = puppet.roomQRCode(id).get()
             return@supplyAsync QrcodeUtils.guardQrCodeValue(qrCodeValue)
         }
     }
+    fun getQrCode(): Future<String> {
+        return CompletableFuture.supplyAsync {
+            val qrCodeValue = puppet.roomQRCode(id).get()
+            return@supplyAsync QrcodeUtils.guardQrCodeValue(qrCodeValue)
+        }
+    }
 
+    fun member(query: RoomMemberQueryFilter?): Contact? {
+        val memberList = memberAll(query)
+
+        if (memberList == null || memberList.size == 0) {
+            return null
+        }
+        if (memberList.size > 1) {
+            log.warn("Room, member({}) get {} contacts, use the first one by default", query?.let { JsonUtils.write(it) }, memberList.size)
+        }
+
+        return memberList[0];
+    }
     fun memberAll(query: RoomMemberQueryFilter?): List<Contact> {
 
         if (query == null) {
@@ -364,11 +393,10 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
         val contactIdList = wechaty.getPuppet().roomMemberSearch(this.id, query).get()
         val contactList = contactIdList.map {
-            wechaty.contactManager.load(id)
+            id -> wechaty.contactManager.load(id)
         }
 
         return contactList
-
     }
 
     fun memberList(): List<Contact> {
@@ -380,19 +408,15 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
         }
 
         val contactList = memberIdList.map {
-            wechaty.contactManager.load(id)
+            id -> wechaty.contactManager.load(id)
         }
         return contactList
 
     }
 
     fun alias(contact: Contact): String? {
-
         val roomMemberPayload = wechaty.getPuppet().roomMemberPayload(this.id, contact.id).get()
-
         return roomMemberPayload?.roomAlias
-
-
     }
 
     fun has(contact: Contact): Boolean {
@@ -419,6 +443,11 @@ class Room(wechaty: Wechaty, val id: String) : Accessory(wechaty), Sayable {
 
     fun avatar(): FileBox {
         log.debug("avatar:{}", avatar())
+        return puppet.roomAvatar(this.id).get()
+    }
+
+    fun getAvatar(): FileBox {
+        log.debug("getAvatar:{}", getAvatar())
         return puppet.roomAvatar(this.id).get()
     }
 
