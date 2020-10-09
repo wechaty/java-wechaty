@@ -1,6 +1,5 @@
 package io.github.wechaty.user.manager
 
-import com.sun.xml.internal.ws.message.PayloadElementSniffer
 import io.github.wechaty.Accessory
 import io.github.wechaty.Wechaty
 import io.github.wechaty.schemas.FriendshipPayload

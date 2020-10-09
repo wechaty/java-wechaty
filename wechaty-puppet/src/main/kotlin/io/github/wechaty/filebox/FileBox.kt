@@ -202,8 +202,8 @@ class FileBox(options: FileBoxOptions) {
 
                 FileBoxType.Url.code -> {
                     fileBox = fromUrl(
-                        jsonNode.findValue("name").asText(),
-                        jsonNode.findValue("remoteUrl").asText()
+                        jsonNode.findValue("remoteUrl").asText(),
+                        jsonNode.findValue("name").asText()
                     )
                 }
 
