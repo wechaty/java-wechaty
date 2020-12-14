@@ -144,7 +144,7 @@ class FileBox(options: FileBoxOptions) {
 
     }
 
-    fun getBufferByte(fileBox: FileBox): ByteArray? {
+    private fun getBufferByte(fileBox: FileBox): ByteArray? {
         when (fileBox.type()) {
             FileBoxType.File -> {
 
