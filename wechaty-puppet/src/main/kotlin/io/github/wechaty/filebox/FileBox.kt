@@ -138,13 +138,13 @@ class FileBox(options: FileBoxOptions) {
     }
 
     fun toJsonString(): String {
-        buffer = toByte(this)
+        buffer = getBufferByte(this)
 
         return JsonUtils.write(this)
 
     }
 
-    fun toByte(fileBox: FileBox): ByteArray? {
+    private fun getBufferByte(fileBox: FileBox): ByteArray? {
         when (fileBox.type()) {
             FileBoxType.File -> {
 
@@ -153,11 +153,12 @@ class FileBox(options: FileBoxOptions) {
                 return FileUtils.readFileToByteArray(file)
 
             }
-
             FileBoxType.Url -> {
                 return null;
             }
-
+            FileBoxType.Base64 -> {
+                return null;
+            }
             else -> {
                 TODO()
             }
