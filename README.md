@@ -323,6 +323,10 @@ We decided to use Kotlin to develop the Java Wechaty!
 - [Java Wechaty](https://github.com/wechaty/java-wechaty) - Java WeChaty Conversational AI Chatbot SDK for Wechat Individual Accounts (Java)
 - [Scala Wechaty](https://github.com/wechaty/scala-wechaty) - Scala WeChaty Conversational AI Chatbot SDK for WechatyIndividual Accounts (Scala)
 
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/wechaty/java-wechaty.svg)](https://starchart.cc/wechaty/java-wechaty)
+
 ## Badge
 
 [![Wechaty in Kotlin](https://img.shields.io/badge/Wechaty-Kotlin-orange)](https://github.com/wechaty/java-wechaty)
