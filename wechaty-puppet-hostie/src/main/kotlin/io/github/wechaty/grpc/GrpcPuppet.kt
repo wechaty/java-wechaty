@@ -151,11 +151,12 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
         }
 
         if (StringUtils.isEmpty(discoverHostieIp.first) || StringUtils.equals(discoverHostieIp.first, "0.0.0.0")) {
-            log.error("cannot get ip by token, check token")
+            log.error("cannot get ip by token, check token or endPoint")
             exitProcess(1)
         }
         val newFixedThreadPool = newFixedThreadPool(16)
-        channel = ManagedChannelBuilder.forAddress(discoverHostieIp.first, NumberUtils.toInt(discoverHostieIp.second)).usePlaintext().executor(newFixedThreadPool).build()
+        channel = ManagedChannelBuilder.forAddress(discoverHostieIp.first, NumberUtils.toInt(discoverHostieIp.second))
+            .overrideAuthority(puppetOptions?.token).usePlaintext().executor(newFixedThreadPool).build()
 
         grpcClient = PuppetGrpc.newBlockingStub(channel)
         grpcAsyncClient = PuppetGrpc.newStub(channel)
@@ -946,7 +947,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
             log.debug("PuppetHostie $type payload $payload")
 
             if (type != Event.EventType.EVENT_TYPE_HEARTBEAT) {
-                emit(EventEnum.HEART_BEAT, EventHeartbeatPayload("heartbeat",6000))
+                emit(EventEnum.HEART_BEAT, EventHeartbeatPayload("heartbeat", 6000))
             }
 
             when (type) {

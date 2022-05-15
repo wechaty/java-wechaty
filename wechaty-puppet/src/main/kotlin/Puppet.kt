@@ -483,7 +483,6 @@ abstract class Puppet : EventEmitter {
         val filterKv = list.get(0)
 
         val filterFunction = { payload: ContactPayload ->
-            Boolean
             val clazz = payload::class.java
             val field = clazz.getField(filterKv.first)
             val toString = field.get(payload).toString()
