@@ -1006,7 +1006,7 @@ class GrpcPuppet(puppetOptions: PuppetOptions) : Puppet(puppetOptions) {
 
                 Event.EventType.EVENT_TYPE_SCAN -> {
                     val eventScanPayload = JsonUtils.readValue<EventScanPayload>(payload)
-                    log.debug("scan pay loadx is {}", eventScanPayload)
+                    log.debug("scan pay load is {}", eventScanPayload)
                     emit(EventEnum.SCAN, eventScanPayload)
                 }
 
